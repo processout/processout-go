@@ -3,6 +3,9 @@ package processout
 const (
 	// APIVersion is the version of the API this package uses
 	APIVersion = "1.1.0.0"
+)
+
+var (
 	// Host is the URL where API requests are made
 	Host = "https://api.processout.com/"
 )
