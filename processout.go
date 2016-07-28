@@ -7,7 +7,7 @@ const (
 
 var (
 	// Host is the URL where API requests are made
-	Host = "https://api.processout.com/"
+	Host = "https://api.processout.com"
 )
 
 // ProcessOut wraps all the components of the package in a
