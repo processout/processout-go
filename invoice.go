@@ -50,24 +50,21 @@ type Invoice struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-
 // Customer : Get the customer linked to the invoice.
 func (s Invoices) Customer(invoice *Invoice) (*Customer, error) {
 
 	type Response struct {
 		Customer `json:"customer"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success  bool   `json:"success"`
+		Message  string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/invoices/"+url.QueryEscape(invoice.ID)+"/customers"
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -102,19 +99,18 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string) (*Customer
 
 	type Response struct {
 		Customer `json:"customer"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success  bool   `json:"success"`
+		Message  string `json:"message"`
 	}
 
-	 body , err := json.Marshal(map[string]interface{}{
+	body, err := json.Marshal(map[string]interface{}{
 		"customer_id": customerID,
-
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/invoices/"+url.QueryEscape(invoice.ID)+"/customers"
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -149,18 +145,17 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string) (*Customer
 // Charge : Charge the invoice using the given customer token ID.
 func (s Invoices) Charge(invoice *Invoice, tokenID string) error {
 
-	type Response struct {Success bool `json:"success"`
+	type Response struct {
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return err
 	}
 
-	path := "/invoices/"+url.QueryEscape(invoice.ID)+"/tokens/"+url.QueryEscape(tokenID)+"/charges"
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/tokens/" + url.QueryEscape(tokenID) + "/charges"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -196,19 +191,17 @@ func (s Invoices) Charge(invoice *Invoice, tokenID string) error {
 func (s Invoices) Tokens(invoice *Invoice) ([]*Token, error) {
 
 	type Response struct {
-		Tokens []*Token `json:"tokens"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Tokens  []*Token `json:"tokens"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/invoices/"+url.QueryEscape(invoice.ID)+"/tokens"
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/tokens"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -243,13 +236,11 @@ func (s Invoices) All() ([]*Invoice, error) {
 
 	type Response struct {
 		Invoices []*Invoice `json:"invoices"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success  bool       `json:"success"`
+		Message  string     `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -289,22 +280,21 @@ func (s Invoices) Create(invoice *Invoice) (*Invoice, error) {
 
 	type Response struct {
 		Invoice `json:"invoice"`
-		Success bool `json:"success"`
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 body , err := json.Marshal(map[string]interface{}{
-		"name": invoice.Name,
-		"price": invoice.Price,
-		"taxes": invoice.Taxes,
-		"shipping": invoice.Shipping,
-		"currency": invoice.Currency,
-		"request_email": invoice.RequestEmail,
+	body, err := json.Marshal(map[string]interface{}{
+		"name":             invoice.Name,
+		"price":            invoice.Price,
+		"taxes":            invoice.Taxes,
+		"shipping":         invoice.Shipping,
+		"currency":         invoice.Currency,
+		"request_email":    invoice.RequestEmail,
 		"request_shipping": invoice.RequestShipping,
-		"return_url": invoice.ReturnURL,
-		"cancel_url": invoice.CancelURL,
-		"custom": invoice.Custom,
-
+		"return_url":       invoice.ReturnURL,
+		"cancel_url":       invoice.CancelURL,
+		"custom":           invoice.Custom,
 	})
 	if err != nil {
 		return nil, err
@@ -347,18 +337,16 @@ func (s Invoices) Find(invoiceID string) (*Invoice, error) {
 
 	type Response struct {
 		Invoice `json:"invoice"`
-		Success bool `json:"success"`
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/invoices/"+url.QueryEscape(invoiceID)+""
+	path := "/invoices/" + url.QueryEscape(invoiceID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -391,18 +379,17 @@ func (s Invoices) Find(invoiceID string) (*Invoice, error) {
 // Lock : Lock the invoice so it can't be interacted with anymore.
 func (s Invoices) Lock(invoice *Invoice) error {
 
-	type Response struct {Success bool `json:"success"`
+	type Response struct {
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return err
 	}
 
-	path := "/invoices/"+url.QueryEscape(invoice.ID)+""
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -433,7 +420,6 @@ func (s Invoices) Lock(invoice *Invoice) error {
 	}
 	return nil
 }
-
 
 // dummyInvoice is a dummy function that's only
 // here because some files need specific packages and some don't.

@@ -52,24 +52,21 @@ type RecurringInvoice struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-
 // Customer : Get the customer linked to the recurring invoice.
 func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice) (*Customer, error) {
 
 	type Response struct {
 		Customer `json:"customer"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success  bool   `json:"success"`
+		Message  string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/recurring-invoices/"+url.QueryEscape(recurringInvoice.ID)+"/customers"
+	path := "/recurring-invoices/" + url.QueryEscape(recurringInvoice.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -104,18 +101,16 @@ func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice) (*Invoice
 
 	type Response struct {
 		Invoice `json:"invoice"`
-		Success bool `json:"success"`
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/recurring-invoices/"+url.QueryEscape(recurringInvoice.ID)+"/invoices"
+	path := "/recurring-invoices/" + url.QueryEscape(recurringInvoice.ID) + "/invoices"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -150,24 +145,23 @@ func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID
 
 	type Response struct {
 		RecurringInvoice `json:"recurring_invoice"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success          bool   `json:"success"`
+		Message          string `json:"message"`
 	}
 
-	 body , err := json.Marshal(map[string]interface{}{
-		"name": recurringInvoice.Name,
-		"price": recurringInvoice.Price,
-		"taxes": recurringInvoice.Taxes,
-		"shipping": recurringInvoice.Shipping,
-		"currency": recurringInvoice.Currency,
-		"return_url": recurringInvoice.ReturnURL,
-		"cancel_url": recurringInvoice.CancelURL,
-		"custom": recurringInvoice.Custom,
-		"interval": recurringInvoice.Interval,
+	body, err := json.Marshal(map[string]interface{}{
+		"name":         recurringInvoice.Name,
+		"price":        recurringInvoice.Price,
+		"taxes":        recurringInvoice.Taxes,
+		"shipping":     recurringInvoice.Shipping,
+		"currency":     recurringInvoice.Currency,
+		"return_url":   recurringInvoice.ReturnURL,
+		"cancel_url":   recurringInvoice.CancelURL,
+		"custom":       recurringInvoice.Custom,
+		"interval":     recurringInvoice.Interval,
 		"trial_period": recurringInvoice.TrialPeriod,
 		"ended_reason": recurringInvoice.EndedReason,
-		"customer_id": customerID,
-
+		"customer_id":  customerID,
 	})
 	if err != nil {
 		return nil, err
@@ -210,18 +204,16 @@ func (s RecurringInvoices) Find(recurringInvoiceID string) (*RecurringInvoice, e
 
 	type Response struct {
 		RecurringInvoice `json:"recurring_invoice"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success          bool   `json:"success"`
+		Message          string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/recurring-invoices/"+url.QueryEscape(recurringInvoiceID)+""
+	path := "/recurring-invoices/" + url.QueryEscape(recurringInvoiceID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -254,19 +246,19 @@ func (s RecurringInvoices) Find(recurringInvoiceID string) (*RecurringInvoice, e
 // End : End a recurring invoice. The reason may be provided as well.
 func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string) error {
 
-	type Response struct {Success bool `json:"success"`
+	type Response struct {
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 body , err := json.Marshal(map[string]interface{}{
+	body, err := json.Marshal(map[string]interface{}{
 		"reason": reason,
-
 	})
 	if err != nil {
 		return err
 	}
 
-	path := "/recurring-invoices/"+url.QueryEscape(recurringInvoice.ID)+""
+	path := "/recurring-invoices/" + url.QueryEscape(recurringInvoice.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -297,7 +289,6 @@ func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string
 	}
 	return nil
 }
-
 
 // dummyRecurringInvoice is a dummy function that's only
 // here because some files need specific packages and some don't.

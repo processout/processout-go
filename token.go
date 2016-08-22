@@ -30,24 +30,21 @@ type Token struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-
 // Delete : Delete a specific customer's token by its ID.
 func (s Tokens) Delete(token *Token) (*Token, error) {
 
 	type Response struct {
-		Token `json:"token"`
-		Success bool `json:"success"`
+		Token   `json:"token"`
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/customers/"+url.QueryEscape(token.CustomerID)+"/tokens/"+url.QueryEscape(token.ID)+""
+	path := "/customers/" + url.QueryEscape(token.CustomerID) + "/tokens/" + url.QueryEscape(token.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -78,7 +75,6 @@ func (s Tokens) Delete(token *Token) (*Token, error) {
 	}
 	return &payload.Token, nil
 }
-
 
 // dummyToken is a dummy function that's only
 // here because some files need specific packages and some don't.

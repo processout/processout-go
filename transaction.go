@@ -28,19 +28,16 @@ type Transaction struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-
 // All : Get all the transactions.
 func (s Transactions) All() ([]*Transaction, error) {
 
 	type Response struct {
 		Transactions []*Transaction `json:"transactions"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success      bool           `json:"success"`
+		Message      string         `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -80,18 +77,16 @@ func (s Transactions) Find(transactionID string) (*Transaction, error) {
 
 	type Response struct {
 		Transaction `json:"transaction"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success     bool   `json:"success"`
+		Message     string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/transactions/"+url.QueryEscape(transactionID)+""
+	path := "/transactions/" + url.QueryEscape(transactionID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -120,7 +115,6 @@ func (s Transactions) Find(transactionID string) (*Transaction, error) {
 	}
 	return &payload.Transaction, nil
 }
-
 
 // dummyTransaction is a dummy function that's only
 // here because some files need specific packages and some don't.

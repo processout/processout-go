@@ -42,24 +42,21 @@ type TailoredInvoice struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-
 // Invoice : Create a new invoice from the tailored invoice.
 func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice) (*Invoice, error) {
 
 	type Response struct {
 		Invoice `json:"invoice"`
-		Success bool `json:"success"`
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/tailored-invoices/"+url.QueryEscape(tailoredInvoice.ID)+"/invoices"
+	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + "/invoices"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -96,13 +93,11 @@ func (s TailoredInvoices) All() ([]*TailoredInvoice, error) {
 
 	type Response struct {
 		TailoredInvoices []*TailoredInvoice `json:"tailored_invoices"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success          bool               `json:"success"`
+		Message          string             `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -142,22 +137,21 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice) (*TailoredInv
 
 	type Response struct {
 		TailoredInvoice `json:"tailored_invoice"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success         bool   `json:"success"`
+		Message         string `json:"message"`
 	}
 
-	 body , err := json.Marshal(map[string]interface{}{
-		"name": tailoredInvoice.Name,
-		"price": tailoredInvoice.Price,
-		"taxes": tailoredInvoice.Taxes,
-		"shipping": tailoredInvoice.Shipping,
-		"currency": tailoredInvoice.Currency,
-		"request_email": tailoredInvoice.RequestEmail,
+	body, err := json.Marshal(map[string]interface{}{
+		"name":             tailoredInvoice.Name,
+		"price":            tailoredInvoice.Price,
+		"taxes":            tailoredInvoice.Taxes,
+		"shipping":         tailoredInvoice.Shipping,
+		"currency":         tailoredInvoice.Currency,
+		"request_email":    tailoredInvoice.RequestEmail,
 		"request_shipping": tailoredInvoice.RequestShipping,
-		"return_url": tailoredInvoice.ReturnURL,
-		"cancel_url": tailoredInvoice.CancelURL,
-		"custom": tailoredInvoice.Custom,
-
+		"return_url":       tailoredInvoice.ReturnURL,
+		"cancel_url":       tailoredInvoice.CancelURL,
+		"custom":           tailoredInvoice.Custom,
 	})
 	if err != nil {
 		return nil, err
@@ -200,18 +194,16 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string) (*TailoredInvoice, erro
 
 	type Response struct {
 		TailoredInvoice `json:"tailored_invoice"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success         bool   `json:"success"`
+		Message         string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/tailored-invoices/"+url.QueryEscape(tailoredInvoiceID)+""
+	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoiceID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -246,18 +238,16 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice) (*TailoredInvoi
 
 	type Response struct {
 		TailoredInvoice `json:"tailored_invoice"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success         bool   `json:"success"`
+		Message         string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/tailored-invoices/"+url.QueryEscape(tailoredInvoice.ID)+""
+	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -292,18 +282,17 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice) (*TailoredInvoi
 // Delete : Delete the tailored invoice.
 func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice) error {
 
-	type Response struct {Success bool `json:"success"`
+	type Response struct {
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return err
 	}
 
-	path := "/tailored-invoices/"+url.QueryEscape(tailoredInvoice.ID)+""
+	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -334,7 +323,6 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice) error {
 	}
 	return nil
 }
-
 
 // dummyTailoredInvoice is a dummy function that's only
 // here because some files need specific packages and some don't.

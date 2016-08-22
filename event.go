@@ -30,24 +30,21 @@ type Event struct {
 	FiredAt time.Time `json:"fired_at"`
 }
 
-
 // Webhooks : Get all the webhooks of the event.
 func (s Events) Webhooks(event *Event) ([]*Webhook, error) {
 
 	type Response struct {
 		Webhooks []*Webhook `json:"webhooks"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success  bool       `json:"success"`
+		Message  string     `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/events/"+url.QueryEscape(event.ID)+"/webhooks"
+	path := "/events/" + url.QueryEscape(event.ID) + "/webhooks"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -81,14 +78,12 @@ func (s Events) Webhooks(event *Event) ([]*Webhook, error) {
 func (s Events) All() ([]*Event, error) {
 
 	type Response struct {
-		Events []*Event `json:"events"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Events  []*Event `json:"events"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -127,19 +122,17 @@ func (s Events) All() ([]*Event, error) {
 func (s Events) Find(eventID string) (*Event, error) {
 
 	type Response struct {
-		Event `json:"event"`
-		Success bool `json:"success"`
+		Event   `json:"event"`
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/events/"+url.QueryEscape(eventID)+""
+	path := "/events/" + url.QueryEscape(eventID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -172,18 +165,17 @@ func (s Events) Find(eventID string) (*Event, error) {
 // MarkProcessed : Mark the event as processed.
 func (s Events) MarkProcessed(event *Event) error {
 
-	type Response struct {Success bool `json:"success"`
+	type Response struct {
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return err
 	}
 
-	path := "/events/"+url.QueryEscape(event.ID)+""
+	path := "/events/" + url.QueryEscape(event.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -214,7 +206,6 @@ func (s Events) MarkProcessed(event *Event) error {
 	}
 	return nil
 }
-
 
 // dummyEvent is a dummy function that's only
 // here because some files need specific packages and some don't.

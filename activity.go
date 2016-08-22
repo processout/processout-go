@@ -28,19 +28,16 @@ type Activity struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-
 // All : Get all the project activities.
 func (s Activities) All() ([]*Activity, error) {
 
 	type Response struct {
 		Activities []*Activity `json:"activities"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success    bool        `json:"success"`
+		Message    string      `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
@@ -80,18 +77,16 @@ func (s Activities) Find(activityID string) (*Activity, error) {
 
 	type Response struct {
 		Activity `json:"activity"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success  bool   `json:"success"`
+		Message  string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/activities/"+url.QueryEscape(activityID)+""
+	path := "/activities/" + url.QueryEscape(activityID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -120,7 +115,6 @@ func (s Activities) Find(activityID string) (*Activity, error) {
 	}
 	return &payload.Activity, nil
 }
-
 
 // dummyActivity is a dummy function that's only
 // here because some files need specific packages and some don't.

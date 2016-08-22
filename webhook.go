@@ -40,8 +40,6 @@ type Webhook struct {
 	ReleaseAt time.Time `json:"release_at"`
 }
 
-
-
 // dummyWebhook is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't

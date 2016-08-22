@@ -38,24 +38,21 @@ type AuthorizationRequest struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-
 // Customer : Get the customer linked to the authorization request.
 func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationRequest) (*Customer, error) {
 
 	type Response struct {
 		Customer `json:"customer"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success  bool   `json:"success"`
+		Message  string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/authorization-requests/"+url.QueryEscape(authorizationRequest.ID)+"/customers"
+	path := "/authorization-requests/" + url.QueryEscape(authorizationRequest.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -89,21 +86,20 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequest, gatewayName, name, token string) (*Token, error) {
 
 	type Response struct {
-		Token `json:"token"`
-		Success bool `json:"success"`
+		Token   `json:"token"`
+		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	 body , err := json.Marshal(map[string]interface{}{
-		"name": name,
+	body, err := json.Marshal(map[string]interface{}{
+		"name":  name,
 		"token": token,
-
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/authorization-requests/"+url.QueryEscape(authorizationRequest.ID)+"/gateways/"+url.QueryEscape(gatewayName)+"/tokens"
+	path := "/authorization-requests/" + url.QueryEscape(authorizationRequest.ID) + "/gateways/" + url.QueryEscape(gatewayName) + "/tokens"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -140,18 +136,17 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 
 	type Response struct {
 		AuthorizationRequest `json:"authorization_request"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success              bool   `json:"success"`
+		Message              string `json:"message"`
 	}
 
-	 body , err := json.Marshal(map[string]interface{}{
-		"name": authorizationRequest.Name,
-		"currency": authorizationRequest.Currency,
-		"return_url": authorizationRequest.ReturnURL,
-		"cancel_url": authorizationRequest.CancelURL,
-		"custom": authorizationRequest.Custom,
+	body, err := json.Marshal(map[string]interface{}{
+		"name":        authorizationRequest.Name,
+		"currency":    authorizationRequest.Currency,
+		"return_url":  authorizationRequest.ReturnURL,
+		"cancel_url":  authorizationRequest.CancelURL,
+		"custom":      authorizationRequest.Custom,
 		"customer_id": customerID,
-
 	})
 	if err != nil {
 		return nil, err
@@ -194,18 +189,16 @@ func (s AuthorizationRequests) Find(authorizationRequestID string) (*Authorizati
 
 	type Response struct {
 		AuthorizationRequest `json:"authorization_request"`
-		Success bool `json:"success"`
-		Message string `json:"message"`
+		Success              bool   `json:"success"`
+		Message              string `json:"message"`
 	}
 
-	 _ , err := json.Marshal(map[string]interface{}{
-
-	})
+	_, err := json.Marshal(map[string]interface{}{})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/authorization-requests/"+url.QueryEscape(authorizationRequestID)+""
+	path := "/authorization-requests/" + url.QueryEscape(authorizationRequestID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -234,7 +227,6 @@ func (s AuthorizationRequests) Find(authorizationRequestID string) (*Authorizati
 	}
 	return &payload.AuthorizationRequest, nil
 }
-
 
 // dummyAuthorizationRequest is a dummy function that's only
 // here because some files need specific packages and some don't.
