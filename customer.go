@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -15,36 +16,52 @@ type Customers struct {
 }
 
 type Customer struct {
-	// Address1 : Main address of the customer
+	// ID : ID of the customer
+	ID string `json:"id"`
+	// Email : Email of the customer
+	Email string `json:"email"`
+	// FirstName : First name of the customer
+	FirstName string `json:"first_name"`
+	// LastName : Last name of the customer
+	LastName string `json:"last_name"`
+	// Address1 : Address of the customer
 	Address1 string `json:"address1"`
 	// Address2 : Secondary address of the customer
 	Address2 string `json:"address2"`
-	// City : Shipping city of the customer
+	// City : City of the customer
 	City string `json:"city"`
-	// CountryCode : Shipping country code of the customer
-	CountryCode string `json:"country_code"`
-	// FirstName : First name of the customer
-	FirstName string `json:"first_name"`
-	// ID : Id of the customer
-	ID string `json:"id"`
-	// LastName : Last name of the customer
-	LastName string `json:"last_name"`
-	// State : Shipping state of the customer
+	// State : State of the customer
 	State string `json:"state"`
-	// Zip : Shipping ZIP code of the customer
+	// Zip : ZIP code of the customer
 	Zip string `json:"zip"`
+	// CountryCode : Country code of the customer
+	CountryCode string `json:"country_code"`
+	// HasPin : Wether the customer has a PIN set or not
+	HasPin bool `json:"has_pin"`
+	// Sandbox : Define whether or not the customer is in sandbox environment
+	Sandbox bool `json:"sandbox"`
+	// CreatedAt : Date at which the customer was created
+	CreatedAt time.Time `json:"created_at"`
 }
 
-// Tokens : Get all the authorization tokens of the customer.
-func (c Customers) Tokens(customer *Customer) ([]*CustomerToken, error) {
+
+// RecurringInvoices : Get the recurring invoices linked to the customer.
+func (s Customers) RecurringInvoices(customer *Customer) ([]*RecurringInvoice, error) {
+
 	type Response struct {
-		Tokens  []*CustomerToken `json:"tokens"`
-		Success bool             `json:"success"`
-		Message string           `json:"message"`
+		RecurringInvoices []*RecurringInvoice `json:"recurring_invoices"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
 	}
 
-	path := "customers/{id}/tokens"
-	path = strings.Replace(path, "{id}", customer.ID, -1)
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/customers/"+url.QueryEscape(customer.ID)+"/recurring-invoices"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -55,7 +72,53 @@ func (c Customers) Tokens(customer *Customer) ([]*CustomerToken, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return payload.RecurringInvoices, nil
+}
+
+// Tokens : Get the customer's tokens.
+func (s Customers) Tokens(customer *Customer) ([]*Token, error) {
+
+	type Response struct {
+		Tokens []*Token `json:"tokens"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
+	}
+
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/customers/"+url.QueryEscape(customer.ID)+"/tokens"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -74,72 +137,23 @@ func (c Customers) Tokens(customer *Customer) ([]*CustomerToken, error) {
 	return payload.Tokens, nil
 }
 
-// Authorize : Authorize (create) a new customer token.
-func (c Customers) Authorize(customer *Customer, gatewayName, name, token string) (*CustomerToken, error) {
-
-	type Request struct {
-		Name  string `json:"name"`
-		Token string `json:"token"`
-	}
+// Token : Get a specific customer's token by its ID.
+func (s Customers) Token(customer *Customer, tokenID string) (*Token, error) {
 
 	type Response struct {
-		CustomerToken `json:"token"`
-		Success       bool   `json:"success"`
-		Message       string `json:"message"`
+		Token `json:"token"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
 	}
 
-	body, err := json.Marshal(&Request{
-		Name:  name,
-		Token: token,
+	 _ , err := json.Marshal(map[string]interface{}{
+
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/customers/{id}/gateways/{gateway_name}/tokens"
-	path = strings.Replace(path, "{id}", customer.ID, -1)
-	path = strings.Replace(path, "{gateway_name}", gatewayName, -1)
-
-	req, err := http.NewRequest(
-		"POST",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("API-Version", c.p.APIVersion)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	if !payload.Success {
-		return nil, errors.New(payload.Message)
-	}
-	return &payload.CustomerToken, nil
-}
-
-// Find : Get the customer data.
-func (c Customers) Find(ID string) (*Customer, error) {
-	type Response struct {
-		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
-	}
-
-	path := "/customers/{id}"
-	path = strings.Replace(path, "{id}", ID, -1)
+	path := "/customers/"+url.QueryEscape(customer.ID)+"/tokens/"+url.QueryEscape(tokenID)+""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -150,7 +164,7 @@ func (c Customers) Find(ID string) (*Customer, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -166,101 +180,23 @@ func (c Customers) Find(ID string) (*Customer, error) {
 	if !payload.Success {
 		return nil, errors.New(payload.Message)
 	}
-	return &payload.Customer, nil
+	return &payload.Token, nil
 }
 
-// Save : Update the customer data.
-func (c Customers) Save(customer *Customer) (*Customer, error) {
+// All : Get all the customers.
+func (s Customers) All() ([]*Customer, error) {
+
 	type Response struct {
-		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
-	}
-
-	body, err := json.Marshal(customer)
-	if err != nil {
-		return nil, err
-	}
-
-	path := "/customers/{id}"
-	path = strings.Replace(path, "{id}", customer.ID, -1)
-
-	req, err := http.NewRequest(
-		"POST",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("API-Version", c.p.APIVersion)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	if !payload.Success {
-		return nil, errors.New(payload.Message)
-	}
-	return &payload.Customer, nil
-}
-
-// Delete : Delete the customer.
-func (c Customers) Delete(customer *Customer) error {
-	type Response struct {
-		Success bool   `json:"success"`
+		Customers []*Customer `json:"customers"`
+		Success bool `json:"success"`
 		Message string `json:"message"`
 	}
 
-	path := "/customers/{id}"
-	path = strings.Replace(path, "{id}", customer.ID, -1)
+	 _ , err := json.Marshal(map[string]interface{}{
 
-	req, err := http.NewRequest(
-		"DELETE",
-		Host+path,
-		nil,
-	)
+	})
 	if err != nil {
-		return err
-	}
-	req.Header.Set("API-Version", c.p.APIVersion)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return err
-	}
-
-	if !payload.Success {
-		return errors.New(payload.Message)
-	}
-	return nil
-}
-
-// All : Get the customers list belonging to the project.
-func (c Customers) All() ([]*Customer, error) {
-	type Response struct {
-		Customers []*Customer `json:"customers"`
-		Success   bool        `json:"success"`
-		Message   string      `json:"message"`
+		return nil, err
 	}
 
 	path := "/customers"
@@ -274,7 +210,7 @@ func (c Customers) All() ([]*Customer, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -294,14 +230,26 @@ func (c Customers) All() ([]*Customer, error) {
 }
 
 // Create : Create a new customer.
-func (c Customers) Create(customer *Customer) (*Customer, error) {
+func (s Customers) Create(customer *Customer) (*Customer, error) {
+
 	type Response struct {
 		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
 	}
 
-	body, err := json.Marshal(customer)
+	 body , err := json.Marshal(map[string]interface{}{
+		"email": customer.Email,
+		"first_name": customer.FirstName,
+		"last_name": customer.LastName,
+		"address1": customer.Address1,
+		"address2": customer.Address2,
+		"city": customer.City,
+		"state": customer.State,
+		"zip": customer.Zip,
+		"country_code": customer.CountryCode,
+
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -316,10 +264,10 @@ func (c Customers) Create(customer *Customer) (*Customer, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", c.p.APIVersion)
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -338,17 +286,23 @@ func (c Customers) Create(customer *Customer) (*Customer, error) {
 	return &payload.Customer, nil
 }
 
-// FindToken : Find a specific customer token.
-func (c Customers) FindToken(customer *Customer, tokenID string) (*CustomerToken, error) {
+// Find : Find a customer by its ID.
+func (s Customers) Find(customerID string) (*Customer, error) {
+
 	type Response struct {
-		CustomerToken `json:"token"`
-		Success       bool   `json:"success"`
-		Message       string `json:"message"`
+		Customer `json:"customer"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
 	}
 
-	path := "customers/{id}/tokens/{token_id}"
-	path = strings.Replace(path, "{id}", customer.ID, -1)
-	path = strings.Replace(path, "{token_id}", tokenID, -1)
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/customers/"+url.QueryEscape(customerID)+""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -359,7 +313,7 @@ func (c Customers) FindToken(customer *Customer, tokenID string) (*CustomerToken
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -375,19 +329,72 @@ func (c Customers) FindToken(customer *Customer, tokenID string) (*CustomerToken
 	if !payload.Success {
 		return nil, errors.New(payload.Message)
 	}
-	return &payload.CustomerToken, nil
+	return &payload.Customer, nil
 }
 
-// Revoke : Revoke (delete) a specific customer token.
-func (c Customers) Revoke(customer *Customer, tokenID string) error {
+// Save : Save the updated customer attributes.
+func (s Customers) Save(customer *Customer) (*Customer, error) {
+
 	type Response struct {
-		Success bool   `json:"success"`
+		Customer `json:"customer"`
+		Success bool `json:"success"`
 		Message string `json:"message"`
 	}
 
-	path := "customers/{id}/tokens/{token_id}"
-	path = strings.Replace(path, "{id}", customer.ID, -1)
-	path = strings.Replace(path, "{token_id}", tokenID, -1)
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/customers/"+url.QueryEscape(customer.ID)+""
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return &payload.Customer, nil
+}
+
+// Delete : Delete the customer.
+func (s Customers) Delete(customer *Customer) error {
+
+	type Response struct {Success bool `json:"success"`
+		Message string `json:"message"`
+	}
+
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return err
+	}
+
+	path := "/customers/"+url.QueryEscape(customer.ID)+""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -397,10 +404,10 @@ func (c Customers) Revoke(customer *Customer, tokenID string) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("API-Version", c.p.APIVersion)
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(c.p.projectID, c.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -419,6 +426,7 @@ func (c Customers) Revoke(customer *Customer, tokenID string) error {
 	return nil
 }
 
+
 // dummyCustomer is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't
@@ -430,6 +438,7 @@ func dummyCustomer() {
 		c http.File
 		d strings.Reader
 		e time.Time
+		f url.URL
 	}
 	errors.New("")
 }

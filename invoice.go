@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -15,44 +16,58 @@ type Invoices struct {
 }
 
 type Invoice struct {
-	// CancelURL : URL where to redirect the customer when the transaction has been canceled. Defaults to ProcessOut's landing page
-	CancelURL string `json:"cancel_url"`
-	// Currency : Currency of the item's price (ex: USD)
-	Currency string `json:"currency"`
-	// Custom : Custom value, can be anything. The value is sent back to notify_url
-	Custom string `json:"custom"`
-	// ID : Id of the created invoice
+	// ID : ID of the invoice
 	ID string `json:"id"`
-	// Metas : Contains a key value dictionary representing additional informations shown on the checkout page
-	Metas map[string]string `json:"metas"`
-	// Name : Name of the item
-	Name string `json:"name"`
-	// Price : Price of the item
-	Price string `json:"price"`
-	// RequestEmail : Determine if we want to ask the customer for his email
-	RequestEmail bool `json:"request_email"`
-	// RequestShipping : Determine if we want to ask the customer for its shipping address
-	RequestShipping bool `json:"request_shipping"`
-	// ReturnURL : URL where to redirect the customer once the payment has been placed. Defaults to ProcessOut's landing page
-	ReturnURL string `json:"return_url"`
-	// Shipping : Shipping price added on top of the item price
-	Shipping string `json:"shipping"`
-	// Taxes : Taxes price added on top of the item price
-	Taxes string `json:"taxes"`
-	// URL : URL to which you can redirect your customer in order to pay
+	// Customer : Customer linked to the invoice, if any
+	Customer *Customer `json:"customer"`
+	// RecurringInvoice : Recurring invoice to which the invoice is linked to, if any
+	RecurringInvoice *RecurringInvoice `json:"recurring_invoice"`
+	// URL : URL to which you may redirect your customer to proceed with the payment
 	URL string `json:"url"`
+	// Name : Name of the invoice
+	Name string `json:"name"`
+	// Price : Price of the invoice
+	Price string `json:"price"`
+	// Currency : Currency of the invoice
+	Currency string `json:"currency"`
+	// Taxes : Taxes applied on the invoice (on top of the price)
+	Taxes string `json:"taxes"`
+	// Shipping : Shipping fees applied on the invoice (on top of the price)
+	Shipping string `json:"shipping"`
+	// RequestEmail : Choose whether or not to request the email during the checkout process
+	RequestEmail bool `json:"request_email"`
+	// RequestShipping : Choose whether or not to request the shipping address during the checkout process
+	RequestShipping bool `json:"request_shipping"`
+	// ReturnURL : URL where the customer will be redirected upon payment
+	ReturnURL string `json:"return_url"`
+	// CancelURL : URL where the customer will be redirected if the paymen was canceled
+	CancelURL string `json:"cancel_url"`
+	// Custom : Custom variable passed along in the events/webhooks
+	Custom string `json:"custom"`
+	// Sandbox : Define whether or not the authorization is in sandbox environment
+	Sandbox bool `json:"sandbox"`
+	// CreatedAt : Date at which the invoice was created
+	CreatedAt time.Time `json:"created_at"`
 }
 
-// Customer : Get the customer associated with the current invoice.
-func (i Invoices) Customer(invoice *Invoice) (*Customer, error) {
+
+// Customer : Get the customer linked to the invoice.
+func (s Invoices) Customer(invoice *Invoice) (*Customer, error) {
+
 	type Response struct {
 		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
 	}
 
-	path := "/invoices/{id}/customers"
-	path = strings.Replace(path, "{id}", invoice.ID, -1)
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/invoices/"+url.QueryEscape(invoice.ID)+"/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -63,7 +78,7 @@ func (i Invoices) Customer(invoice *Invoice) (*Customer, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(i.p.projectID, i.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -82,28 +97,24 @@ func (i Invoices) Customer(invoice *Invoice) (*Customer, error) {
 	return &payload.Customer, nil
 }
 
-// SetCustomer : Link a customer to the invoice.
-func (i Invoices) SetCustomer(invoice *Invoice, customerID string) (*Customer, error) {
-
-	type Request struct {
-		CustomerID string `json:"customer_id"`
-	}
+// AssignCustomer : Assign a customer to the invoice.
+func (s Invoices) AssignCustomer(invoice *Invoice, customerID string) (*Customer, error) {
 
 	type Response struct {
 		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
 	}
 
-	body, err := json.Marshal(&Request{
-		CustomerID: customerID,
+	 body , err := json.Marshal(map[string]interface{}{
+		"customer_id": customerID,
+
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/invoices/{id}/customers"
-	path = strings.Replace(path, "{id}", invoice.ID, -1)
+	path := "/invoices/"+url.QueryEscape(invoice.ID)+"/customers"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -113,10 +124,10 @@ func (i Invoices) SetCustomer(invoice *Invoice, customerID string) (*Customer, e
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", i.p.APIVersion)
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(i.p.projectID, i.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -135,15 +146,166 @@ func (i Invoices) SetCustomer(invoice *Invoice, customerID string) (*Customer, e
 	return &payload.Customer, nil
 }
 
-// Create : Create an invoice.
-func (i Invoices) Create(invoice *Invoice) (*Invoice, error) {
-	type Response struct {
-		Invoice `json:"invoice"`
-		Success bool   `json:"success"`
+// Charge : Charge the invoice using the given customer token ID.
+func (s Invoices) Charge(invoice *Invoice, tokenID string) error {
+
+	type Response struct {Success bool `json:"success"`
 		Message string `json:"message"`
 	}
 
-	body, err := json.Marshal(invoice)
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return err
+	}
+
+	path := "/invoices/"+url.QueryEscape(invoice.ID)+"/tokens/"+url.QueryEscape(tokenID)+"/charges"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return err
+	}
+
+	if !payload.Success {
+		return errors.New(payload.Message)
+	}
+	return nil
+}
+
+// Tokens : Get all the customer tokens available on the current invoice.
+func (s Invoices) Tokens(invoice *Invoice) ([]*Token, error) {
+
+	type Response struct {
+		Tokens []*Token `json:"tokens"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
+	}
+
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/invoices/"+url.QueryEscape(invoice.ID)+"/tokens"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return payload.Tokens, nil
+}
+
+// All : Get all the invoices.
+func (s Invoices) All() ([]*Invoice, error) {
+
+	type Response struct {
+		Invoices []*Invoice `json:"invoices"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
+	}
+
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/invoices"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return payload.Invoices, nil
+}
+
+// Create : Create a new invoice.
+func (s Invoices) Create(invoice *Invoice) (*Invoice, error) {
+
+	type Response struct {
+		Invoice `json:"invoice"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
+	}
+
+	 body , err := json.Marshal(map[string]interface{}{
+		"name": invoice.Name,
+		"price": invoice.Price,
+		"taxes": invoice.Taxes,
+		"shipping": invoice.Shipping,
+		"currency": invoice.Currency,
+		"request_email": invoice.RequestEmail,
+		"request_shipping": invoice.RequestShipping,
+		"return_url": invoice.ReturnURL,
+		"cancel_url": invoice.CancelURL,
+		"custom": invoice.Custom,
+
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -158,10 +320,10 @@ func (i Invoices) Create(invoice *Invoice) (*Invoice, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", i.p.APIVersion)
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(i.p.projectID, i.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -180,16 +342,23 @@ func (i Invoices) Create(invoice *Invoice) (*Invoice, error) {
 	return &payload.Invoice, nil
 }
 
-// Find : Get the invoice data.
-func (i Invoices) Find(ID string) (*Invoice, error) {
+// Find : Find an invoice by its ID.
+func (s Invoices) Find(invoiceID string) (*Invoice, error) {
+
 	type Response struct {
 		Invoice `json:"invoice"`
-		Success bool   `json:"success"`
+		Success bool `json:"success"`
 		Message string `json:"message"`
 	}
 
-	path := "/invoices/{id}"
-	path = strings.Replace(path, "{id}", ID, -1)
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/invoices/"+url.QueryEscape(invoiceID)+""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -200,7 +369,7 @@ func (i Invoices) Find(ID string) (*Invoice, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(i.p.projectID, i.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -219,100 +388,52 @@ func (i Invoices) Find(ID string) (*Invoice, error) {
 	return &payload.Invoice, nil
 }
 
-// Charge : Charge using a manually generated payment gateway token.
-func (i Invoices) Charge(invoice *Invoice, token string) (*CustomerAction, error) {
+// Lock : Lock the invoice so it can't be interacted with anymore.
+func (s Invoices) Lock(invoice *Invoice) error {
 
-	type Request struct {
-		Token string `json:"token"`
+	type Response struct {Success bool `json:"success"`
+		Message string `json:"message"`
 	}
 
-	type Response struct {
-		CustomerAction `json:"customer_action"`
-		Success        bool   `json:"success"`
-		Message        string `json:"message"`
-	}
+	 _ , err := json.Marshal(map[string]interface{}{
 
-	body, err := json.Marshal(&Request{
-		Token: token,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	path := "/invoices/{id}/gateways/{gateway_name}/charges"
-	path = strings.Replace(path, "{id}", invoice.ID, -1)
+	path := "/invoices/"+url.QueryEscape(invoice.ID)+""
 
 	req, err := http.NewRequest(
-		"POST",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("API-Version", i.p.APIVersion)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(i.p.projectID, i.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	if !payload.Success {
-		return nil, errors.New(payload.Message)
-	}
-	return &payload.CustomerAction, nil
-}
-
-// ChargeWithToken : Charge using a customer token.
-func (i Invoices) ChargeWithToken(invoice *Invoice, tokenID string) (*CustomerAction, error) {
-	type Response struct {
-		CustomerAction `json:"customer_action"`
-		Success        bool   `json:"success"`
-		Message        string `json:"message"`
-	}
-
-	path := "/invoices/{id}/tokens/{token_id}/charges"
-	path = strings.Replace(path, "{id}", invoice.ID, -1)
-	path = strings.Replace(path, "{token_id}", tokenID, -1)
-
-	req, err := http.NewRequest(
-		"POST",
+		"DELETE",
 		Host+path,
 		nil,
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	req.Header.Set("API-Version", i.p.APIVersion)
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(i.p.projectID, i.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		return errors.New(payload.Message)
 	}
-	return &payload.CustomerAction, nil
+	return nil
 }
+
 
 // dummyInvoice is a dummy function that's only
 // here because some files need specific packages and some don't.
@@ -325,6 +446,7 @@ func dummyInvoice() {
 		c http.File
 		d strings.Reader
 		e time.Time
+		f url.URL
 	}
 	errors.New("")
 }

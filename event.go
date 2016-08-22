@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -15,24 +16,81 @@ type Events struct {
 }
 
 type Event struct {
-	// Data : Data associated to the event, in the form of a dictionary
-	Data map[string]string `json:"data"`
-	// Date : The date at which the event was fired
-	Date time.Time `json:"date"`
-	// ID : Id of the event
+	// ID : ID of the event
 	ID string `json:"id"`
 	// Name : Name of the event
 	Name string `json:"name"`
-	// Sandbox : Whether or not the event was fired in the sandbox environment
+	// Data : Data associated to the event, in the form of a dictionary
+	Data map[string]string `json:"data"`
+	// Processed : Define whether or not event was processed
+	Processed bool `json:"processed"`
+	// Sandbox : Define whether or not the event is in sandbox environment
 	Sandbox bool `json:"sandbox"`
+	// FiredAt : Date at which the event was fired
+	FiredAt time.Time `json:"fired_at"`
 }
 
-// Pull : Get the 15 oldest events pending processing.
-func (e Events) Pull() ([]*Event, error) {
+
+// Webhooks : Get all the webhooks of the event.
+func (s Events) Webhooks(event *Event) ([]*Webhook, error) {
+
 	type Response struct {
-		Events  []*Event `json:"events"`
-		Success bool     `json:"success"`
-		Message string   `json:"message"`
+		Webhooks []*Webhook `json:"webhooks"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
+	}
+
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/events/"+url.QueryEscape(event.ID)+"/webhooks"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		nil,
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/json")
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return payload.Webhooks, nil
+}
+
+// All : Get all the events.
+func (s Events) All() ([]*Event, error) {
+
+	type Response struct {
+		Events []*Event `json:"events"`
+		Success bool `json:"success"`
+		Message string `json:"message"`
+	}
+
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	path := "/events"
@@ -46,7 +104,7 @@ func (e Events) Pull() ([]*Event, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(e.p.projectID, e.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -65,55 +123,23 @@ func (e Events) Pull() ([]*Event, error) {
 	return payload.Events, nil
 }
 
-// SetAllProcessed : Set all the events as processed.
-func (e Events) SetAllProcessed() error {
+// Find : Find an event by its ID.
+func (s Events) Find(eventID string) (*Event, error) {
+
 	type Response struct {
-		Success bool   `json:"success"`
+		Event `json:"event"`
+		Success bool `json:"success"`
 		Message string `json:"message"`
 	}
 
-	path := "/events"
+	 _ , err := json.Marshal(map[string]interface{}{
 
-	req, err := http.NewRequest(
-		"DELETE",
-		Host+path,
-		nil,
-	)
+	})
 	if err != nil {
-		return err
-	}
-	req.Header.Set("API-Version", e.p.APIVersion)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(e.p.projectID, e.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if !payload.Success {
-		return errors.New(payload.Message)
-	}
-	return nil
-}
-
-// Find : Get the information related to the specific event.
-func (e Events) Find(ID string) (*Event, error) {
-	type Response struct {
-		Event   `json:"event"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-	}
-
-	path := "/events/{id}"
-	path = strings.Replace(path, "{id}", ID, -1)
+	path := "/events/"+url.QueryEscape(eventID)+""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -124,7 +150,7 @@ func (e Events) Find(ID string) (*Event, error) {
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(e.p.projectID, e.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -143,28 +169,34 @@ func (e Events) Find(ID string) (*Event, error) {
 	return &payload.Event, nil
 }
 
-// MarkProcessed : Set the specific event as processed.
-func (e Events) MarkProcessed(event *Event) error {
-	type Response struct {
-		Success bool   `json:"success"`
+// MarkProcessed : Mark the event as processed.
+func (s Events) MarkProcessed(event *Event) error {
+
+	type Response struct {Success bool `json:"success"`
 		Message string `json:"message"`
 	}
 
-	path := "/events/{id}"
-	path = strings.Replace(path, "{id}", event.ID, -1)
+	 _ , err := json.Marshal(map[string]interface{}{
+
+	})
+	if err != nil {
+		return err
+	}
+
+	path := "/events/"+url.QueryEscape(event.ID)+""
 
 	req, err := http.NewRequest(
-		"DELETE",
+		"PUT",
 		Host+path,
 		nil,
 	)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("API-Version", e.p.APIVersion)
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(e.p.projectID, e.p.projectSecret)
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -183,6 +215,7 @@ func (e Events) MarkProcessed(event *Event) error {
 	return nil
 }
 
+
 // dummyEvent is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't
@@ -194,6 +227,7 @@ func dummyEvent() {
 		c http.File
 		d strings.Reader
 		e time.Time
+		f url.URL
 	}
 	errors.New("")
 }
