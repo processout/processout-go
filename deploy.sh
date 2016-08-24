@@ -16,7 +16,7 @@ rm -rf ../tmp
 echo " > Committing new library"
 git add -A
 git commit -m "$COMMITMESSAGE"
-git tag -f "3.1.0.0"
+git tag -f "v1.3.1"
 echo " > Publishing the new version to github"
 git push origin master --tags
 

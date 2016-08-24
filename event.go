@@ -20,10 +20,8 @@ type Event struct {
 	ID string `json:"id"`
 	// Name : Name of the event
 	Name string `json:"name"`
-	// Data : Data associated to the event, in the form of a dictionary
-	Data map[string]string `json:"data"`
-	// Processed : Define whether or not event was processed
-	Processed bool `json:"processed"`
+	// Data : Data object associated to the event
+	Data interface{} `json:"data"`
 	// Sandbox : Define whether or not the event is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// FiredAt : Date at which the event was fired
@@ -160,51 +158,6 @@ func (s Events) Find(eventID string) (*Event, error) {
 		return nil, errors.New(payload.Message)
 	}
 	return &payload.Event, nil
-}
-
-// MarkProcessed : Mark the event as processed.
-func (s Events) MarkProcessed(event *Event) error {
-
-	type Response struct {
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-	}
-
-	_, err := json.Marshal(map[string]interface{}{})
-	if err != nil {
-		return err
-	}
-
-	path := "/events/" + url.QueryEscape(event.ID) + ""
-
-	req, err := http.NewRequest(
-		"PUT",
-		Host+path,
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("API-Version", s.p.APIVersion)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return err
-	}
-
-	if !payload.Success {
-		return errors.New(payload.Message)
-	}
-	return nil
 }
 
 // dummyEvent is a dummy function that's only
