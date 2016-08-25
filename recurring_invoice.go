@@ -16,32 +16,28 @@ type RecurringInvoices struct {
 }
 
 type RecurringInvoice struct {
-	// ID : ID of the recurring invoice
+	// ID : ID of the subscription
 	ID string `json:"id"`
-	// Customer : Customer linked to the recurring invoice
+	// Customer : Customer linked to the subscription
 	Customer *Customer `json:"customer"`
-	// URL : URL to which you may redirect your customer to authorize the recurring invoice
+	// URL : URL to which you may redirect your customer to authorize the subscription
 	URL string `json:"url"`
-	// Name : Name of the recurring invoice
+	// Name : Name of the subscription
 	Name string `json:"name"`
-	// Price : Price of the recurring invoice
-	Price string `json:"price"`
-	// Currency : Currency of the recurring invoice
+	// Amount : Price of the subscription
+	Amount string `json:"amount"`
+	// Currency : Currency of the subscription
 	Currency string `json:"currency"`
-	// Taxes : Taxes applied on the recurring invoice (on top of the price)
-	Taxes string `json:"taxes"`
-	// Shipping : Shipping fees applied on the recurring invoice (on top of the price)
-	Shipping string `json:"shipping"`
-	// ReturnURL : URL where the customer will be redirected upon payment
+	// Metadata : Metadata related to the subscription, in the form of a dictionary (key-value pair)
+	Metadata map[string]string `json:"metadata"`
+	// ReturnURL : URL where the customer will be redirected when he activates the subscription
 	ReturnURL string `json:"return_url"`
-	// CancelURL : URL where the customer will be redirected if the paymen was canceled
+	// CancelURL : URL where the customer will be redirected when he canceles the subscription
 	CancelURL string `json:"cancel_url"`
 	// Interval : The recurring payment period, formatted in the format "1d2w3m4y" (day, week, month, year)
 	Interval string `json:"interval"`
 	// TrialPeriod : The trial period. The customer will not be charged during this time span. Formatted in the format "1d2w3m4y" (day, week, month, year)
 	TrialPeriod string `json:"trial_period"`
-	// Custom : Custom variable passed along in the events/webhooks
-	Custom string `json:"custom"`
 	// Ended : Weither or not the recurring invoice has ended (programmatically or canceled)
 	Ended bool `json:"ended"`
 	// EndedReason : Reason as to why the recurring invoice ended
@@ -151,13 +147,11 @@ func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID
 
 	body, err := json.Marshal(map[string]interface{}{
 		"name":         recurringInvoice.Name,
-		"price":        recurringInvoice.Price,
-		"taxes":        recurringInvoice.Taxes,
-		"shipping":     recurringInvoice.Shipping,
+		"amount":       recurringInvoice.Amount,
 		"currency":     recurringInvoice.Currency,
+		"metadata":     recurringInvoice.Metadata,
 		"return_url":   recurringInvoice.ReturnURL,
 		"cancel_url":   recurringInvoice.CancelURL,
-		"custom":       recurringInvoice.Custom,
 		"interval":     recurringInvoice.Interval,
 		"trial_period": recurringInvoice.TrialPeriod,
 		"ended_reason": recurringInvoice.EndedReason,

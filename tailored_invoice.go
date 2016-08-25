@@ -20,14 +20,12 @@ type TailoredInvoice struct {
 	ID string `json:"id"`
 	// Name : Name of the tailored invoice
 	Name string `json:"name"`
-	// Price : Price of the tailored invoice
-	Price string `json:"price"`
+	// Amount : Amount of the tailored invoice
+	Amount string `json:"amount"`
 	// Currency : Currency of the tailored invoice
 	Currency string `json:"currency"`
-	// Taxes : Taxes applied on the tailored invoice (on top of the price)
-	Taxes string `json:"taxes"`
-	// Shipping : Shipping fees applied on the tailored invoice (on top of the price)
-	Shipping string `json:"shipping"`
+	// Metadata : Metadata related to the tailored invoice, in the form of a dictionary (key-value pair)
+	Metadata map[string]string `json:"metadata"`
 	// RequestEmail : Choose whether or not to request the email during the checkout process
 	RequestEmail bool `json:"request_email"`
 	// RequestShipping : Choose whether or not to request the shipping address during the checkout process
@@ -143,15 +141,13 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice) (*TailoredInv
 
 	body, err := json.Marshal(map[string]interface{}{
 		"name":             tailoredInvoice.Name,
-		"price":            tailoredInvoice.Price,
-		"taxes":            tailoredInvoice.Taxes,
-		"shipping":         tailoredInvoice.Shipping,
+		"amount":           tailoredInvoice.Amount,
 		"currency":         tailoredInvoice.Currency,
+		"metadata":         tailoredInvoice.Metadata,
 		"request_email":    tailoredInvoice.RequestEmail,
 		"request_shipping": tailoredInvoice.RequestShipping,
 		"return_url":       tailoredInvoice.ReturnURL,
 		"cancel_url":       tailoredInvoice.CancelURL,
-		"custom":           tailoredInvoice.Custom,
 	})
 	if err != nil {
 		return nil, err

@@ -24,6 +24,8 @@ type Token struct {
 	CustomerID string `json:"customer_id"`
 	// Name : Name of the customer token
 	Name string `json:"name"`
+	// Metadata : Metadata related to the token, in the form of a dictionary (key-value pair)
+	Metadata map[string]string `json:"metadata"`
 	// IsRecurringInvoice : Define whether or not the customer token is used on a recurring invoice
 	IsRecurringInvoice string `json:"is_recurring_invoice"`
 	// CreatedAt : Date at which the customer token was created

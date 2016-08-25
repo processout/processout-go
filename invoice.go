@@ -26,14 +26,12 @@ type Invoice struct {
 	URL string `json:"url"`
 	// Name : Name of the invoice
 	Name string `json:"name"`
-	// Price : Price of the invoice
-	Price string `json:"price"`
+	// Amount : Amount to be paid
+	Amount string `json:"amount"`
 	// Currency : Currency of the invoice
 	Currency string `json:"currency"`
-	// Taxes : Taxes applied on the invoice (on top of the price)
-	Taxes string `json:"taxes"`
-	// Shipping : Shipping fees applied on the invoice (on top of the price)
-	Shipping string `json:"shipping"`
+	// Metadata : Metadata related to the invoice, in the form of a dictionary (key-value pair)
+	Metadata map[string]string `json:"metadata"`
 	// RequestEmail : Choose whether or not to request the email during the checkout process
 	RequestEmail bool `json:"request_email"`
 	// RequestShipping : Choose whether or not to request the shipping address during the checkout process
@@ -42,8 +40,6 @@ type Invoice struct {
 	ReturnURL string `json:"return_url"`
 	// CancelURL : URL where the customer will be redirected if the paymen was canceled
 	CancelURL string `json:"cancel_url"`
-	// Custom : Custom variable passed along in the events/webhooks
-	Custom string `json:"custom"`
 	// Sandbox : Define whether or not the authorization is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt : Date at which the invoice was created
@@ -286,15 +282,13 @@ func (s Invoices) Create(invoice *Invoice) (*Invoice, error) {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"name":             invoice.Name,
-		"price":            invoice.Price,
-		"taxes":            invoice.Taxes,
-		"shipping":         invoice.Shipping,
+		"amount":           invoice.Amount,
 		"currency":         invoice.Currency,
+		"metadata":         invoice.Metadata,
 		"request_email":    invoice.RequestEmail,
 		"request_shipping": invoice.RequestShipping,
 		"return_url":       invoice.ReturnURL,
 		"cancel_url":       invoice.CancelURL,
-		"custom":           invoice.Custom,
 	})
 	if err != nil {
 		return nil, err

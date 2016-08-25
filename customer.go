@@ -36,6 +36,8 @@ type Customer struct {
 	Zip string `json:"zip"`
 	// CountryCode : Country code of the customer
 	CountryCode string `json:"country_code"`
+	// Metadata : Metadata related to the customer, in the form of a dictionary (key-value pair)
+	Metadata map[string]string `json:"metadata"`
 	// HasPin : Wether the customer has a PIN set or not
 	HasPin bool `json:"has_pin"`
 	// Sandbox : Define whether or not the customer is in sandbox environment
@@ -239,6 +241,7 @@ func (s Customers) Create(customer *Customer) (*Customer, error) {
 		"state":        customer.State,
 		"zip":          customer.Zip,
 		"country_code": customer.CountryCode,
+		"metadata":     customer.Metadata,
 	})
 	if err != nil {
 		return nil, err
