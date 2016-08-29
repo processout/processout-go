@@ -41,12 +41,12 @@ type TailoredInvoice struct {
 }
 
 // Invoice : Create a new invoice from the tailored invoice.
-func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, optionss ...Options) (*Invoice, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...Options) (*Invoice, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -57,7 +57,7 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, optionss ...
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -76,8 +76,8 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, optionss ...
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -99,12 +99,12 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, optionss ...
 }
 
 // All : Get all the tailored invoices.
-func (s TailoredInvoices) All(optionss ...Options) ([]*TailoredInvoice, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -115,7 +115,7 @@ func (s TailoredInvoices) All(optionss ...Options) ([]*TailoredInvoice, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -133,8 +133,8 @@ func (s TailoredInvoices) All(optionss ...Options) ([]*TailoredInvoice, error) {
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -156,12 +156,12 @@ func (s TailoredInvoices) All(optionss ...Options) ([]*TailoredInvoice, error) {
 }
 
 // Create : Create a new tailored invoice.
-func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, optionss ...Options) (*TailoredInvoice, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Options) (*TailoredInvoice, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -180,7 +180,7 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, optionss ...O
 		"request_shipping": tailoredInvoice.RequestShipping,
 		"return_url":       tailoredInvoice.ReturnURL,
 		"cancel_url":       tailoredInvoice.CancelURL,
-		"expand":           options.Expand,
+		"expand":           opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -199,8 +199,8 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, optionss ...O
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -222,12 +222,12 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, optionss ...O
 }
 
 // Find : Find a tailored invoice by its ID.
-func (s TailoredInvoices) Find(tailoredInvoiceID string, optionss ...Options) (*TailoredInvoice, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*TailoredInvoice, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -238,7 +238,7 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, optionss ...Options) (*
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -256,8 +256,8 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, optionss ...Options) (*
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -279,12 +279,12 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, optionss ...Options) (*
 }
 
 // Save : Save the updated tailored invoice attributes.
-func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, optionss ...Options) (*TailoredInvoice, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Options) (*TailoredInvoice, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -295,7 +295,7 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, optionss ...Opt
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -314,8 +314,8 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, optionss ...Opt
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -337,12 +337,12 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, optionss ...Opt
 }
 
 // Delete : Delete the tailored invoice.
-func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, optionss ...Options) error {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Options) error {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -352,7 +352,7 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, optionss ...O
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return err
@@ -371,8 +371,8 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, optionss ...O
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

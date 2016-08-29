@@ -31,12 +31,12 @@ type Activity struct {
 }
 
 // All : Get all the project activities.
-func (s Activities) All(optionss ...Options) ([]*Activity, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Activities) All(options ...Options) ([]*Activity, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -47,7 +47,7 @@ func (s Activities) All(optionss ...Options) ([]*Activity, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -65,8 +65,8 @@ func (s Activities) All(optionss ...Options) ([]*Activity, error) {
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -88,12 +88,12 @@ func (s Activities) All(optionss ...Options) ([]*Activity, error) {
 }
 
 // Find : Find a specific activity and fetch its data.
-func (s Activities) Find(activityID string, optionss ...Options) (*Activity, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Activities) Find(activityID string, options ...Options) (*Activity, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -104,7 +104,7 @@ func (s Activities) Find(activityID string, optionss ...Options) (*Activity, err
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -122,8 +122,8 @@ func (s Activities) Find(activityID string, optionss ...Options) (*Activity, err
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

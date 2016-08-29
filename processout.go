@@ -26,6 +26,7 @@ type ProcessOut struct {
 	Tokens                *Tokens
 	Events                *Events
 	Invoices              *Invoices
+	Projects              *Projects
 	RecurringInvoices     *RecurringInvoices
 	TailoredInvoices      *TailoredInvoices
 	Transactions          *Transactions
@@ -53,6 +54,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 	p.Tokens = &Tokens{p: p}
 	p.Events = &Events{p: p}
 	p.Invoices = &Invoices{p: p}
+	p.Projects = &Projects{p: p}
 	p.RecurringInvoices = &RecurringInvoices{p: p}
 	p.TailoredInvoices = &TailoredInvoices{p: p}
 	p.Transactions = &Transactions{p: p}

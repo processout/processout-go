@@ -49,12 +49,12 @@ type Invoice struct {
 }
 
 // Customer : Get the customer linked to the invoice.
-func (s Invoices) Customer(invoice *Invoice, optionss ...Options) (*Customer, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Invoices) Customer(invoice *Invoice, options ...Options) (*Customer, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -65,7 +65,7 @@ func (s Invoices) Customer(invoice *Invoice, optionss ...Options) (*Customer, er
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -83,8 +83,8 @@ func (s Invoices) Customer(invoice *Invoice, optionss ...Options) (*Customer, er
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -106,12 +106,12 @@ func (s Invoices) Customer(invoice *Invoice, optionss ...Options) (*Customer, er
 }
 
 // AssignCustomer : Assign a customer to the invoice.
-func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, optionss ...Options) (*Customer, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ...Options) (*Customer, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -123,7 +123,7 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, optionss .
 
 	body, err := json.Marshal(map[string]interface{}{
 		"customer_id": customerID,
-		"expand":      options.Expand,
+		"expand":      opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -142,8 +142,8 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, optionss .
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -165,12 +165,12 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, optionss .
 }
 
 // Charge : Charge the invoice using the given customer token ID.
-func (s Invoices) Charge(invoice *Invoice, tokenID string, optionss ...Options) error {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Invoices) Charge(invoice *Invoice, tokenID string, options ...Options) error {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -180,7 +180,7 @@ func (s Invoices) Charge(invoice *Invoice, tokenID string, optionss ...Options) 
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return err
@@ -199,8 +199,8 @@ func (s Invoices) Charge(invoice *Invoice, tokenID string, optionss ...Options) 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -222,12 +222,12 @@ func (s Invoices) Charge(invoice *Invoice, tokenID string, optionss ...Options) 
 }
 
 // Tokens : Get all the customer tokens available on the current invoice.
-func (s Invoices) Tokens(invoice *Invoice, optionss ...Options) ([]*Token, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Invoices) Tokens(invoice *Invoice, options ...Options) ([]*Token, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -238,7 +238,7 @@ func (s Invoices) Tokens(invoice *Invoice, optionss ...Options) ([]*Token, error
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -256,8 +256,8 @@ func (s Invoices) Tokens(invoice *Invoice, optionss ...Options) ([]*Token, error
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -279,12 +279,12 @@ func (s Invoices) Tokens(invoice *Invoice, optionss ...Options) ([]*Token, error
 }
 
 // All : Get all the invoices.
-func (s Invoices) All(optionss ...Options) ([]*Invoice, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Invoices) All(options ...Options) ([]*Invoice, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -295,7 +295,7 @@ func (s Invoices) All(optionss ...Options) ([]*Invoice, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -313,8 +313,8 @@ func (s Invoices) All(optionss ...Options) ([]*Invoice, error) {
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -336,12 +336,12 @@ func (s Invoices) All(optionss ...Options) ([]*Invoice, error) {
 }
 
 // Create : Create a new invoice.
-func (s Invoices) Create(invoice *Invoice, optionss ...Options) (*Invoice, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -360,7 +360,7 @@ func (s Invoices) Create(invoice *Invoice, optionss ...Options) (*Invoice, error
 		"request_shipping": invoice.RequestShipping,
 		"return_url":       invoice.ReturnURL,
 		"cancel_url":       invoice.CancelURL,
-		"expand":           options.Expand,
+		"expand":           opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -379,8 +379,8 @@ func (s Invoices) Create(invoice *Invoice, optionss ...Options) (*Invoice, error
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -402,12 +402,12 @@ func (s Invoices) Create(invoice *Invoice, optionss ...Options) (*Invoice, error
 }
 
 // Find : Find an invoice by its ID.
-func (s Invoices) Find(invoiceID string, optionss ...Options) (*Invoice, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Invoices) Find(invoiceID string, options ...Options) (*Invoice, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -418,7 +418,7 @@ func (s Invoices) Find(invoiceID string, optionss ...Options) (*Invoice, error) 
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -436,8 +436,8 @@ func (s Invoices) Find(invoiceID string, optionss ...Options) (*Invoice, error) 
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -459,12 +459,12 @@ func (s Invoices) Find(invoiceID string, optionss ...Options) (*Invoice, error) 
 }
 
 // Lock : Lock the invoice so it can't be interacted with anymore.
-func (s Invoices) Lock(invoice *Invoice, optionss ...Options) error {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Invoices) Lock(invoice *Invoice, options ...Options) error {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -474,7 +474,7 @@ func (s Invoices) Lock(invoice *Invoice, optionss ...Options) error {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return err
@@ -493,8 +493,8 @@ func (s Invoices) Lock(invoice *Invoice, optionss ...Options) error {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

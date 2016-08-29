@@ -31,12 +31,12 @@ type Event struct {
 }
 
 // Webhooks : Get all the webhooks of the event.
-func (s Events) Webhooks(event *Event, optionss ...Options) ([]*Webhook, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -47,7 +47,7 @@ func (s Events) Webhooks(event *Event, optionss ...Options) ([]*Webhook, error) 
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -65,8 +65,8 @@ func (s Events) Webhooks(event *Event, optionss ...Options) ([]*Webhook, error) 
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -88,12 +88,12 @@ func (s Events) Webhooks(event *Event, optionss ...Options) ([]*Webhook, error) 
 }
 
 // All : Get all the events.
-func (s Events) All(optionss ...Options) ([]*Event, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Events) All(options ...Options) ([]*Event, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -104,7 +104,7 @@ func (s Events) All(optionss ...Options) ([]*Event, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -122,8 +122,8 @@ func (s Events) All(optionss ...Options) ([]*Event, error) {
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -145,12 +145,12 @@ func (s Events) All(optionss ...Options) ([]*Event, error) {
 }
 
 // Find : Find an event by its ID.
-func (s Events) Find(eventID string, optionss ...Options) (*Event, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Events) Find(eventID string, options ...Options) (*Event, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -161,7 +161,7 @@ func (s Events) Find(eventID string, optionss ...Options) (*Event, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -179,8 +179,8 @@ func (s Events) Find(eventID string, optionss ...Options) (*Event, error) {
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

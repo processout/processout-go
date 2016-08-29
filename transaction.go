@@ -29,12 +29,12 @@ type Transaction struct {
 }
 
 // All : Get all the transactions.
-func (s Transactions) All(optionss ...Options) ([]*Transaction, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Transactions) All(options ...Options) ([]*Transaction, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -45,7 +45,7 @@ func (s Transactions) All(optionss ...Options) ([]*Transaction, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -63,8 +63,8 @@ func (s Transactions) All(optionss ...Options) ([]*Transaction, error) {
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -86,12 +86,12 @@ func (s Transactions) All(optionss ...Options) ([]*Transaction, error) {
 }
 
 // Find : Find a transaction by its ID.
-func (s Transactions) Find(transactionID string, optionss ...Options) (*Transaction, error) {
-	options := Options{}
-	if len(optionss) == 1 {
-		options = options[0]
+func (s Transactions) Find(transactionID string, options ...Options) (*Transaction, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
 	}
-	if len(optionss) > 1 {
+	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
@@ -102,7 +102,7 @@ func (s Transactions) Find(transactionID string, optionss ...Options) (*Transact
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": options.Expand,
+		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -120,8 +120,8 @@ func (s Transactions) Find(transactionID string, optionss ...Options) (*Transact
 	}
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
-	if options.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
