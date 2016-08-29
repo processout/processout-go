@@ -18,6 +18,8 @@ type Invoices struct {
 type Invoice struct {
 	// ID : ID of the invoice
 	ID string `json:"id"`
+	// Project : Project to which the invoice belongs
+	Project *Project `json:"project"`
 	// Customer : Customer linked to the invoice, if any
 	Customer *Customer `json:"customer"`
 	// RecurringInvoice : Recurring invoice to which the invoice is linked to, if any
@@ -47,7 +49,14 @@ type Invoice struct {
 }
 
 // Customer : Get the customer linked to the invoice.
-func (s Invoices) Customer(invoice *Invoice) (*Customer, error) {
+func (s Invoices) Customer(invoice *Invoice, optionss ...Options) (*Customer, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Customer `json:"customer"`
@@ -55,7 +64,9 @@ func (s Invoices) Customer(invoice *Invoice) (*Customer, error) {
 		Message  string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +76,16 @@ func (s Invoices) Customer(invoice *Invoice) (*Customer, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -91,7 +106,14 @@ func (s Invoices) Customer(invoice *Invoice) (*Customer, error) {
 }
 
 // AssignCustomer : Assign a customer to the invoice.
-func (s Invoices) AssignCustomer(invoice *Invoice, customerID string) (*Customer, error) {
+func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, optionss ...Options) (*Customer, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Customer `json:"customer"`
@@ -101,6 +123,7 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string) (*Customer
 
 	body, err := json.Marshal(map[string]interface{}{
 		"customer_id": customerID,
+		"expand":      options.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -116,9 +139,12 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string) (*Customer
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -139,14 +165,23 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string) (*Customer
 }
 
 // Charge : Charge the invoice using the given customer token ID.
-func (s Invoices) Charge(invoice *Invoice, tokenID string) error {
+func (s Invoices) Charge(invoice *Invoice, tokenID string, optionss ...Options) error {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return err
 	}
@@ -156,14 +191,17 @@ func (s Invoices) Charge(invoice *Invoice, tokenID string) error {
 	req, err := http.NewRequest(
 		"POST",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -184,7 +222,14 @@ func (s Invoices) Charge(invoice *Invoice, tokenID string) error {
 }
 
 // Tokens : Get all the customer tokens available on the current invoice.
-func (s Invoices) Tokens(invoice *Invoice) ([]*Token, error) {
+func (s Invoices) Tokens(invoice *Invoice, optionss ...Options) ([]*Token, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Tokens  []*Token `json:"tokens"`
@@ -192,7 +237,9 @@ func (s Invoices) Tokens(invoice *Invoice) ([]*Token, error) {
 		Message string   `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -202,12 +249,16 @@ func (s Invoices) Tokens(invoice *Invoice) ([]*Token, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -228,7 +279,14 @@ func (s Invoices) Tokens(invoice *Invoice) ([]*Token, error) {
 }
 
 // All : Get all the invoices.
-func (s Invoices) All() ([]*Invoice, error) {
+func (s Invoices) All(optionss ...Options) ([]*Invoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Invoices []*Invoice `json:"invoices"`
@@ -236,7 +294,9 @@ func (s Invoices) All() ([]*Invoice, error) {
 		Message  string     `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -246,12 +306,16 @@ func (s Invoices) All() ([]*Invoice, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -272,7 +336,14 @@ func (s Invoices) All() ([]*Invoice, error) {
 }
 
 // Create : Create a new invoice.
-func (s Invoices) Create(invoice *Invoice) (*Invoice, error) {
+func (s Invoices) Create(invoice *Invoice, optionss ...Options) (*Invoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Invoice `json:"invoice"`
@@ -289,6 +360,7 @@ func (s Invoices) Create(invoice *Invoice) (*Invoice, error) {
 		"request_shipping": invoice.RequestShipping,
 		"return_url":       invoice.ReturnURL,
 		"cancel_url":       invoice.CancelURL,
+		"expand":           options.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -304,9 +376,12 @@ func (s Invoices) Create(invoice *Invoice) (*Invoice, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -327,7 +402,14 @@ func (s Invoices) Create(invoice *Invoice) (*Invoice, error) {
 }
 
 // Find : Find an invoice by its ID.
-func (s Invoices) Find(invoiceID string) (*Invoice, error) {
+func (s Invoices) Find(invoiceID string, optionss ...Options) (*Invoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Invoice `json:"invoice"`
@@ -335,7 +417,9 @@ func (s Invoices) Find(invoiceID string) (*Invoice, error) {
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -345,12 +429,16 @@ func (s Invoices) Find(invoiceID string) (*Invoice, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -371,14 +459,23 @@ func (s Invoices) Find(invoiceID string) (*Invoice, error) {
 }
 
 // Lock : Lock the invoice so it can't be interacted with anymore.
-func (s Invoices) Lock(invoice *Invoice) error {
+func (s Invoices) Lock(invoice *Invoice, optionss ...Options) error {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return err
 	}
@@ -388,14 +485,17 @@ func (s Invoices) Lock(invoice *Invoice) error {
 	req, err := http.NewRequest(
 		"DELETE",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)

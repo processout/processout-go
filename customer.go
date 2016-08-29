@@ -18,6 +18,8 @@ type Customers struct {
 type Customer struct {
 	// ID : ID of the customer
 	ID string `json:"id"`
+	// Project : Project to which the customer belongs
+	Project *Project `json:"project"`
 	// Email : Email of the customer
 	Email string `json:"email"`
 	// FirstName : First name of the customer
@@ -47,7 +49,14 @@ type Customer struct {
 }
 
 // RecurringInvoices : Get the recurring invoices linked to the customer.
-func (s Customers) RecurringInvoices(customer *Customer) ([]*RecurringInvoice, error) {
+func (s Customers) RecurringInvoices(customer *Customer, optionss ...Options) ([]*RecurringInvoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		RecurringInvoices []*RecurringInvoice `json:"recurring_invoices"`
@@ -55,7 +64,9 @@ func (s Customers) RecurringInvoices(customer *Customer) ([]*RecurringInvoice, e
 		Message           string              `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +76,16 @@ func (s Customers) RecurringInvoices(customer *Customer) ([]*RecurringInvoice, e
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -91,7 +106,14 @@ func (s Customers) RecurringInvoices(customer *Customer) ([]*RecurringInvoice, e
 }
 
 // Tokens : Get the customer's tokens.
-func (s Customers) Tokens(customer *Customer) ([]*Token, error) {
+func (s Customers) Tokens(customer *Customer, optionss ...Options) ([]*Token, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Tokens  []*Token `json:"tokens"`
@@ -99,7 +121,9 @@ func (s Customers) Tokens(customer *Customer) ([]*Token, error) {
 		Message string   `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -109,12 +133,16 @@ func (s Customers) Tokens(customer *Customer) ([]*Token, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -135,7 +163,14 @@ func (s Customers) Tokens(customer *Customer) ([]*Token, error) {
 }
 
 // Token : Get a specific customer's token by its ID.
-func (s Customers) Token(customer *Customer, tokenID string) (*Token, error) {
+func (s Customers) Token(customer *Customer, tokenID string, optionss ...Options) (*Token, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Token   `json:"token"`
@@ -143,7 +178,9 @@ func (s Customers) Token(customer *Customer, tokenID string) (*Token, error) {
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -153,12 +190,16 @@ func (s Customers) Token(customer *Customer, tokenID string) (*Token, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -179,7 +220,14 @@ func (s Customers) Token(customer *Customer, tokenID string) (*Token, error) {
 }
 
 // All : Get all the customers.
-func (s Customers) All() ([]*Customer, error) {
+func (s Customers) All(optionss ...Options) ([]*Customer, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Customers []*Customer `json:"customers"`
@@ -187,7 +235,9 @@ func (s Customers) All() ([]*Customer, error) {
 		Message   string      `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -197,12 +247,16 @@ func (s Customers) All() ([]*Customer, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -223,7 +277,14 @@ func (s Customers) All() ([]*Customer, error) {
 }
 
 // Create : Create a new customer.
-func (s Customers) Create(customer *Customer) (*Customer, error) {
+func (s Customers) Create(customer *Customer, optionss ...Options) (*Customer, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Customer `json:"customer"`
@@ -242,6 +303,7 @@ func (s Customers) Create(customer *Customer) (*Customer, error) {
 		"zip":          customer.Zip,
 		"country_code": customer.CountryCode,
 		"metadata":     customer.Metadata,
+		"expand":       options.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -257,9 +319,12 @@ func (s Customers) Create(customer *Customer) (*Customer, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -280,7 +345,14 @@ func (s Customers) Create(customer *Customer) (*Customer, error) {
 }
 
 // Find : Find a customer by its ID.
-func (s Customers) Find(customerID string) (*Customer, error) {
+func (s Customers) Find(customerID string, optionss ...Options) (*Customer, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Customer `json:"customer"`
@@ -288,7 +360,9 @@ func (s Customers) Find(customerID string) (*Customer, error) {
 		Message  string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -298,12 +372,16 @@ func (s Customers) Find(customerID string) (*Customer, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -324,7 +402,14 @@ func (s Customers) Find(customerID string) (*Customer, error) {
 }
 
 // Save : Save the updated customer attributes.
-func (s Customers) Save(customer *Customer) (*Customer, error) {
+func (s Customers) Save(customer *Customer, optionss ...Options) (*Customer, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Customer `json:"customer"`
@@ -332,7 +417,9 @@ func (s Customers) Save(customer *Customer) (*Customer, error) {
 		Message  string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -342,14 +429,17 @@ func (s Customers) Save(customer *Customer) (*Customer, error) {
 	req, err := http.NewRequest(
 		"PUT",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -370,14 +460,23 @@ func (s Customers) Save(customer *Customer) (*Customer, error) {
 }
 
 // Delete : Delete the customer.
-func (s Customers) Delete(customer *Customer) error {
+func (s Customers) Delete(customer *Customer, optionss ...Options) error {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return err
 	}
@@ -387,14 +486,17 @@ func (s Customers) Delete(customer *Customer) error {
 	req, err := http.NewRequest(
 		"DELETE",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)

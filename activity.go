@@ -18,6 +18,8 @@ type Activities struct {
 type Activity struct {
 	// ID : ID of the activity
 	ID string `json:"id"`
+	// Project : Project to which the activity belongs
+	Project *Project `json:"project"`
 	// Title : Title of the activity
 	Title string `json:"title"`
 	// Content : Content of the activity
@@ -29,7 +31,14 @@ type Activity struct {
 }
 
 // All : Get all the project activities.
-func (s Activities) All() ([]*Activity, error) {
+func (s Activities) All(optionss ...Options) ([]*Activity, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Activities []*Activity `json:"activities"`
@@ -37,7 +46,9 @@ func (s Activities) All() ([]*Activity, error) {
 		Message    string      `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -47,12 +58,16 @@ func (s Activities) All() ([]*Activity, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -73,7 +88,14 @@ func (s Activities) All() ([]*Activity, error) {
 }
 
 // Find : Find a specific activity and fetch its data.
-func (s Activities) Find(activityID string) (*Activity, error) {
+func (s Activities) Find(activityID string, optionss ...Options) (*Activity, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Activity `json:"activity"`
@@ -81,7 +103,9 @@ func (s Activities) Find(activityID string) (*Activity, error) {
 		Message  string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -91,12 +115,16 @@ func (s Activities) Find(activityID string) (*Activity, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)

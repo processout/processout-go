@@ -18,7 +18,9 @@ type AuthorizationRequests struct {
 type AuthorizationRequest struct {
 	// ID : ID of the authorization
 	ID string `json:"id"`
-	// Customer : Customer linked to the authorization
+	// Project : Project to which the authorization request belongs
+	Project *Project `json:"project"`
+	// Customer : Customer linked to the authorization request
 	Customer *Customer `json:"customer"`
 	// URL : URL to which you may redirect your customer to proceed with the authorization
 	URL string `json:"url"`
@@ -39,7 +41,14 @@ type AuthorizationRequest struct {
 }
 
 // Customer : Get the customer linked to the authorization request.
-func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationRequest) (*Customer, error) {
+func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationRequest, optionss ...Options) (*Customer, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Customer `json:"customer"`
@@ -47,7 +56,9 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 		Message  string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -57,12 +68,16 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -83,7 +98,14 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 }
 
 // Authorize : Authorize (create) a new customer token on the given gateway.
-func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequest, gatewayName, name, token string) (*Token, error) {
+func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequest, gatewayName, name, token string, optionss ...Options) (*Token, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Token   `json:"token"`
@@ -92,8 +114,9 @@ func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequ
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":  name,
-		"token": token,
+		"name":   name,
+		"token":  token,
+		"expand": options.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -109,9 +132,12 @@ func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequ
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -132,7 +158,14 @@ func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequ
 }
 
 // Create : Create a new authorization request for the given customer ID.
-func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest, customerID string) (*AuthorizationRequest, error) {
+func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest, customerID string, optionss ...Options) (*AuthorizationRequest, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		AuthorizationRequest `json:"authorization_request"`
@@ -147,6 +180,7 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 		"cancel_url":  authorizationRequest.CancelURL,
 		"custom":      authorizationRequest.Custom,
 		"customer_id": customerID,
+		"expand":      options.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -162,9 +196,12 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -185,7 +222,14 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 }
 
 // Find : Find an authorization request by its ID.
-func (s AuthorizationRequests) Find(authorizationRequestID string) (*AuthorizationRequest, error) {
+func (s AuthorizationRequests) Find(authorizationRequestID string, optionss ...Options) (*AuthorizationRequest, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		AuthorizationRequest `json:"authorization_request"`
@@ -193,7 +237,9 @@ func (s AuthorizationRequests) Find(authorizationRequestID string) (*Authorizati
 		Message              string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -203,12 +249,16 @@ func (s AuthorizationRequests) Find(authorizationRequestID string) (*Authorizati
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)

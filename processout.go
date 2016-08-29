@@ -32,6 +32,13 @@ type ProcessOut struct {
 	Webhooks              *Webhooks
 }
 
+// Options represents the options available when doing a request to the
+// ProcessOut API
+type Options struct {
+	IdempotencyKey string
+	Expand         []string
+}
+
 // New creates a new struct *ProcessOut with the given API credentials. It
 // initializes all the resources available so they can be used immediately.
 func New(projectID, projectSecret string) *ProcessOut {

@@ -18,6 +18,8 @@ type RecurringInvoices struct {
 type RecurringInvoice struct {
 	// ID : ID of the subscription
 	ID string `json:"id"`
+	// Project : Project to which the subscription belongs
+	Project *Project `json:"project"`
 	// Customer : Customer linked to the subscription
 	Customer *Customer `json:"customer"`
 	// URL : URL to which you may redirect your customer to authorize the subscription
@@ -49,7 +51,14 @@ type RecurringInvoice struct {
 }
 
 // Customer : Get the customer linked to the recurring invoice.
-func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice) (*Customer, error) {
+func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice, optionss ...Options) (*Customer, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Customer `json:"customer"`
@@ -57,7 +66,9 @@ func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice) (*Custom
 		Message  string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -67,12 +78,16 @@ func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice) (*Custom
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -93,7 +108,14 @@ func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice) (*Custom
 }
 
 // Invoice : Get the invoice corresponding to the last iteration of the recurring invoice.
-func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice) (*Invoice, error) {
+func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice, optionss ...Options) (*Invoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Invoice `json:"invoice"`
@@ -101,7 +123,9 @@ func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice) (*Invoice
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -111,12 +135,16 @@ func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice) (*Invoice
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -137,7 +165,14 @@ func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice) (*Invoice
 }
 
 // Create : Create a new recurring invoice for the given customer.
-func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID string) (*RecurringInvoice, error) {
+func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID string, optionss ...Options) (*RecurringInvoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		RecurringInvoice `json:"recurring_invoice"`
@@ -156,6 +191,7 @@ func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID
 		"trial_period": recurringInvoice.TrialPeriod,
 		"ended_reason": recurringInvoice.EndedReason,
 		"customer_id":  customerID,
+		"expand":       options.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -171,9 +207,12 @@ func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -194,7 +233,14 @@ func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID
 }
 
 // Find : Find a recurring invoice by its ID.
-func (s RecurringInvoices) Find(recurringInvoiceID string) (*RecurringInvoice, error) {
+func (s RecurringInvoices) Find(recurringInvoiceID string, optionss ...Options) (*RecurringInvoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		RecurringInvoice `json:"recurring_invoice"`
@@ -202,7 +248,9 @@ func (s RecurringInvoices) Find(recurringInvoiceID string) (*RecurringInvoice, e
 		Message          string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -212,12 +260,16 @@ func (s RecurringInvoices) Find(recurringInvoiceID string) (*RecurringInvoice, e
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -238,7 +290,14 @@ func (s RecurringInvoices) Find(recurringInvoiceID string) (*RecurringInvoice, e
 }
 
 // End : End a recurring invoice. The reason may be provided as well.
-func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string) error {
+func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string, optionss ...Options) error {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Success bool   `json:"success"`
@@ -247,6 +306,7 @@ func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string
 
 	body, err := json.Marshal(map[string]interface{}{
 		"reason": reason,
+		"expand": options.Expand,
 	})
 	if err != nil {
 		return err
@@ -262,9 +322,12 @@ func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string
 	if err != nil {
 		return err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)

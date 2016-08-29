@@ -41,7 +41,14 @@ type TailoredInvoice struct {
 }
 
 // Invoice : Create a new invoice from the tailored invoice.
-func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice) (*Invoice, error) {
+func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, optionss ...Options) (*Invoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Invoice `json:"invoice"`
@@ -49,7 +56,9 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice) (*Invoice, e
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -59,14 +68,17 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice) (*Invoice, e
 	req, err := http.NewRequest(
 		"POST",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -87,7 +99,14 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice) (*Invoice, e
 }
 
 // All : Get all the tailored invoices.
-func (s TailoredInvoices) All() ([]*TailoredInvoice, error) {
+func (s TailoredInvoices) All(optionss ...Options) ([]*TailoredInvoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		TailoredInvoices []*TailoredInvoice `json:"tailored_invoices"`
@@ -95,7 +114,9 @@ func (s TailoredInvoices) All() ([]*TailoredInvoice, error) {
 		Message          string             `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -105,12 +126,16 @@ func (s TailoredInvoices) All() ([]*TailoredInvoice, error) {
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -131,7 +156,14 @@ func (s TailoredInvoices) All() ([]*TailoredInvoice, error) {
 }
 
 // Create : Create a new tailored invoice.
-func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice) (*TailoredInvoice, error) {
+func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, optionss ...Options) (*TailoredInvoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		TailoredInvoice `json:"tailored_invoice"`
@@ -148,6 +180,7 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice) (*TailoredInv
 		"request_shipping": tailoredInvoice.RequestShipping,
 		"return_url":       tailoredInvoice.ReturnURL,
 		"cancel_url":       tailoredInvoice.CancelURL,
+		"expand":           options.Expand,
 	})
 	if err != nil {
 		return nil, err
@@ -163,9 +196,12 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice) (*TailoredInv
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -186,7 +222,14 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice) (*TailoredInv
 }
 
 // Find : Find a tailored invoice by its ID.
-func (s TailoredInvoices) Find(tailoredInvoiceID string) (*TailoredInvoice, error) {
+func (s TailoredInvoices) Find(tailoredInvoiceID string, optionss ...Options) (*TailoredInvoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		TailoredInvoice `json:"tailored_invoice"`
@@ -194,7 +237,9 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string) (*TailoredInvoice, erro
 		Message         string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -204,12 +249,16 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string) (*TailoredInvoice, erro
 	req, err := http.NewRequest(
 		"GET",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -230,7 +279,14 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string) (*TailoredInvoice, erro
 }
 
 // Save : Save the updated tailored invoice attributes.
-func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice) (*TailoredInvoice, error) {
+func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, optionss ...Options) (*TailoredInvoice, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		TailoredInvoice `json:"tailored_invoice"`
@@ -238,7 +294,9 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice) (*TailoredInvoi
 		Message         string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -248,14 +306,17 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice) (*TailoredInvoi
 	req, err := http.NewRequest(
 		"PUT",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -276,14 +337,23 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice) (*TailoredInvoi
 }
 
 // Delete : Delete the tailored invoice.
-func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice) error {
+func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, optionss ...Options) error {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return err
 	}
@@ -293,14 +363,17 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice) error {
 	req, err := http.NewRequest(
 		"DELETE",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)

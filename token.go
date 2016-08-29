@@ -33,7 +33,14 @@ type Token struct {
 }
 
 // Delete : Delete a specific customer's token by its ID.
-func (s Tokens) Delete(token *Token) (*Token, error) {
+func (s Tokens) Delete(token *Token, optionss ...Options) (*Token, error) {
+	options := Options{}
+	if len(optionss) == 1 {
+		options = options[0]
+	}
+	if len(optionss) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
 
 	type Response struct {
 		Token   `json:"token"`
@@ -41,7 +48,9 @@ func (s Tokens) Delete(token *Token) (*Token, error) {
 		Message string `json:"message"`
 	}
 
-	_, err := json.Marshal(map[string]interface{}{})
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": options.Expand,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -51,14 +60,17 @@ func (s Tokens) Delete(token *Token) (*Token, error) {
 	req, err := http.NewRequest(
 		"DELETE",
 		Host+path,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if options.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", options.IdempotencyKey)
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
