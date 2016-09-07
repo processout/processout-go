@@ -10,28 +10,32 @@ import (
 	"time"
 )
 
-// Tokens manages the Token struct
-type Tokens struct {
+// Refunds manages the Refund struct
+type Refunds struct {
 	p *ProcessOut
 }
 
-type Token struct {
-	// ID : ID of the customer token
+type Refund struct {
+	// ID : ID of the refund
 	ID string `json:"id"`
-	// Customer : Customer linked to the token
-	Customer *Customer `json:"customer"`
-	// CustomerID : ID of the customer token
-	CustomerID string `json:"customer_id"`
-	// Metadata : Metadata related to the token, in the form of a dictionary (key-value pair)
+	// Transaction : Transaction to which the refund is applied
+	Transaction *Transaction `json:"transaction"`
+	// Reason : Reason for the refund. Either customer_request, duplicate or fraud
+	Reason string `json:"reason"`
+	// Information : Custom details regarding the refund
+	Information string `json:"information"`
+	// Amount : Amount to be refunded. Must not be greater than the amount still available on the transaction
+	Amount string `json:"amount"`
+	// Metadata : Metadata related to the refund, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// IsSubscriptionOnly : Define whether or not the customer token is used on a recurring invoice
-	IsSubscriptionOnly string `json:"is_subscription_only"`
-	// CreatedAt : Date at which the customer token was created
+	// Sandbox : Define whether or not the refund is in sandbox environment
+	Sandbox bool `json:"sandbox"`
+	// CreatedAt : Date at which the refund was done
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Find : Find a customer's token by its ID.
-func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, error) {
+// Find : Find a transaction's refund by its ID.
+func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refund, error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -41,7 +45,7 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, er
 	}
 
 	type Response struct {
-		Token   `json:"token"`
+		Refund  `json:"refund"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
@@ -53,7 +57,7 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, er
 		return nil, err
 	}
 
-	path := "/customers/" + url.QueryEscape(customerID) + "/tokens/" + url.QueryEscape(tokenID) + ""
+	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds/" + url.QueryEscape(refundID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -84,11 +88,11 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, er
 	if !payload.Success {
 		return nil, errors.New(payload.Message)
 	}
-	return &payload.Token, nil
+	return &payload.Refund, nil
 }
 
-// Create : Create a new token for the given customer ID.
-func (s Tokens) Create(token *Token, customerID, target, source string, options ...Options) (*Token, error) {
+// Apply : Apply a refund to a transaction.
+func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options) error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -98,22 +102,22 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 	}
 
 	type Response struct {
-		Token   `json:"token"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"metadata": token.Metadata,
-		"target":   target,
-		"source":   source,
-		"expand":   opt.Expand,
+		"amount":      refund.Amount,
+		"metadata":    refund.Metadata,
+		"reason":      refund.Reason,
+		"information": refund.Information,
+		"expand":      opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	path := "/customers/" + url.QueryEscape(customerID) + "/tokens"
+	path := "/transactions/{transactions_id}/refunds"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -121,7 +125,7 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -133,26 +137,26 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		return errors.New(payload.Message)
 	}
-	return &payload.Token, nil
+	return nil
 }
 
-// dummyToken is a dummy function that's only
+// dummyRefund is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't
 // tell, everything is generated.
-func dummyToken() {
+func dummyRefund() {
 	type dummy struct {
 		a bytes.Buffer
 		b json.RawMessage

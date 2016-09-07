@@ -10,12 +10,12 @@ import (
 	"time"
 )
 
-// RecurringInvoices manages the RecurringInvoice struct
-type RecurringInvoices struct {
+// Subscriptions manages the Subscription struct
+type Subscriptions struct {
 	p *ProcessOut
 }
 
-type RecurringInvoice struct {
+type Subscription struct {
 	// ID : ID of the subscription
 	ID string `json:"id"`
 	// Project : Project to which the subscription belongs
@@ -50,8 +50,8 @@ type RecurringInvoice struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Customer : Get the customer linked to the recurring invoice.
-func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice, options ...Options) (*Customer, error) {
+// Customer : Get the customer owning the subscription.
+func (s Subscriptions) Customer(subscription *Subscription, options ...Options) (*Customer, error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -73,7 +73,7 @@ func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice, options 
 		return nil, err
 	}
 
-	path := "/recurring-invoices/" + url.QueryEscape(recurringInvoice.ID) + "/customers"
+	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -107,8 +107,65 @@ func (s RecurringInvoices) Customer(recurringInvoice *RecurringInvoice, options 
 	return &payload.Customer, nil
 }
 
-// Invoice : Get the invoice corresponding to the last iteration of the recurring invoice.
-func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice, options ...Options) (*Invoice, error) {
+// CustomerAction : Get the customer action needed to be continue the subscription authorization flow on the given gateway.
+func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigurationID string, options ...Options) (*CustomerAction, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		CustomerAction `json:"customer_action"`
+		Success        bool   `json:"success"`
+		Message        string `json:"message"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": opt.Expand,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/gateway-configurations/" + url.QueryEscape(gatewayConfigurationID) + "/customer-action"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return &payload.CustomerAction, nil
+}
+
+// Invoice : Get the invoice corresponding to the last iteration of the subscription.
+func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (*Invoice, error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -130,7 +187,7 @@ func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice, options .
 		return nil, err
 	}
 
-	path := "/recurring-invoices/" + url.QueryEscape(recurringInvoice.ID) + "/invoices"
+	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/invoices"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -164,8 +221,8 @@ func (s RecurringInvoices) Invoice(recurringInvoice *RecurringInvoice, options .
 	return &payload.Invoice, nil
 }
 
-// Create : Create a new recurring invoice for the given customer.
-func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID string, options ...Options) (*RecurringInvoice, error) {
+// Create : Create a new subscription for the given customer.
+func (s Subscriptions) Create(subscription *Subscription, customerID string, options ...Options) (*Subscription, error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -175,21 +232,21 @@ func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID
 	}
 
 	type Response struct {
-		RecurringInvoice `json:"recurring_invoice"`
-		Success          bool   `json:"success"`
-		Message          string `json:"message"`
+		Subscription `json:"subscription"`
+		Success      bool   `json:"success"`
+		Message      string `json:"message"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":         recurringInvoice.Name,
-		"amount":       recurringInvoice.Amount,
-		"currency":     recurringInvoice.Currency,
-		"metadata":     recurringInvoice.Metadata,
-		"return_url":   recurringInvoice.ReturnURL,
-		"cancel_url":   recurringInvoice.CancelURL,
-		"interval":     recurringInvoice.Interval,
-		"trial_period": recurringInvoice.TrialPeriod,
-		"ended_reason": recurringInvoice.EndedReason,
+		"name":         subscription.Name,
+		"amount":       subscription.Amount,
+		"currency":     subscription.Currency,
+		"metadata":     subscription.Metadata,
+		"return_url":   subscription.ReturnURL,
+		"cancel_url":   subscription.CancelURL,
+		"interval":     subscription.Interval,
+		"trial_period": subscription.TrialPeriod,
+		"ended_reason": subscription.EndedReason,
 		"customer_id":  customerID,
 		"expand":       opt.Expand,
 	})
@@ -197,7 +254,7 @@ func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID
 		return nil, err
 	}
 
-	path := "/recurring-invoices"
+	path := "/subscriptions"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -229,11 +286,11 @@ func (s RecurringInvoices) Create(recurringInvoice *RecurringInvoice, customerID
 	if !payload.Success {
 		return nil, errors.New(payload.Message)
 	}
-	return &payload.RecurringInvoice, nil
+	return &payload.Subscription, nil
 }
 
-// Find : Find a recurring invoice by its ID.
-func (s RecurringInvoices) Find(recurringInvoiceID string, options ...Options) (*RecurringInvoice, error) {
+// Find : Find a subscription by its ID.
+func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscription, error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -243,9 +300,9 @@ func (s RecurringInvoices) Find(recurringInvoiceID string, options ...Options) (
 	}
 
 	type Response struct {
-		RecurringInvoice `json:"recurring_invoice"`
-		Success          bool   `json:"success"`
-		Message          string `json:"message"`
+		Subscription `json:"subscription"`
+		Success      bool   `json:"success"`
+		Message      string `json:"message"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -255,7 +312,7 @@ func (s RecurringInvoices) Find(recurringInvoiceID string, options ...Options) (
 		return nil, err
 	}
 
-	path := "/recurring-invoices/" + url.QueryEscape(recurringInvoiceID) + ""
+	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -286,11 +343,69 @@ func (s RecurringInvoices) Find(recurringInvoiceID string, options ...Options) (
 	if !payload.Success {
 		return nil, errors.New(payload.Message)
 	}
-	return &payload.RecurringInvoice, nil
+	return &payload.Subscription, nil
 }
 
-// End : End a recurring invoice. The reason may be provided as well.
-func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string, options ...Options) error {
+// Activate : Activate the subscription with the provided token.
+func (s Subscriptions) Activate(subscription *Subscription, source string, options ...Options) error {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"source": source,
+		"expand": opt.Expand,
+	})
+	if err != nil {
+		return err
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return err
+	}
+
+	if !payload.Success {
+		return errors.New(payload.Message)
+	}
+	return nil
+}
+
+// End : End a subscription. The reason may be provided as well.
+func (s Subscriptions) End(subscription *Subscription, reason string, options ...Options) error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -312,7 +427,7 @@ func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string
 		return err
 	}
 
-	path := "/recurring-invoices/" + url.QueryEscape(recurringInvoice.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -347,11 +462,11 @@ func (s RecurringInvoices) End(recurringInvoice *RecurringInvoice, reason string
 	return nil
 }
 
-// dummyRecurringInvoice is a dummy function that's only
+// dummySubscription is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't
 // tell, everything is generated.
-func dummyRecurringInvoice() {
+func dummySubscription() {
 	type dummy struct {
 		a bytes.Buffer
 		b json.RawMessage

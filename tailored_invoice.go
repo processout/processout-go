@@ -295,7 +295,15 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
+		"name":             tailoredInvoice.Name,
+		"amount":           tailoredInvoice.Amount,
+		"currency":         tailoredInvoice.Currency,
+		"metadata":         tailoredInvoice.Metadata,
+		"request_email":    tailoredInvoice.RequestEmail,
+		"request_shipping": tailoredInvoice.RequestShipping,
+		"return_url":       tailoredInvoice.ReturnURL,
+		"cancel_url":       tailoredInvoice.CancelURL,
+		"expand":           opt.Expand,
 	})
 	if err != nil {
 		return nil, err

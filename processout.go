@@ -2,7 +2,7 @@ package processout
 
 const (
 	// APIVersion is the version of the API this package uses
-	APIVersion = "1.2.0.0"
+	APIVersion = "1.3.0.0"
 )
 
 var (
@@ -26,8 +26,10 @@ type ProcessOut struct {
 	Tokens                *Tokens
 	Events                *Events
 	Invoices              *Invoices
+	CustomerActions       *CustomerActions
 	Projects              *Projects
-	RecurringInvoices     *RecurringInvoices
+	Refunds               *Refunds
+	Subscriptions         *Subscriptions
 	TailoredInvoices      *TailoredInvoices
 	Transactions          *Transactions
 	Webhooks              *Webhooks
@@ -54,8 +56,10 @@ func New(projectID, projectSecret string) *ProcessOut {
 	p.Tokens = &Tokens{p: p}
 	p.Events = &Events{p: p}
 	p.Invoices = &Invoices{p: p}
+	p.CustomerActions = &CustomerActions{p: p}
 	p.Projects = &Projects{p: p}
-	p.RecurringInvoices = &RecurringInvoices{p: p}
+	p.Refunds = &Refunds{p: p}
+	p.Subscriptions = &Subscriptions{p: p}
 	p.TailoredInvoices = &TailoredInvoices{p: p}
 	p.Transactions = &Transactions{p: p}
 	p.Webhooks = &Webhooks{p: p}

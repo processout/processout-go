@@ -22,8 +22,8 @@ type Invoice struct {
 	Project *Project `json:"project"`
 	// Customer : Customer linked to the invoice, if any
 	Customer *Customer `json:"customer"`
-	// RecurringInvoice : Recurring invoice to which the invoice is linked to, if any
-	RecurringInvoice *RecurringInvoice `json:"recurring_invoice"`
+	// Subscription : Subscription to which the invoice is linked to, if any
+	Subscription *Subscription `json:"subscription"`
 	// URL : URL to which you may redirect your customer to proceed with the payment
 	URL string `json:"url"`
 	// Name : Name of the invoice
@@ -46,6 +46,122 @@ type Invoice struct {
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt : Date at which the invoice was created
 	CreatedAt time.Time `json:"created_at"`
+}
+
+// Authorize : Authorize the invoice using the given source (customer or token)
+func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options) error {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"source": source,
+		"expand": opt.Expand,
+	})
+	if err != nil {
+		return err
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/authorize"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return err
+	}
+
+	if !payload.Success {
+		return errors.New(payload.Message)
+	}
+	return nil
+}
+
+// Capture : Capture the invoice using the given source (customer or token)
+func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) error {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"source": source,
+		"expand": opt.Expand,
+	})
+	if err != nil {
+		return err
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/capture"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return err
+	}
+
+	if !payload.Success {
+		return errors.New(payload.Message)
+	}
+	return nil
 }
 
 // Customer : Get the customer linked to the invoice.
@@ -164,8 +280,122 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ..
 	return &payload.Customer, nil
 }
 
-// Charge : Charge the invoice using the given customer token ID.
-func (s Invoices) Charge(invoice *Invoice, tokenID string, options ...Options) error {
+// CustomerAction : Get the customer action needed to be continue the payment flow on the given gateway.
+func (s Invoices) CustomerAction(invoice *Invoice, gatewayConfigurationID string, options ...Options) (*CustomerAction, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		CustomerAction `json:"customer_action"`
+		Success        bool   `json:"success"`
+		Message        string `json:"message"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": opt.Expand,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/gateway-configurations/" + url.QueryEscape(gatewayConfigurationID) + "/customer-action"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return &payload.CustomerAction, nil
+}
+
+// Transaction : Get the transaction of the invoice.
+func (s Invoices) Transaction(invoice *Invoice, options ...Options) (*Transaction, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Transaction `json:"transaction"`
+		Success     bool   `json:"success"`
+		Message     string `json:"message"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": opt.Expand,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/transactions"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return &payload.Transaction, nil
+}
+
+// Void : Void the invoice
+func (s Invoices) Void(invoice *Invoice, options ...Options) error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -186,7 +416,7 @@ func (s Invoices) Charge(invoice *Invoice, tokenID string, options ...Options) e
 		return err
 	}
 
-	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/tokens/" + url.QueryEscape(tokenID) + "/charges"
+	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/void"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -219,63 +449,6 @@ func (s Invoices) Charge(invoice *Invoice, tokenID string, options ...Options) e
 		return errors.New(payload.Message)
 	}
 	return nil
-}
-
-// Tokens : Get all the customer tokens available on the current invoice.
-func (s Invoices) Tokens(invoice *Invoice, options ...Options) ([]*Token, error) {
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	type Response struct {
-		Tokens  []*Token `json:"tokens"`
-		Success bool     `json:"success"`
-		Message string   `json:"message"`
-	}
-
-	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/tokens"
-
-	req, err := http.NewRequest(
-		"GET",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("API-Version", s.p.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	if !payload.Success {
-		return nil, errors.New(payload.Message)
-	}
-	return payload.Tokens, nil
 }
 
 // All : Get all the invoices.
@@ -456,63 +629,6 @@ func (s Invoices) Find(invoiceID string, options ...Options) (*Invoice, error) {
 		return nil, errors.New(payload.Message)
 	}
 	return &payload.Invoice, nil
-}
-
-// Lock : Lock the invoice so it can't be interacted with anymore.
-func (s Invoices) Lock(invoice *Invoice, options ...Options) error {
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	type Response struct {
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-	}
-
-	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-	})
-	if err != nil {
-		return err
-	}
-
-	path := "/invoices/" + url.QueryEscape(invoice.ID) + ""
-
-	req, err := http.NewRequest(
-		"DELETE",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return err
-	}
-
-	if !payload.Success {
-		return errors.New(payload.Message)
-	}
-	return nil
 }
 
 // dummyInvoice is a dummy function that's only

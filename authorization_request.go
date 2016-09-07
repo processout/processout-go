@@ -97,8 +97,8 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 	return &payload.Customer, nil
 }
 
-// Authorize : Authorize (create) a new customer token on the given gateway.
-func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequest, gatewayName, name, token string, options ...Options) (*Token, error) {
+// CustomerAction : Get the customer action needed to be continue the token authorization flow on the given gateway.
+func (s AuthorizationRequests) CustomerAction(authorizationRequest *AuthorizationRequest, gatewayConfigurationID string, options ...Options) (*CustomerAction, error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -108,31 +108,28 @@ func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequ
 	}
 
 	type Response struct {
-		Token   `json:"token"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
+		CustomerAction `json:"customer_action"`
+		Success        bool   `json:"success"`
+		Message        string `json:"message"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":   name,
-		"token":  token,
 		"expand": opt.Expand,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	path := "/authorization-requests/" + url.QueryEscape(authorizationRequest.ID) + "/gateways/" + url.QueryEscape(gatewayName) + "/tokens"
+	path := "/authorization-requests/" + url.QueryEscape(authorizationRequest.ID) + "/gateway-configurations/" + url.QueryEscape(gatewayConfigurationID) + "/customer-action"
 
 	req, err := http.NewRequest(
-		"POST",
+		"GET",
 		Host+path,
 		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -154,7 +151,7 @@ func (s AuthorizationRequests) Authorize(authorizationRequest *AuthorizationRequ
 	if !payload.Success {
 		return nil, errors.New(payload.Message)
 	}
-	return &payload.Token, nil
+	return &payload.CustomerAction, nil
 }
 
 // Create : Create a new authorization request for the given customer ID.

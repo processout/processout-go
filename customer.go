@@ -48,8 +48,8 @@ type Customer struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// RecurringInvoices : Get the recurring invoices linked to the customer.
-func (s Customers) RecurringInvoices(customer *Customer, options ...Options) ([]*RecurringInvoice, error) {
+// Subscriptions : Get the subscriptions belonging to the customer.
+func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Subscription, error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -59,9 +59,9 @@ func (s Customers) RecurringInvoices(customer *Customer, options ...Options) ([]
 	}
 
 	type Response struct {
-		RecurringInvoices []*RecurringInvoice `json:"recurring_invoices"`
-		Success           bool                `json:"success"`
-		Message           string              `json:"message"`
+		Subscriptions []*Subscription `json:"subscriptions"`
+		Success       bool            `json:"success"`
+		Message       string          `json:"message"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -71,7 +71,7 @@ func (s Customers) RecurringInvoices(customer *Customer, options ...Options) ([]
 		return nil, err
 	}
 
-	path := "/customers/" + url.QueryEscape(customer.ID) + "/recurring-invoices"
+	path := "/customers/" + url.QueryEscape(customer.ID) + "/subscriptions"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -102,7 +102,7 @@ func (s Customers) RecurringInvoices(customer *Customer, options ...Options) ([]
 	if !payload.Success {
 		return nil, errors.New(payload.Message)
 	}
-	return payload.RecurringInvoices, nil
+	return payload.Subscriptions, nil
 }
 
 // Tokens : Get the customer's tokens.
@@ -160,63 +160,6 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, err
 		return nil, errors.New(payload.Message)
 	}
 	return payload.Tokens, nil
-}
-
-// Token : Get a specific customer's token by its ID.
-func (s Customers) Token(customer *Customer, tokenID string, options ...Options) (*Token, error) {
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	type Response struct {
-		Token   `json:"token"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-	}
-
-	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	path := "/customers/" + url.QueryEscape(customer.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
-
-	req, err := http.NewRequest(
-		"GET",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("API-Version", s.p.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	if !payload.Success {
-		return nil, errors.New(payload.Message)
-	}
-	return &payload.Token, nil
 }
 
 // All : Get all the customers.
@@ -418,7 +361,17 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, erro
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
+		"email":        customer.Email,
+		"first_name":   customer.FirstName,
+		"last_name":    customer.LastName,
+		"address1":     customer.Address1,
+		"address2":     customer.Address2,
+		"city":         customer.City,
+		"state":        customer.State,
+		"zip":          customer.Zip,
+		"country_code": customer.CountryCode,
+		"metadata":     customer.Metadata,
+		"expand":       opt.Expand,
 	})
 	if err != nil {
 		return nil, err
