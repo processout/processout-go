@@ -26,6 +26,8 @@ type Gateway struct {
 	LogoURL string `json:"logo_url"`
 	// URL : URL of the payment gateway
 	URL string `json:"url"`
+	// Flows : Supported flow by the gateway (one-off, subscription or tokenization)
+	Flows []string `json:"flows"`
 	// Description : Description of the payment gateway
 	Description string `json:"description"`
 }
