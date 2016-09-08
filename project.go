@@ -51,7 +51,7 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 		return nil, err
 	}
 
-	path := "/projects/" + url.QueryEscape(project.ID) + "/gateway_configurations"
+	path := "/projects/" + url.QueryEscape(project.ID) + "/gateway-configurations"
 
 	req, err := http.NewRequest(
 		"GET",
