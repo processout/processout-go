@@ -81,6 +81,7 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -138,6 +139,7 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, err
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -195,6 +197,7 @@ func (s Customers) All(options ...Options) ([]*Customer, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -320,6 +323,7 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, error
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {

@@ -63,6 +63,7 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, er
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {

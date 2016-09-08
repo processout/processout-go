@@ -63,6 +63,7 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -120,6 +121,7 @@ func (s Events) All(options ...Options) ([]*Event, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -177,6 +179,7 @@ func (s Events) Find(eventID string, options ...Options) (*Event, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {

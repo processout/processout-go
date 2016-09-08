@@ -83,6 +83,7 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -140,6 +141,7 @@ func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigu
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -197,6 +199,7 @@ func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -322,6 +325,7 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {

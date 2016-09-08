@@ -67,6 +67,7 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {

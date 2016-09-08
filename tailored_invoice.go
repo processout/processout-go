@@ -131,6 +131,7 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, error) {
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
@@ -254,6 +255,7 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 	if err != nil {
 		return nil, err
 	}
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
