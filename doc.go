@@ -14,8 +14,8 @@ its URL:
 
 	p := processout.New("<project-id>", "<project-secret>")
 	iv, err := p.Invoices.Create(&processout.Invoice{
-		Name: "Test item",
-		Price: "10.00",
+		Name:     "Test item",
+		Amount:   "10.00",
 		Currency: "USD",
 	})
 	if err != nil {

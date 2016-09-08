@@ -25,6 +25,8 @@ type ProcessOut struct {
 	Customers             *Customers
 	Tokens                *Tokens
 	Events                *Events
+	Gatewaies             *Gatewaies
+	GatewayConfigurations *GatewayConfigurations
 	Invoices              *Invoices
 	CustomerActions       *CustomerActions
 	Projects              *Projects
@@ -55,6 +57,8 @@ func New(projectID, projectSecret string) *ProcessOut {
 	p.Customers = &Customers{p: p}
 	p.Tokens = &Tokens{p: p}
 	p.Events = &Events{p: p}
+	p.Gatewaies = &Gatewaies{p: p}
+	p.GatewayConfigurations = &GatewayConfigurations{p: p}
 	p.Invoices = &Invoices{p: p}
 	p.CustomerActions = &CustomerActions{p: p}
 	p.Projects = &Projects{p: p}

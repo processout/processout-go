@@ -25,7 +25,7 @@ type Token struct {
 	// Metadata : Metadata related to the token, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
 	// IsSubscriptionOnly : Define whether or not the customer token is used on a recurring invoice
-	IsSubscriptionOnly string `json:"is_subscription_only"`
+	IsSubscriptionOnly bool `json:"is_subscription_only"`
 	// CreatedAt : Date at which the customer token was created
 	CreatedAt time.Time `json:"created_at"`
 }

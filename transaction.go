@@ -18,10 +18,18 @@ type Transactions struct {
 type Transaction struct {
 	// ID : ID of the transaction
 	ID string `json:"id"`
+	// Name : Name of the transaction
+	Name string `json:"name"`
+	// Amount : Amount of the transaction
+	Amount string `json:"amount"`
+	// Currency : Currency of the transaction
+	Currency string `json:"currency"`
 	// Status : Status of the transaction
 	Status string `json:"status"`
-	// Fee : ProcessOut fee applied on the transaction
-	Fee string `json:"fee"`
+	// ProcessoutFee : ProcessOut fee applied on the transaction
+	ProcessoutFee string `json:"processout_fee"`
+	// Metadata : Metadata related to the transaction, in the form of a dictionary (key-value pair)
+	Metadata map[string]string `json:"metadata"`
 	// Sandbox : Define whether or not the transaction is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt : Date at which the transaction was created

@@ -28,6 +28,63 @@ type Project struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// GatewayConfigurations : Get all the gateway configurations of the project
+func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([]*GatewayConfiguration, error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		GatewayConfigurations []*GatewayConfiguration `json:"gateway_configurations"`
+		Success               bool                    `json:"success"`
+		Message               string                  `json:"message"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": opt.Expand,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	path := "/projects/" + url.QueryEscape(project.ID) + "/gateway_configurations"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	if !payload.Success {
+		return nil, errors.New(payload.Message)
+	}
+	return payload.GatewayConfigurations, nil
+}
+
 // dummyProject is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't

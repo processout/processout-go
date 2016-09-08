@@ -26,7 +26,7 @@ type Subscription struct {
 	URL string `json:"url"`
 	// Name : Name of the subscription
 	Name string `json:"name"`
-	// Amount : Price of the subscription
+	// Amount : Amount of the subscription
 	Amount string `json:"amount"`
 	// Currency : Currency of the subscription
 	Currency string `json:"currency"`
