@@ -22,6 +22,8 @@ type AuthorizationRequest struct {
 	Project *Project `json:"project"`
 	// Customer : Customer linked to the authorization request
 	Customer *Customer `json:"customer"`
+	// Token : Token linked to the authorization request, once authorized
+	Token *Token `json:"token"`
 	// URL : URL to which you may redirect your customer to proceed with the authorization
 	URL string `json:"url"`
 	// Name : Name of the authorization

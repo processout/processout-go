@@ -22,6 +22,8 @@ type Subscription struct {
 	Project *Project `json:"project"`
 	// Customer : Customer linked to the subscription
 	Customer *Customer `json:"customer"`
+	// Token : Token linked to the subscription, once started
+	Token *Token `json:"token"`
 	// URL : URL to which you may redirect your customer to authorize the subscription
 	URL string `json:"url"`
 	// Name : Name of the subscription
@@ -36,13 +38,15 @@ type Subscription struct {
 	ReturnURL string `json:"return_url"`
 	// CancelURL : URL where the customer will be redirected when he canceles the subscription
 	CancelURL string `json:"cancel_url"`
-	// Interval : The recurring payment period, formatted in the format "1d2w3m4y" (day, week, month, year)
+	// Interval : The subscriptinp interval, formatted in the format "1d2w3m4y" (day, week, month, year)
 	Interval string `json:"interval"`
 	// TrialPeriod : The trial period. The customer will not be charged during this time span. Formatted in the format "1d2w3m4y" (day, week, month, year)
 	TrialPeriod string `json:"trial_period"`
-	// Ended : Weither or not the recurring invoice has ended (programmatically or canceled)
+	// Activated : Weither or not the subscription is active
+	Activated bool `json:"activated"`
+	// Ended : Weither or not the subscription has ended (programmatically or canceled)
 	Ended bool `json:"ended"`
-	// EndedReason : Reason as to why the recurring invoice ended
+	// EndedReason : Reason as to why the subscription ended
 	EndedReason string `json:"ended_reason"`
 	// Sandbox : Define whether or not the authorization is in sandbox environment
 	Sandbox bool `json:"sandbox"`
