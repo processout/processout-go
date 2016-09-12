@@ -51,7 +51,7 @@ type Invoice struct {
 }
 
 // Authorize : Authorize the invoice using the given source (customer or token)
-func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options) error {
+func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -63,6 +63,7 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -70,7 +71,7 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/authorize"
@@ -81,7 +82,7 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -93,23 +94,26 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	if !payload.Success {
-		return errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return erri
 	}
 	return nil
 }
 
 // Capture : Capture the invoice using the given source (customer or token)
-func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) error {
+func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -121,6 +125,7 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) e
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -128,7 +133,7 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) e
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/capture"
@@ -139,7 +144,7 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) e
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -151,23 +156,26 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) e
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	if !payload.Success {
-		return errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return erri
 	}
 	return nil
 }
 
 // Customer : Get the customer linked to the invoice.
-func (s Invoices) Customer(invoice *Invoice, options ...Options) (*Customer, error) {
+func (s Invoices) Customer(invoice *Invoice, options ...Options) (*Customer, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -180,13 +188,14 @@ func (s Invoices) Customer(invoice *Invoice, options ...Options) (*Customer, err
 		Customer `json:"customer"`
 		Success  bool   `json:"success"`
 		Message  string `json:"message"`
+		Code     string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/customers"
@@ -197,7 +206,7 @@ func (s Invoices) Customer(invoice *Invoice, options ...Options) (*Customer, err
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -209,23 +218,26 @@ func (s Invoices) Customer(invoice *Invoice, options ...Options) (*Customer, err
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Customer, nil
 }
 
 // AssignCustomer : Assign a customer to the invoice.
-func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ...Options) (*Customer, error) {
+func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ...Options) (*Customer, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -238,6 +250,7 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ..
 		Customer `json:"customer"`
 		Success  bool   `json:"success"`
 		Message  string `json:"message"`
+		Code     string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -245,7 +258,7 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ..
 		"expand":      opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/customers"
@@ -256,7 +269,7 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ..
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -268,23 +281,26 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ..
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Customer, nil
 }
 
 // CustomerAction : Get the customer action needed to be continue the payment flow on the given gateway.
-func (s Invoices) CustomerAction(invoice *Invoice, gatewayConfigurationID string, options ...Options) (*CustomerAction, error) {
+func (s Invoices) CustomerAction(invoice *Invoice, gatewayConfigurationID string, options ...Options) (*CustomerAction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -297,13 +313,14 @@ func (s Invoices) CustomerAction(invoice *Invoice, gatewayConfigurationID string
 		CustomerAction `json:"customer_action"`
 		Success        bool   `json:"success"`
 		Message        string `json:"message"`
+		Code           string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/gateway-configurations/" + url.QueryEscape(gatewayConfigurationID) + "/customer-action"
@@ -314,7 +331,7 @@ func (s Invoices) CustomerAction(invoice *Invoice, gatewayConfigurationID string
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -326,23 +343,26 @@ func (s Invoices) CustomerAction(invoice *Invoice, gatewayConfigurationID string
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.CustomerAction, nil
 }
 
 // Transaction : Get the transaction of the invoice.
-func (s Invoices) Transaction(invoice *Invoice, options ...Options) (*Transaction, error) {
+func (s Invoices) Transaction(invoice *Invoice, options ...Options) (*Transaction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -355,13 +375,14 @@ func (s Invoices) Transaction(invoice *Invoice, options ...Options) (*Transactio
 		Transaction `json:"transaction"`
 		Success     bool   `json:"success"`
 		Message     string `json:"message"`
+		Code        string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/transactions"
@@ -372,7 +393,7 @@ func (s Invoices) Transaction(invoice *Invoice, options ...Options) (*Transactio
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -384,23 +405,26 @@ func (s Invoices) Transaction(invoice *Invoice, options ...Options) (*Transactio
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Transaction, nil
 }
 
 // Void : Void the invoice
-func (s Invoices) Void(invoice *Invoice, options ...Options) error {
+func (s Invoices) Void(invoice *Invoice, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -412,13 +436,14 @@ func (s Invoices) Void(invoice *Invoice, options ...Options) error {
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/void"
@@ -429,7 +454,7 @@ func (s Invoices) Void(invoice *Invoice, options ...Options) error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -441,23 +466,26 @@ func (s Invoices) Void(invoice *Invoice, options ...Options) error {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	if !payload.Success {
-		return errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return erri
 	}
 	return nil
 }
 
 // All : Get all the invoices.
-func (s Invoices) All(options ...Options) ([]*Invoice, error) {
+func (s Invoices) All(options ...Options) ([]*Invoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -470,13 +498,14 @@ func (s Invoices) All(options ...Options) ([]*Invoice, error) {
 		Invoices []*Invoice `json:"invoices"`
 		Success  bool       `json:"success"`
 		Message  string     `json:"message"`
+		Code     string     `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/invoices"
@@ -487,7 +516,7 @@ func (s Invoices) All(options ...Options) ([]*Invoice, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -499,23 +528,26 @@ func (s Invoices) All(options ...Options) ([]*Invoice, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Invoices, nil
 }
 
 // Create : Create a new invoice.
-func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, error) {
+func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -528,6 +560,7 @@ func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, error)
 		Invoice `json:"invoice"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -542,7 +575,7 @@ func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, error)
 		"expand":           opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/invoices"
@@ -553,7 +586,7 @@ func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, error)
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -565,23 +598,26 @@ func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, error)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Invoice, nil
 }
 
 // Find : Find an invoice by its ID.
-func (s Invoices) Find(invoiceID string, options ...Options) (*Invoice, error) {
+func (s Invoices) Find(invoiceID string, options ...Options) (*Invoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -594,13 +630,14 @@ func (s Invoices) Find(invoiceID string, options ...Options) (*Invoice, error) {
 		Invoice `json:"invoice"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoiceID) + ""
@@ -611,7 +648,7 @@ func (s Invoices) Find(invoiceID string, options ...Options) (*Invoice, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -623,17 +660,20 @@ func (s Invoices) Find(invoiceID string, options ...Options) (*Invoice, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Invoice, nil
 }

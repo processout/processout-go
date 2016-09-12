@@ -31,7 +31,7 @@ type Event struct {
 }
 
 // Webhooks : Get all the webhooks of the event.
-func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, error) {
+func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -44,13 +44,14 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, error) {
 		Webhooks []*Webhook `json:"webhooks"`
 		Success  bool       `json:"success"`
 		Message  string     `json:"message"`
+		Code     string     `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/events/" + url.QueryEscape(event.ID) + "/webhooks"
@@ -61,7 +62,7 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -73,23 +74,26 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Webhooks, nil
 }
 
 // All : Get all the events.
-func (s Events) All(options ...Options) ([]*Event, error) {
+func (s Events) All(options ...Options) ([]*Event, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -102,13 +106,14 @@ func (s Events) All(options ...Options) ([]*Event, error) {
 		Events  []*Event `json:"events"`
 		Success bool     `json:"success"`
 		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/events"
@@ -119,7 +124,7 @@ func (s Events) All(options ...Options) ([]*Event, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -131,23 +136,26 @@ func (s Events) All(options ...Options) ([]*Event, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Events, nil
 }
 
 // Find : Find an event by its ID.
-func (s Events) Find(eventID string, options ...Options) (*Event, error) {
+func (s Events) Find(eventID string, options ...Options) (*Event, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -160,13 +168,14 @@ func (s Events) Find(eventID string, options ...Options) (*Event, error) {
 		Event   `json:"event"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/events/" + url.QueryEscape(eventID) + ""
@@ -177,7 +186,7 @@ func (s Events) Find(eventID string, options ...Options) (*Event, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -189,17 +198,20 @@ func (s Events) Find(eventID string, options ...Options) (*Event, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Event, nil
 }

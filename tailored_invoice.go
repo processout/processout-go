@@ -41,7 +41,7 @@ type TailoredInvoice struct {
 }
 
 // Invoice : Create a new invoice from the tailored invoice.
-func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...Options) (*Invoice, error) {
+func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...Options) (*Invoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -54,13 +54,14 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...O
 		Invoice `json:"invoice"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + "/invoices"
@@ -71,7 +72,7 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...O
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -83,23 +84,26 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...O
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Invoice, nil
 }
 
 // All : Get all the tailored invoices.
-func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, error) {
+func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -112,13 +116,14 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, error) {
 		TailoredInvoices []*TailoredInvoice `json:"tailored_invoices"`
 		Success          bool               `json:"success"`
 		Message          string             `json:"message"`
+		Code             string             `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/tailored-invoices"
@@ -129,7 +134,7 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -141,23 +146,26 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.TailoredInvoices, nil
 }
 
 // Create : Create a new tailored invoice.
-func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Options) (*TailoredInvoice, error) {
+func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Options) (*TailoredInvoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -170,6 +178,7 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 		TailoredInvoice `json:"tailored_invoice"`
 		Success         bool   `json:"success"`
 		Message         string `json:"message"`
+		Code            string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -184,7 +193,7 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 		"expand":           opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/tailored-invoices"
@@ -195,7 +204,7 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -207,23 +216,26 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.TailoredInvoice, nil
 }
 
 // Find : Find a tailored invoice by its ID.
-func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*TailoredInvoice, error) {
+func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*TailoredInvoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -236,13 +248,14 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 		TailoredInvoice `json:"tailored_invoice"`
 		Success         bool   `json:"success"`
 		Message         string `json:"message"`
+		Code            string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoiceID) + ""
@@ -253,7 +266,7 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -265,23 +278,26 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.TailoredInvoice, nil
 }
 
 // Save : Save the updated tailored invoice attributes.
-func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Options) (*TailoredInvoice, error) {
+func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Options) (*TailoredInvoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -294,6 +310,7 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 		TailoredInvoice `json:"tailored_invoice"`
 		Success         bool   `json:"success"`
 		Message         string `json:"message"`
+		Code            string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -308,7 +325,7 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 		"expand":           opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + ""
@@ -319,7 +336,7 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -331,23 +348,26 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.TailoredInvoice, nil
 }
 
 // Delete : Delete the tailored invoice.
-func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Options) error {
+func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -359,13 +379,14 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Op
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + ""
@@ -376,7 +397,7 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Op
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -388,17 +409,20 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Op
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	if !payload.Success {
-		return errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return erri
 	}
 	return nil
 }

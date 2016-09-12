@@ -38,7 +38,7 @@ type Subscription struct {
 	ReturnURL string `json:"return_url"`
 	// CancelURL : URL where the customer will be redirected when he canceles the subscription
 	CancelURL string `json:"cancel_url"`
-	// Interval : The subscriptinp interval, formatted in the format "1d2w3m4y" (day, week, month, year)
+	// Interval : The subscription interval, formatted in the format "1d2w3m4y" (day, week, month, year)
 	Interval string `json:"interval"`
 	// TrialPeriod : The trial period. The customer will not be charged during this time span. Formatted in the format "1d2w3m4y" (day, week, month, year)
 	TrialPeriod string `json:"trial_period"`
@@ -55,7 +55,7 @@ type Subscription struct {
 }
 
 // Customer : Get the customer owning the subscription.
-func (s Subscriptions) Customer(subscription *Subscription, options ...Options) (*Customer, error) {
+func (s Subscriptions) Customer(subscription *Subscription, options ...Options) (*Customer, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -68,13 +68,14 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 		Customer `json:"customer"`
 		Success  bool   `json:"success"`
 		Message  string `json:"message"`
+		Code     string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/customers"
@@ -85,7 +86,7 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -97,23 +98,26 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Customer, nil
 }
 
 // CustomerAction : Get the customer action needed to be continue the subscription authorization flow on the given gateway.
-func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigurationID string, options ...Options) (*CustomerAction, error) {
+func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigurationID string, options ...Options) (*CustomerAction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -126,13 +130,14 @@ func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigu
 		CustomerAction `json:"customer_action"`
 		Success        bool   `json:"success"`
 		Message        string `json:"message"`
+		Code           string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/gateway-configurations/" + url.QueryEscape(gatewayConfigurationID) + "/customer-action"
@@ -143,7 +148,7 @@ func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigu
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -155,23 +160,26 @@ func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigu
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.CustomerAction, nil
 }
 
 // Invoice : Get the invoice corresponding to the last iteration of the subscription.
-func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (*Invoice, error) {
+func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (*Invoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -184,13 +192,14 @@ func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (
 		Invoice `json:"invoice"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/invoices"
@@ -201,7 +210,7 @@ func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -213,23 +222,26 @@ func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Invoice, nil
 }
 
 // Create : Create a new subscription for the given customer.
-func (s Subscriptions) Create(subscription *Subscription, customerID string, options ...Options) (*Subscription, error) {
+func (s Subscriptions) Create(subscription *Subscription, customerID string, options ...Options) (*Subscription, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -242,6 +254,7 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 		Subscription `json:"subscription"`
 		Success      bool   `json:"success"`
 		Message      string `json:"message"`
+		Code         string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -258,7 +271,7 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 		"expand":       opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/subscriptions"
@@ -269,7 +282,7 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -281,23 +294,26 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Subscription, nil
 }
 
 // Find : Find a subscription by its ID.
-func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscription, error) {
+func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscription, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -310,13 +326,14 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 		Subscription `json:"subscription"`
 		Success      bool   `json:"success"`
 		Message      string `json:"message"`
+		Code         string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + ""
@@ -327,7 +344,7 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -339,23 +356,26 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Subscription, nil
 }
 
 // Activate : Activate the subscription with the provided token.
-func (s Subscriptions) Activate(subscription *Subscription, source string, options ...Options) error {
+func (s Subscriptions) Activate(subscription *Subscription, source string, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -367,6 +387,7 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -374,7 +395,7 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
@@ -385,7 +406,7 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -397,23 +418,26 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	if !payload.Success {
-		return errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return erri
 	}
 	return nil
 }
 
 // End : End a subscription. The reason may be provided as well.
-func (s Subscriptions) End(subscription *Subscription, reason string, options ...Options) error {
+func (s Subscriptions) End(subscription *Subscription, reason string, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -425,6 +449,7 @@ func (s Subscriptions) End(subscription *Subscription, reason string, options ..
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -432,7 +457,7 @@ func (s Subscriptions) End(subscription *Subscription, reason string, options ..
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
@@ -443,7 +468,7 @@ func (s Subscriptions) End(subscription *Subscription, reason string, options ..
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -455,17 +480,20 @@ func (s Subscriptions) End(subscription *Subscription, reason string, options ..
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	if !payload.Success {
-		return errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return erri
 	}
 	return nil
 }

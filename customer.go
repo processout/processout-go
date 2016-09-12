@@ -49,7 +49,7 @@ type Customer struct {
 }
 
 // Subscriptions : Get the subscriptions belonging to the customer.
-func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Subscription, error) {
+func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Subscription, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -62,13 +62,14 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 		Subscriptions []*Subscription `json:"subscriptions"`
 		Success       bool            `json:"success"`
 		Message       string          `json:"message"`
+		Code          string          `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/customers/" + url.QueryEscape(customer.ID) + "/subscriptions"
@@ -79,7 +80,7 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -91,23 +92,26 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Subscriptions, nil
 }
 
 // Tokens : Get the customer's tokens.
-func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, error) {
+func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -120,13 +124,14 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, err
 		Tokens  []*Token `json:"tokens"`
 		Success bool     `json:"success"`
 		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/customers/" + url.QueryEscape(customer.ID) + "/tokens"
@@ -137,7 +142,7 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, err
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -149,23 +154,26 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, err
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Tokens, nil
 }
 
 // All : Get all the customers.
-func (s Customers) All(options ...Options) ([]*Customer, error) {
+func (s Customers) All(options ...Options) ([]*Customer, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -178,13 +186,14 @@ func (s Customers) All(options ...Options) ([]*Customer, error) {
 		Customers []*Customer `json:"customers"`
 		Success   bool        `json:"success"`
 		Message   string      `json:"message"`
+		Code      string      `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/customers"
@@ -195,7 +204,7 @@ func (s Customers) All(options ...Options) ([]*Customer, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -207,23 +216,26 @@ func (s Customers) All(options ...Options) ([]*Customer, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Customers, nil
 }
 
 // Create : Create a new customer.
-func (s Customers) Create(customer *Customer, options ...Options) (*Customer, error) {
+func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -236,6 +248,7 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, er
 		Customer `json:"customer"`
 		Success  bool   `json:"success"`
 		Message  string `json:"message"`
+		Code     string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -252,7 +265,7 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, er
 		"expand":       opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/customers"
@@ -263,7 +276,7 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, er
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -275,23 +288,26 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, er
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Customer, nil
 }
 
 // Find : Find a customer by its ID.
-func (s Customers) Find(customerID string, options ...Options) (*Customer, error) {
+func (s Customers) Find(customerID string, options ...Options) (*Customer, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -304,13 +320,14 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, error
 		Customer `json:"customer"`
 		Success  bool   `json:"success"`
 		Message  string `json:"message"`
+		Code     string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/customers/" + url.QueryEscape(customerID) + ""
@@ -321,7 +338,7 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, error
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -333,23 +350,26 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, error
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Customer, nil
 }
 
 // Save : Save the updated customer attributes.
-func (s Customers) Save(customer *Customer, options ...Options) (*Customer, error) {
+func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -362,6 +382,7 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, erro
 		Customer `json:"customer"`
 		Success  bool   `json:"success"`
 		Message  string `json:"message"`
+		Code     string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -378,7 +399,7 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, erro
 		"expand":       opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/customers/" + url.QueryEscape(customer.ID) + ""
@@ -389,7 +410,7 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, erro
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -401,23 +422,26 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, erro
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Customer, nil
 }
 
 // Delete : Delete the customer.
-func (s Customers) Delete(customer *Customer, options ...Options) error {
+func (s Customers) Delete(customer *Customer, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -429,13 +453,14 @@ func (s Customers) Delete(customer *Customer, options ...Options) error {
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	path := "/customers/" + url.QueryEscape(customer.ID) + ""
@@ -446,7 +471,7 @@ func (s Customers) Delete(customer *Customer, options ...Options) error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -458,17 +483,20 @@ func (s Customers) Delete(customer *Customer, options ...Options) error {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	if !payload.Success {
-		return errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return erri
 	}
 	return nil
 }

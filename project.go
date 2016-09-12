@@ -29,7 +29,7 @@ type Project struct {
 }
 
 // GatewayConfigurations : Get all the gateway configurations of the project
-func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([]*GatewayConfiguration, error) {
+func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([]*GatewayConfiguration, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -42,13 +42,14 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 		GatewayConfigurations []*GatewayConfiguration `json:"gateway_configurations"`
 		Success               bool                    `json:"success"`
 		Message               string                  `json:"message"`
+		Code                  string                  `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/projects/" + url.QueryEscape(project.ID) + "/gateway-configurations"
@@ -59,7 +60,7 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -71,23 +72,26 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.GatewayConfigurations, nil
 }
 
 // Find : Find a project by its ID.
-func (s Projects) Find(projectID string, options ...Options) (*Project, error) {
+func (s Projects) Find(projectID string, options ...Options) (*Project, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -100,13 +104,14 @@ func (s Projects) Find(projectID string, options ...Options) (*Project, error) {
 		Project `json:"project"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/projects/" + url.QueryEscape(projectID) + ""
@@ -117,7 +122,7 @@ func (s Projects) Find(projectID string, options ...Options) (*Project, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -129,17 +134,20 @@ func (s Projects) Find(projectID string, options ...Options) (*Project, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Project, nil
 }

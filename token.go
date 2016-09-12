@@ -31,7 +31,7 @@ type Token struct {
 }
 
 // Find : Find a customer's token by its ID.
-func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, error) {
+func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -44,13 +44,14 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, er
 		Token   `json:"token"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/customers/" + url.QueryEscape(customerID) + "/tokens/" + url.QueryEscape(tokenID) + ""
@@ -61,7 +62,7 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, er
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -73,23 +74,26 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, er
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Token, nil
 }
 
 // Create : Create a new token for the given customer ID.
-func (s Tokens) Create(token *Token, customerID, target, source string, options ...Options) (*Token, error) {
+func (s Tokens) Create(token *Token, customerID, target, source string, options ...Options) (*Token, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -102,6 +106,7 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 		Token   `json:"token"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -111,7 +116,7 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 		"expand":   opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/customers/" + url.QueryEscape(customerID) + "/tokens"
@@ -122,7 +127,7 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -134,17 +139,20 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Token, nil
 }

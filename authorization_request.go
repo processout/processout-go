@@ -43,7 +43,7 @@ type AuthorizationRequest struct {
 }
 
 // Customer : Get the customer linked to the authorization request.
-func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationRequest, options ...Options) (*Customer, error) {
+func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationRequest, options ...Options) (*Customer, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -56,13 +56,14 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 		Customer `json:"customer"`
 		Success  bool   `json:"success"`
 		Message  string `json:"message"`
+		Code     string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/authorization-requests/" + url.QueryEscape(authorizationRequest.ID) + "/customers"
@@ -73,7 +74,7 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -85,23 +86,26 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Customer, nil
 }
 
 // CustomerAction : Get the customer action needed to be continue the token authorization flow on the given gateway.
-func (s AuthorizationRequests) CustomerAction(authorizationRequest *AuthorizationRequest, gatewayConfigurationID string, options ...Options) (*CustomerAction, error) {
+func (s AuthorizationRequests) CustomerAction(authorizationRequest *AuthorizationRequest, gatewayConfigurationID string, options ...Options) (*CustomerAction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -114,13 +118,14 @@ func (s AuthorizationRequests) CustomerAction(authorizationRequest *Authorizatio
 		CustomerAction `json:"customer_action"`
 		Success        bool   `json:"success"`
 		Message        string `json:"message"`
+		Code           string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/authorization-requests/" + url.QueryEscape(authorizationRequest.ID) + "/gateway-configurations/" + url.QueryEscape(gatewayConfigurationID) + "/customer-action"
@@ -131,7 +136,7 @@ func (s AuthorizationRequests) CustomerAction(authorizationRequest *Authorizatio
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -143,23 +148,26 @@ func (s AuthorizationRequests) CustomerAction(authorizationRequest *Authorizatio
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.CustomerAction, nil
 }
 
 // Create : Create a new authorization request for the given customer ID.
-func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest, customerID string, options ...Options) (*AuthorizationRequest, error) {
+func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest, customerID string, options ...Options) (*AuthorizationRequest, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -172,6 +180,7 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 		AuthorizationRequest `json:"authorization_request"`
 		Success              bool   `json:"success"`
 		Message              string `json:"message"`
+		Code                 string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -184,7 +193,7 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 		"expand":      opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/authorization-requests"
@@ -195,7 +204,7 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -207,23 +216,26 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.AuthorizationRequest, nil
 }
 
 // Find : Find an authorization request by its ID.
-func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Options) (*AuthorizationRequest, error) {
+func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Options) (*AuthorizationRequest, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -236,13 +248,14 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 		AuthorizationRequest `json:"authorization_request"`
 		Success              bool   `json:"success"`
 		Message              string `json:"message"`
+		Code                 string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/authorization-requests/" + url.QueryEscape(authorizationRequestID) + ""
@@ -253,7 +266,7 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -265,17 +278,20 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.AuthorizationRequest, nil
 }

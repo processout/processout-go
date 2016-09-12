@@ -37,7 +37,7 @@ type Transaction struct {
 }
 
 // Refunds : Get the transaction's refunds.
-func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*Refund, error) {
+func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*Refund, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -50,13 +50,14 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 		Refunds []*Refund `json:"refunds"`
 		Success bool      `json:"success"`
 		Message string    `json:"message"`
+		Code    string    `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/transactions/" + url.QueryEscape(transaction.ID) + "/refunds"
@@ -67,7 +68,7 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -79,23 +80,26 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Refunds, nil
 }
 
 // All : Get all the transactions.
-func (s Transactions) All(options ...Options) ([]*Transaction, error) {
+func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -108,13 +112,14 @@ func (s Transactions) All(options ...Options) ([]*Transaction, error) {
 		Transactions []*Transaction `json:"transactions"`
 		Success      bool           `json:"success"`
 		Message      string         `json:"message"`
+		Code         string         `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/transactions"
@@ -125,7 +130,7 @@ func (s Transactions) All(options ...Options) ([]*Transaction, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -137,23 +142,26 @@ func (s Transactions) All(options ...Options) ([]*Transaction, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Transactions, nil
 }
 
 // Find : Find a transaction by its ID.
-func (s Transactions) Find(transactionID string, options ...Options) (*Transaction, error) {
+func (s Transactions) Find(transactionID string, options ...Options) (*Transaction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -166,13 +174,14 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 		Transaction `json:"transaction"`
 		Success     bool   `json:"success"`
 		Message     string `json:"message"`
+		Code        string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/transactions/" + url.QueryEscape(transactionID) + ""
@@ -183,7 +192,7 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -195,17 +204,20 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Transaction, nil
 }

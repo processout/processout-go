@@ -44,6 +44,22 @@ type Options struct {
 	Expand         []string
 }
 
+// Error represents an error coming from the ProcessOut API. It inherits
+// error and adds a Code field, corresponding to the error code coming from
+// the API
+type Error struct {
+	error
+	Code string
+}
+
+// newError creates a new Error from an error, with an empty code
+func newError(err error) *Error {
+	return &Error{
+		error: err,
+		Code:  "",
+	}
+}
+
 // New creates a new struct *ProcessOut with the given API credentials. It
 // initializes all the resources available so they can be used immediately.
 func New(projectID, projectSecret string) *ProcessOut {

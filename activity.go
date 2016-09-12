@@ -31,7 +31,7 @@ type Activity struct {
 }
 
 // All : Get all the project activities.
-func (s Activities) All(options ...Options) ([]*Activity, error) {
+func (s Activities) All(options ...Options) ([]*Activity, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -44,13 +44,14 @@ func (s Activities) All(options ...Options) ([]*Activity, error) {
 		Activities []*Activity `json:"activities"`
 		Success    bool        `json:"success"`
 		Message    string      `json:"message"`
+		Code       string      `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/activities"
@@ -61,7 +62,7 @@ func (s Activities) All(options ...Options) ([]*Activity, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -73,23 +74,26 @@ func (s Activities) All(options ...Options) ([]*Activity, error) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return payload.Activities, nil
 }
 
 // Find : Find a specific activity and fetch its data.
-func (s Activities) Find(activityID string, options ...Options) (*Activity, error) {
+func (s Activities) Find(activityID string, options ...Options) (*Activity, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -102,13 +106,14 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, erro
 		Activity `json:"activity"`
 		Success  bool   `json:"success"`
 		Message  string `json:"message"`
+		Code     string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/activities/" + url.QueryEscape(activityID) + ""
@@ -119,7 +124,7 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, erro
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -131,17 +136,20 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, erro
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Activity, nil
 }

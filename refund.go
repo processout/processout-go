@@ -35,7 +35,7 @@ type Refund struct {
 }
 
 // Find : Find a transaction's refund by its ID.
-func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refund, error) {
+func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refund, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -48,13 +48,14 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 		Refund  `json:"refund"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
 	})
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds/" + url.QueryEscape(refundID) + ""
@@ -65,7 +66,7 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -77,23 +78,26 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, err
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
-		return nil, errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
 	}
 	return &payload.Refund, nil
 }
 
 // Apply : Apply a refund to a transaction.
-func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options) error {
+func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -105,6 +109,7 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 	type Response struct {
 		Success bool   `json:"success"`
 		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -115,7 +120,7 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 		"expand":      opt.Expand,
 	})
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	path := "/transactions/{transactions_id}/refunds"
@@ -126,7 +131,7 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -138,17 +143,20 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return err
+		return newError(err)
 	}
 
 	if !payload.Success {
-		return errors.New(payload.Message)
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return erri
 	}
 	return nil
 }
