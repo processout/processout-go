@@ -53,6 +53,7 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -118,12 +119,13 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 		"reason":      refund.Reason,
 		"information": refund.Information,
 		"expand":      opt.Expand,
+		"filter":      opt.Filter,
 	})
 	if err != nil {
 		return newError(err)
 	}
 
-	path := "/transactions/{transactions_id}/refunds"
+	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds"
 
 	req, err := http.NewRequest(
 		"POST",

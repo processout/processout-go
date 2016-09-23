@@ -47,6 +47,7 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -109,6 +110,7 @@ func (s Projects) Find(projectID string, options ...Options) (*Project, *Error) 
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)

@@ -49,6 +49,7 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *E
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -114,6 +115,7 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 		"target":   target,
 		"source":   source,
 		"expand":   opt.Expand,
+		"filter":   opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)

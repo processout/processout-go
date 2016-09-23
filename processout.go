@@ -42,6 +42,7 @@ type ProcessOut struct {
 type Options struct {
 	IdempotencyKey string
 	Expand         []string
+	Filter         string
 }
 
 // Error represents an error coming from the ProcessOut API. It inherits

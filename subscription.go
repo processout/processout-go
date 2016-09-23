@@ -73,6 +73,7 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -135,6 +136,7 @@ func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigu
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -197,6 +199,7 @@ func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -269,6 +272,7 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 		"ended_reason": subscription.EndedReason,
 		"customer_id":  customerID,
 		"expand":       opt.Expand,
+		"filter":       opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -331,6 +335,7 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -393,6 +398,7 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 	body, err := json.Marshal(map[string]interface{}{
 		"source": source,
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return newError(err)
@@ -455,6 +461,7 @@ func (s Subscriptions) End(subscription *Subscription, reason string, options ..
 	body, err := json.Marshal(map[string]interface{}{
 		"reason": reason,
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return newError(err)

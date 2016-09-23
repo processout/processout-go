@@ -67,6 +67,7 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -129,6 +130,7 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Er
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -191,6 +193,7 @@ func (s Customers) All(options ...Options) ([]*Customer, *Error) {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -263,6 +266,7 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *E
 		"country_code": customer.CountryCode,
 		"metadata":     customer.Metadata,
 		"expand":       opt.Expand,
+		"filter":       opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -325,6 +329,7 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, *Erro
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -397,6 +402,7 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Err
 		"country_code": customer.CountryCode,
 		"metadata":     customer.Metadata,
 		"expand":       opt.Expand,
+		"filter":       opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -458,6 +464,7 @@ func (s Customers) Delete(customer *Customer, options ...Options) *Error {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return newError(err)

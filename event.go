@@ -49,6 +49,7 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) 
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -111,6 +112,7 @@ func (s Events) All(options ...Options) ([]*Event, *Error) {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -173,6 +175,7 @@ func (s Events) Find(eventID string, options ...Options) (*Event, *Error) {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)

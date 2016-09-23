@@ -61,6 +61,7 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -123,6 +124,7 @@ func (s AuthorizationRequests) CustomerAction(authorizationRequest *Authorizatio
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -191,6 +193,7 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 		"custom":      authorizationRequest.Custom,
 		"customer_id": customerID,
 		"expand":      opt.Expand,
+		"filter":      opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -253,6 +256,7 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)

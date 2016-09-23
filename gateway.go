@@ -28,6 +28,8 @@ type Gateway struct {
 	URL string `json:"url"`
 	// Flows : Supported flow by the gateway (one-off, subscription or tokenization)
 	Flows []string `json:"flows"`
+	// Tags : Gateway tags. Mainly used to filter gateways depending on their attributes (e-wallets and such)
+	Tags []string `json:"tags"`
 	// Description : Description of the payment gateway
 	Description string `json:"description"`
 }

@@ -69,6 +69,7 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 	body, err := json.Marshal(map[string]interface{}{
 		"source": source,
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return newError(err)
@@ -131,6 +132,7 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) *
 	body, err := json.Marshal(map[string]interface{}{
 		"source": source,
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return newError(err)
@@ -193,6 +195,7 @@ func (s Invoices) Customer(invoice *Invoice, options ...Options) (*Customer, *Er
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -256,6 +259,7 @@ func (s Invoices) AssignCustomer(invoice *Invoice, customerID string, options ..
 	body, err := json.Marshal(map[string]interface{}{
 		"customer_id": customerID,
 		"expand":      opt.Expand,
+		"filter":      opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -318,6 +322,7 @@ func (s Invoices) CustomerAction(invoice *Invoice, gatewayConfigurationID string
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -380,6 +385,7 @@ func (s Invoices) Transaction(invoice *Invoice, options ...Options) (*Transactio
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -441,6 +447,7 @@ func (s Invoices) Void(invoice *Invoice, options ...Options) *Error {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return newError(err)
@@ -503,6 +510,7 @@ func (s Invoices) All(options ...Options) ([]*Invoice, *Error) {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -573,6 +581,7 @@ func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, *Error
 		"return_url":       invoice.ReturnURL,
 		"cancel_url":       invoice.CancelURL,
 		"expand":           opt.Expand,
+		"filter":           opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -635,6 +644,7 @@ func (s Invoices) Find(invoiceID string, options ...Options) (*Invoice, *Error) 
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)

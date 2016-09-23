@@ -55,6 +55,7 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -117,6 +118,7 @@ func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -179,6 +181,7 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)

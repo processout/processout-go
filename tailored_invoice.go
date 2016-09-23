@@ -59,6 +59,7 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...O
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -121,6 +122,7 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, *Error) {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -191,6 +193,7 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 		"return_url":       tailoredInvoice.ReturnURL,
 		"cancel_url":       tailoredInvoice.CancelURL,
 		"expand":           opt.Expand,
+		"filter":           opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -253,6 +256,7 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -323,6 +327,7 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 		"return_url":       tailoredInvoice.ReturnURL,
 		"cancel_url":       tailoredInvoice.CancelURL,
 		"expand":           opt.Expand,
+		"filter":           opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -384,6 +389,7 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Op
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return newError(err)

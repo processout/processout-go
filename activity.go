@@ -49,6 +49,7 @@ func (s Activities) All(options ...Options) ([]*Activity, *Error) {
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
@@ -111,6 +112,7 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, *Err
 
 	body, err := json.Marshal(map[string]interface{}{
 		"expand": opt.Expand,
+		"filter": opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
