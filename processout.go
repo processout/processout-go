@@ -43,6 +43,8 @@ type Options struct {
 	IdempotencyKey string
 	Expand         []string
 	Filter         string
+	Limit          uint64
+	Page           uint64
 }
 
 // Error represents an error coming from the ProcessOut API. It inherits

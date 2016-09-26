@@ -407,7 +407,7 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
 
 	req, err := http.NewRequest(
-		"PUT",
+		"POST",
 		Host+path,
 		bytes.NewReader(body),
 	)
