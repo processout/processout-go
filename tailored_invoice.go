@@ -81,6 +81,9 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...O
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -143,6 +146,9 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, *Error) {
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -215,6 +221,9 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -277,6 +286,9 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -349,6 +361,9 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -410,6 +425,9 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Op
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

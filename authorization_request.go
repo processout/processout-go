@@ -83,6 +83,9 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -145,6 +148,9 @@ func (s AuthorizationRequests) CustomerAction(authorizationRequest *Authorizatio
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -215,6 +221,9 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -277,6 +286,9 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

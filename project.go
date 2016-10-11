@@ -69,6 +69,9 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -131,6 +134,9 @@ func (s Projects) Find(projectID string, options ...Options) (*Project, *Error) 
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

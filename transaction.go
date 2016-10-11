@@ -77,6 +77,9 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -140,6 +143,9 @@ func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -202,6 +208,9 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

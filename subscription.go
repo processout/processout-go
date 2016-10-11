@@ -95,6 +95,9 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -158,6 +161,9 @@ func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigu
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -220,6 +226,9 @@ func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -294,6 +303,9 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -356,6 +368,9 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
@@ -420,6 +435,9 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
@@ -440,6 +458,72 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 		return erri
 	}
 	return nil
+}
+
+// Update : Update the subscription.
+func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*Subscription, *Error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Subscription `json:"subscription"`
+		Success      bool   `json:"success"`
+		Message      string `json:"message"`
+		Code         string `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": opt.Expand,
+		"filter": opt.Filter,
+	})
+	if err != nil {
+		return nil, newError(err)
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, newError(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, newError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, newError(err)
+	}
+
+	if !payload.Success {
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
+	}
+	return &payload.Subscription, nil
 }
 
 // End : End a subscription. The reason may be provided as well.
@@ -482,6 +566,9 @@ func (s Subscriptions) End(subscription *Subscription, reason string, options ..
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
 

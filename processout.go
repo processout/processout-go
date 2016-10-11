@@ -45,6 +45,7 @@ type Options struct {
 	Filter         string
 	Limit          uint64
 	Page           uint64
+	DisableLogging bool
 }
 
 // Error represents an error coming from the ProcessOut API. It inherits
