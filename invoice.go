@@ -44,7 +44,7 @@ type Invoice struct {
 	ReturnURL string `json:"return_url"`
 	// CancelURL : URL where the customer will be redirected if the paymen was canceled
 	CancelURL string `json:"cancel_url"`
-	// Sandbox : Define whether or not the authorization is in sandbox environment
+	// Sandbox : Define whether or not the invoice is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt : Date at which the invoice was created
 	CreatedAt time.Time `json:"created_at"`

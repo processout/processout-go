@@ -10,21 +10,21 @@ import (
 	"time"
 )
 
-// TailoredInvoices manages the TailoredInvoice struct
-type TailoredInvoices struct {
+// Products manages the Product struct
+type Products struct {
 	p *ProcessOut
 }
 
-type TailoredInvoice struct {
-	// ID : ID of the tailored invoice
+type Product struct {
+	// ID : ID of the product
 	ID string `json:"id"`
-	// Name : Name of the tailored invoice
+	// Name : Name of the product
 	Name string `json:"name"`
-	// Amount : Amount of the tailored invoice
+	// Amount : Amount of the product
 	Amount string `json:"amount"`
-	// Currency : Currency of the tailored invoice
+	// Currency : Currency of the product
 	Currency string `json:"currency"`
-	// Metadata : Metadata related to the tailored invoice, in the form of a dictionary (key-value pair)
+	// Metadata : Metadata related to the product, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
 	// RequestEmail : Choose whether or not to request the email during the checkout process
 	RequestEmail bool `json:"request_email"`
@@ -34,14 +34,14 @@ type TailoredInvoice struct {
 	ReturnURL string `json:"return_url"`
 	// CancelURL : URL where the customer will be redirected if the paymen was canceled
 	CancelURL string `json:"cancel_url"`
-	// Custom : Custom variable passed along in the events/webhooks
-	Custom string `json:"custom"`
-	// CreatedAt : Date at which the tailored invoice was created
+	// Sandbox : Define whether or not the product is in sandbox environment
+	Sandbox bool `json:"sandbox"`
+	// CreatedAt : Date at which the product was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Invoice : Create a new invoice from the tailored invoice.
-func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...Options) (*Invoice, *Error) {
+// Invoice : Create a new invoice from the product.
+func (s Products) Invoice(product *Product, options ...Options) (*Invoice, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -65,7 +65,7 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...O
 		return nil, newError(err)
 	}
 
-	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + "/invoices"
+	path := "/products/" + url.QueryEscape(product.ID) + "/invoices"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -106,8 +106,8 @@ func (s TailoredInvoices) Invoice(tailoredInvoice *TailoredInvoice, options ...O
 	return &payload.Invoice, nil
 }
 
-// All : Get all the tailored invoices.
-func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, *Error) {
+// All : Get all the products.
+func (s Products) All(options ...Options) ([]*Product, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -117,10 +117,10 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, *Error) {
 	}
 
 	type Response struct {
-		TailoredInvoices []*TailoredInvoice `json:"tailored_invoices"`
-		Success          bool               `json:"success"`
-		Message          string             `json:"message"`
-		Code             string             `json:"error_type"`
+		Products []*Product `json:"products"`
+		Success  bool       `json:"success"`
+		Message  string     `json:"message"`
+		Code     string     `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -131,7 +131,7 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, *Error) {
 		return nil, newError(err)
 	}
 
-	path := "/tailored-invoices"
+	path := "/products"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -169,11 +169,11 @@ func (s TailoredInvoices) All(options ...Options) ([]*TailoredInvoice, *Error) {
 
 		return nil, erri
 	}
-	return payload.TailoredInvoices, nil
+	return payload.Products, nil
 }
 
-// Create : Create a new tailored invoice.
-func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Options) (*TailoredInvoice, *Error) {
+// Create : Create a new product.
+func (s Products) Create(product *Product, options ...Options) (*Product, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -183,21 +183,21 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 	}
 
 	type Response struct {
-		TailoredInvoice `json:"tailored_invoice"`
-		Success         bool   `json:"success"`
-		Message         string `json:"message"`
-		Code            string `json:"error_type"`
+		Product `json:"product"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":             tailoredInvoice.Name,
-		"amount":           tailoredInvoice.Amount,
-		"currency":         tailoredInvoice.Currency,
-		"metadata":         tailoredInvoice.Metadata,
-		"request_email":    tailoredInvoice.RequestEmail,
-		"request_shipping": tailoredInvoice.RequestShipping,
-		"return_url":       tailoredInvoice.ReturnURL,
-		"cancel_url":       tailoredInvoice.CancelURL,
+		"name":             product.Name,
+		"amount":           product.Amount,
+		"currency":         product.Currency,
+		"metadata":         product.Metadata,
+		"request_email":    product.RequestEmail,
+		"request_shipping": product.RequestShipping,
+		"return_url":       product.ReturnURL,
+		"cancel_url":       product.CancelURL,
 		"expand":           opt.Expand,
 		"filter":           opt.Filter,
 	})
@@ -205,7 +205,7 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 		return nil, newError(err)
 	}
 
-	path := "/tailored-invoices"
+	path := "/products"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -243,11 +243,11 @@ func (s TailoredInvoices) Create(tailoredInvoice *TailoredInvoice, options ...Op
 
 		return nil, erri
 	}
-	return &payload.TailoredInvoice, nil
+	return &payload.Product, nil
 }
 
-// Find : Find a tailored invoice by its ID.
-func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*TailoredInvoice, *Error) {
+// Find : Find a product by its ID.
+func (s Products) Find(productID string, options ...Options) (*Product, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -257,10 +257,10 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 	}
 
 	type Response struct {
-		TailoredInvoice `json:"tailored_invoice"`
-		Success         bool   `json:"success"`
-		Message         string `json:"message"`
-		Code            string `json:"error_type"`
+		Product `json:"product"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -271,7 +271,7 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 		return nil, newError(err)
 	}
 
-	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoiceID) + ""
+	path := "/products/" + url.QueryEscape(productID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -309,11 +309,11 @@ func (s TailoredInvoices) Find(tailoredInvoiceID string, options ...Options) (*T
 
 		return nil, erri
 	}
-	return &payload.TailoredInvoice, nil
+	return &payload.Product, nil
 }
 
-// Save : Save the updated tailored invoice attributes.
-func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Options) (*TailoredInvoice, *Error) {
+// Save : Save the updated product attributes.
+func (s Products) Save(product *Product, options ...Options) (*Product, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -323,21 +323,21 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 	}
 
 	type Response struct {
-		TailoredInvoice `json:"tailored_invoice"`
-		Success         bool   `json:"success"`
-		Message         string `json:"message"`
-		Code            string `json:"error_type"`
+		Product `json:"product"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":             tailoredInvoice.Name,
-		"amount":           tailoredInvoice.Amount,
-		"currency":         tailoredInvoice.Currency,
-		"metadata":         tailoredInvoice.Metadata,
-		"request_email":    tailoredInvoice.RequestEmail,
-		"request_shipping": tailoredInvoice.RequestShipping,
-		"return_url":       tailoredInvoice.ReturnURL,
-		"cancel_url":       tailoredInvoice.CancelURL,
+		"name":             product.Name,
+		"amount":           product.Amount,
+		"currency":         product.Currency,
+		"metadata":         product.Metadata,
+		"request_email":    product.RequestEmail,
+		"request_shipping": product.RequestShipping,
+		"return_url":       product.ReturnURL,
+		"cancel_url":       product.CancelURL,
 		"expand":           opt.Expand,
 		"filter":           opt.Filter,
 	})
@@ -345,7 +345,7 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 		return nil, newError(err)
 	}
 
-	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + ""
+	path := "/products/{tailored_invoice_id}"
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -383,11 +383,11 @@ func (s TailoredInvoices) Save(tailoredInvoice *TailoredInvoice, options ...Opti
 
 		return nil, erri
 	}
-	return &payload.TailoredInvoice, nil
+	return &payload.Product, nil
 }
 
-// Delete : Delete the tailored invoice.
-func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Options) *Error {
+// Delete : Delete the product.
+func (s Products) Delete(product *Product, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -410,7 +410,7 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Op
 		return newError(err)
 	}
 
-	path := "/tailored-invoices/" + url.QueryEscape(tailoredInvoice.ID) + ""
+	path := "/products/" + url.QueryEscape(product.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -451,11 +451,11 @@ func (s TailoredInvoices) Delete(tailoredInvoice *TailoredInvoice, options ...Op
 	return nil
 }
 
-// dummyTailoredInvoice is a dummy function that's only
+// dummyProduct is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't
 // tell, everything is generated.
-func dummyTailoredInvoice() {
+func dummyProduct() {
 	type dummy struct {
 		a bytes.Buffer
 		b json.RawMessage

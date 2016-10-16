@@ -29,10 +29,10 @@ type ProcessOut struct {
 	GatewayConfigurations *GatewayConfigurations
 	Invoices              *Invoices
 	CustomerActions       *CustomerActions
+	Products              *Products
 	Projects              *Projects
 	Refunds               *Refunds
 	Subscriptions         *Subscriptions
-	TailoredInvoices      *TailoredInvoices
 	Transactions          *Transactions
 	Webhooks              *Webhooks
 }
@@ -81,10 +81,10 @@ func New(projectID, projectSecret string) *ProcessOut {
 	p.GatewayConfigurations = &GatewayConfigurations{p: p}
 	p.Invoices = &Invoices{p: p}
 	p.CustomerActions = &CustomerActions{p: p}
+	p.Products = &Products{p: p}
 	p.Projects = &Projects{p: p}
 	p.Refunds = &Refunds{p: p}
 	p.Subscriptions = &Subscriptions{p: p}
-	p.TailoredInvoices = &TailoredInvoices{p: p}
 	p.Transactions = &Transactions{p: p}
 	p.Webhooks = &Webhooks{p: p}
 
