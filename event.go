@@ -42,9 +42,10 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) 
 
 	type Response struct {
 		Webhooks []*Webhook `json:"webhooks"`
-		Success  bool       `json:"success"`
-		Message  string     `json:"message"`
-		Code     string     `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -93,6 +94,7 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) 
 
 		return nil, erri
 	}
+
 	return payload.Webhooks, nil
 }
 
@@ -107,10 +109,11 @@ func (s Events) All(options ...Options) ([]*Event, *Error) {
 	}
 
 	type Response struct {
-		Events  []*Event `json:"events"`
-		Success bool     `json:"success"`
-		Message string   `json:"message"`
-		Code    string   `json:"error_type"`
+		Events []*Event `json:"events"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -159,6 +162,7 @@ func (s Events) All(options ...Options) ([]*Event, *Error) {
 
 		return nil, erri
 	}
+
 	return payload.Events, nil
 }
 
@@ -173,7 +177,7 @@ func (s Events) Find(eventID string, options ...Options) (*Event, *Error) {
 	}
 
 	type Response struct {
-		Event   `json:"event"`
+		Event   *Event `json:"event"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
@@ -225,7 +229,8 @@ func (s Events) Find(eventID string, options ...Options) (*Event, *Error) {
 
 		return nil, erri
 	}
-	return &payload.Event, nil
+
+	return payload.Event, nil
 }
 
 // dummyEvent is a dummy function that's only

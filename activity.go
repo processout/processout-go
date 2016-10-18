@@ -42,9 +42,10 @@ func (s Activities) All(options ...Options) ([]*Activity, *Error) {
 
 	type Response struct {
 		Activities []*Activity `json:"activities"`
-		Success    bool        `json:"success"`
-		Message    string      `json:"message"`
-		Code       string      `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -93,6 +94,7 @@ func (s Activities) All(options ...Options) ([]*Activity, *Error) {
 
 		return nil, erri
 	}
+
 	return payload.Activities, nil
 }
 
@@ -107,10 +109,10 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, *Err
 	}
 
 	type Response struct {
-		Activity `json:"activity"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
-		Code     string `json:"error_type"`
+		Activity *Activity `json:"activity"`
+		Success  bool      `json:"success"`
+		Message  string    `json:"message"`
+		Code     string    `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -159,7 +161,8 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, *Err
 
 		return nil, erri
 	}
-	return &payload.Activity, nil
+
+	return payload.Activity, nil
 }
 
 // dummyActivity is a dummy function that's only

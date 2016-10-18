@@ -45,10 +45,10 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 	}
 
 	type Response struct {
-		Refund  `json:"refund"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Refund  *Refund `json:"refund"`
+		Success bool    `json:"success"`
+		Message string  `json:"message"`
+		Code    string  `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -97,7 +97,8 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 
 		return nil, erri
 	}
-	return &payload.Refund, nil
+
+	return payload.Refund, nil
 }
 
 // Apply : Apply a refund to a transaction.
@@ -166,6 +167,7 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 
 		return erri
 	}
+
 	return nil
 }
 

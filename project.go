@@ -40,9 +40,10 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 
 	type Response struct {
 		GatewayConfigurations []*GatewayConfiguration `json:"gateway_configurations"`
-		Success               bool                    `json:"success"`
-		Message               string                  `json:"message"`
-		Code                  string                  `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -91,6 +92,7 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 
 		return nil, erri
 	}
+
 	return payload.GatewayConfigurations, nil
 }
 
@@ -105,10 +107,10 @@ func (s Projects) Find(projectID string, options ...Options) (*Project, *Error) 
 	}
 
 	type Response struct {
-		Project `json:"project"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Project *Project `json:"project"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -157,7 +159,8 @@ func (s Projects) Find(projectID string, options ...Options) (*Project, *Error) 
 
 		return nil, erri
 	}
-	return &payload.Project, nil
+
+	return payload.Project, nil
 }
 
 // dummyProject is a dummy function that's only

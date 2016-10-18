@@ -48,9 +48,10 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 
 	type Response struct {
 		Refunds []*Refund `json:"refunds"`
-		Success bool      `json:"success"`
-		Message string    `json:"message"`
-		Code    string    `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -99,6 +100,7 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 
 		return nil, erri
 	}
+
 	return payload.Refunds, nil
 }
 
@@ -114,9 +116,10 @@ func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 
 	type Response struct {
 		Transactions []*Transaction `json:"transactions"`
-		Success      bool           `json:"success"`
-		Message      string         `json:"message"`
-		Code         string         `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -165,6 +168,7 @@ func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 
 		return nil, erri
 	}
+
 	return payload.Transactions, nil
 }
 
@@ -179,10 +183,10 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 	}
 
 	type Response struct {
-		Transaction `json:"transaction"`
-		Success     bool   `json:"success"`
-		Message     string `json:"message"`
-		Code        string `json:"error_type"`
+		Transaction *Transaction `json:"transaction"`
+		Success     bool         `json:"success"`
+		Message     string       `json:"message"`
+		Code        string       `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -231,7 +235,8 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 
 		return nil, erri
 	}
-	return &payload.Transaction, nil
+
+	return payload.Transaction, nil
 }
 
 // dummyTransaction is a dummy function that's only

@@ -65,10 +65,10 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 	}
 
 	type Response struct {
-		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
-		Code     string `json:"error_type"`
+		Customer *Customer `json:"customer"`
+		Success  bool      `json:"success"`
+		Message  string    `json:"message"`
+		Code     string    `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -117,7 +117,8 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 
 		return nil, erri
 	}
-	return &payload.Customer, nil
+
+	return payload.Customer, nil
 }
 
 // CustomerAction : Get the customer action needed to be continue the subscription authorization flow on the given gateway.
@@ -131,10 +132,10 @@ func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigu
 	}
 
 	type Response struct {
-		CustomerAction `json:"customer_action"`
-		Success        bool   `json:"success"`
-		Message        string `json:"message"`
-		Code           string `json:"error_type"`
+		CustomerAction *CustomerAction `json:"customer_action"`
+		Success        bool            `json:"success"`
+		Message        string          `json:"message"`
+		Code           string          `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -183,7 +184,8 @@ func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigu
 
 		return nil, erri
 	}
-	return &payload.CustomerAction, nil
+
+	return payload.CustomerAction, nil
 }
 
 // Invoice : Get the invoice corresponding to the last iteration of the subscription.
@@ -197,10 +199,10 @@ func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (
 	}
 
 	type Response struct {
-		Invoice `json:"invoice"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Invoice *Invoice `json:"invoice"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -249,7 +251,76 @@ func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (
 
 		return nil, erri
 	}
-	return &payload.Invoice, nil
+
+	return payload.Invoice, nil
+}
+
+// Transactions : Get the subscriptions past transactions.
+func (s Subscriptions) Transactions(subscription *Subscription, options ...Options) ([]*Transaction, *Error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Transactions []*Transaction `json:"transactions"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand": opt.Expand,
+		"filter": opt.Filter,
+	})
+	if err != nil {
+		return nil, newError(err)
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/transactions"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, newError(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, newError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, newError(err)
+	}
+
+	if !payload.Success {
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
+	}
+
+	return payload.Transactions, nil
 }
 
 // All : Get all the subscriptions.
@@ -264,9 +335,10 @@ func (s Subscriptions) All(options ...Options) ([]*Subscription, *Error) {
 
 	type Response struct {
 		Subscriptions []*Subscription `json:"subscriptions"`
-		Success       bool            `json:"success"`
-		Message       string          `json:"message"`
-		Code          string          `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -315,6 +387,7 @@ func (s Subscriptions) All(options ...Options) ([]*Subscription, *Error) {
 
 		return nil, erri
 	}
+
 	return payload.Subscriptions, nil
 }
 
@@ -329,10 +402,10 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 	}
 
 	type Response struct {
-		Subscription `json:"subscription"`
-		Success      bool   `json:"success"`
-		Message      string `json:"message"`
-		Code         string `json:"error_type"`
+		Subscription *Subscription `json:"subscription"`
+		Success      bool          `json:"success"`
+		Message      string        `json:"message"`
+		Code         string        `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -391,7 +464,8 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 
 		return nil, erri
 	}
-	return &payload.Subscription, nil
+
+	return payload.Subscription, nil
 }
 
 // Find : Find a subscription by its ID.
@@ -405,10 +479,10 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 	}
 
 	type Response struct {
-		Subscription `json:"subscription"`
-		Success      bool   `json:"success"`
-		Message      string `json:"message"`
-		Code         string `json:"error_type"`
+		Subscription *Subscription `json:"subscription"`
+		Success      bool          `json:"success"`
+		Message      string        `json:"message"`
+		Code         string        `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -457,7 +531,8 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 
 		return nil, erri
 	}
-	return &payload.Subscription, nil
+
+	return payload.Subscription, nil
 }
 
 // Activate : Activate the subscription with the provided token.
@@ -523,6 +598,7 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 
 		return erri
 	}
+
 	return nil
 }
 
@@ -537,10 +613,10 @@ func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*
 	}
 
 	type Response struct {
-		Subscription `json:"subscription"`
-		Success      bool   `json:"success"`
-		Message      string `json:"message"`
-		Code         string `json:"error_type"`
+		Subscription *Subscription `json:"subscription"`
+		Success      bool          `json:"success"`
+		Message      string        `json:"message"`
+		Code         string        `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -589,7 +665,8 @@ func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*
 
 		return nil, erri
 	}
-	return &payload.Subscription, nil
+
+	return payload.Subscription, nil
 }
 
 // End : End a subscription. The reason may be provided as well.
@@ -655,6 +732,7 @@ func (s Subscriptions) End(subscription *Subscription, reason string, options ..
 
 		return erri
 	}
+
 	return nil
 }
 

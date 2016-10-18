@@ -18,6 +18,8 @@ type Products struct {
 type Product struct {
 	// ID : ID of the product
 	ID string `json:"id"`
+	// URL : URL to which you may redirect your customer to proceed with the payment
+	URL string `json:"url"`
 	// Name : Name of the product
 	Name string `json:"name"`
 	// Amount : Amount of the product
@@ -51,10 +53,10 @@ func (s Products) Invoice(product *Product, options ...Options) (*Invoice, *Erro
 	}
 
 	type Response struct {
-		Invoice `json:"invoice"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Invoice *Invoice `json:"invoice"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -103,7 +105,8 @@ func (s Products) Invoice(product *Product, options ...Options) (*Invoice, *Erro
 
 		return nil, erri
 	}
-	return &payload.Invoice, nil
+
+	return payload.Invoice, nil
 }
 
 // All : Get all the products.
@@ -118,9 +121,10 @@ func (s Products) All(options ...Options) ([]*Product, *Error) {
 
 	type Response struct {
 		Products []*Product `json:"products"`
-		Success  bool       `json:"success"`
-		Message  string     `json:"message"`
-		Code     string     `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -169,6 +173,7 @@ func (s Products) All(options ...Options) ([]*Product, *Error) {
 
 		return nil, erri
 	}
+
 	return payload.Products, nil
 }
 
@@ -183,10 +188,10 @@ func (s Products) Create(product *Product, options ...Options) (*Product, *Error
 	}
 
 	type Response struct {
-		Product `json:"product"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Product *Product `json:"product"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -243,7 +248,8 @@ func (s Products) Create(product *Product, options ...Options) (*Product, *Error
 
 		return nil, erri
 	}
-	return &payload.Product, nil
+
+	return payload.Product, nil
 }
 
 // Find : Find a product by its ID.
@@ -257,10 +263,10 @@ func (s Products) Find(productID string, options ...Options) (*Product, *Error) 
 	}
 
 	type Response struct {
-		Product `json:"product"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Product *Product `json:"product"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -309,7 +315,8 @@ func (s Products) Find(productID string, options ...Options) (*Product, *Error) 
 
 		return nil, erri
 	}
-	return &payload.Product, nil
+
+	return payload.Product, nil
 }
 
 // Save : Save the updated product attributes.
@@ -323,10 +330,10 @@ func (s Products) Save(product *Product, options ...Options) (*Product, *Error) 
 	}
 
 	type Response struct {
-		Product `json:"product"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Product *Product `json:"product"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -345,7 +352,7 @@ func (s Products) Save(product *Product, options ...Options) (*Product, *Error) 
 		return nil, newError(err)
 	}
 
-	path := "/products/{tailored_invoice_id}"
+	path := "/products/" + url.QueryEscape(product.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -383,7 +390,8 @@ func (s Products) Save(product *Product, options ...Options) (*Product, *Error) 
 
 		return nil, erri
 	}
-	return &payload.Product, nil
+
+	return payload.Product, nil
 }
 
 // Delete : Delete the product.
@@ -448,6 +456,7 @@ func (s Products) Delete(product *Product, options ...Options) *Error {
 
 		return erri
 	}
+
 	return nil
 }
 

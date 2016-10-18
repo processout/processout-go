@@ -53,10 +53,10 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 	}
 
 	type Response struct {
-		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
-		Code     string `json:"error_type"`
+		Customer *Customer `json:"customer"`
+		Success  bool      `json:"success"`
+		Message  string    `json:"message"`
+		Code     string    `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -105,7 +105,8 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 
 		return nil, erri
 	}
-	return &payload.Customer, nil
+
+	return payload.Customer, nil
 }
 
 // CustomerAction : Get the customer action needed to be continue the token authorization flow on the given gateway.
@@ -119,10 +120,10 @@ func (s AuthorizationRequests) CustomerAction(authorizationRequest *Authorizatio
 	}
 
 	type Response struct {
-		CustomerAction `json:"customer_action"`
-		Success        bool   `json:"success"`
-		Message        string `json:"message"`
-		Code           string `json:"error_type"`
+		CustomerAction *CustomerAction `json:"customer_action"`
+		Success        bool            `json:"success"`
+		Message        string          `json:"message"`
+		Code           string          `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -171,7 +172,8 @@ func (s AuthorizationRequests) CustomerAction(authorizationRequest *Authorizatio
 
 		return nil, erri
 	}
-	return &payload.CustomerAction, nil
+
+	return payload.CustomerAction, nil
 }
 
 // Create : Create a new authorization request for the given customer ID.
@@ -185,10 +187,10 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 	}
 
 	type Response struct {
-		AuthorizationRequest `json:"authorization_request"`
-		Success              bool   `json:"success"`
-		Message              string `json:"message"`
-		Code                 string `json:"error_type"`
+		AuthorizationRequest *AuthorizationRequest `json:"authorization_request"`
+		Success              bool                  `json:"success"`
+		Message              string                `json:"message"`
+		Code                 string                `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -243,7 +245,8 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 
 		return nil, erri
 	}
-	return &payload.AuthorizationRequest, nil
+
+	return payload.AuthorizationRequest, nil
 }
 
 // Find : Find an authorization request by its ID.
@@ -257,10 +260,10 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 	}
 
 	type Response struct {
-		AuthorizationRequest `json:"authorization_request"`
-		Success              bool   `json:"success"`
-		Message              string `json:"message"`
-		Code                 string `json:"error_type"`
+		AuthorizationRequest *AuthorizationRequest `json:"authorization_request"`
+		Success              bool                  `json:"success"`
+		Message              string                `json:"message"`
+		Code                 string                `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -309,7 +312,8 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 
 		return nil, erri
 	}
-	return &payload.AuthorizationRequest, nil
+
+	return payload.AuthorizationRequest, nil
 }
 
 // dummyAuthorizationRequest is a dummy function that's only

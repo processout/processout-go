@@ -41,7 +41,7 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *E
 	}
 
 	type Response struct {
-		Token   `json:"token"`
+		Token   *Token `json:"token"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
@@ -93,7 +93,8 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *E
 
 		return nil, erri
 	}
-	return &payload.Token, nil
+
+	return payload.Token, nil
 }
 
 // Create : Create a new token for the given customer ID.
@@ -107,7 +108,7 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 	}
 
 	type Response struct {
-		Token   `json:"token"`
+		Token   *Token `json:"token"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
@@ -162,7 +163,8 @@ func (s Tokens) Create(token *Token, customerID, target, source string, options 
 
 		return nil, erri
 	}
-	return &payload.Token, nil
+
+	return payload.Token, nil
 }
 
 // dummyToken is a dummy function that's only

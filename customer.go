@@ -62,9 +62,10 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 
 	type Response struct {
 		Subscriptions []*Subscription `json:"subscriptions"`
-		Success       bool            `json:"success"`
-		Message       string          `json:"message"`
-		Code          string          `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -113,6 +114,7 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 
 		return nil, erri
 	}
+
 	return payload.Subscriptions, nil
 }
 
@@ -127,10 +129,11 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Er
 	}
 
 	type Response struct {
-		Tokens  []*Token `json:"tokens"`
-		Success bool     `json:"success"`
-		Message string   `json:"message"`
-		Code    string   `json:"error_type"`
+		Tokens []*Token `json:"tokens"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -179,6 +182,7 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Er
 
 		return nil, erri
 	}
+
 	return payload.Tokens, nil
 }
 
@@ -194,9 +198,10 @@ func (s Customers) Transactions(customer *Customer, options ...Options) ([]*Tran
 
 	type Response struct {
 		Transactions []*Transaction `json:"transactions"`
-		Success      bool           `json:"success"`
-		Message      string         `json:"message"`
-		Code         string         `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -245,6 +250,7 @@ func (s Customers) Transactions(customer *Customer, options ...Options) ([]*Tran
 
 		return nil, erri
 	}
+
 	return payload.Transactions, nil
 }
 
@@ -260,9 +266,10 @@ func (s Customers) All(options ...Options) ([]*Customer, *Error) {
 
 	type Response struct {
 		Customers []*Customer `json:"customers"`
-		Success   bool        `json:"success"`
-		Message   string      `json:"message"`
-		Code      string      `json:"error_type"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -311,6 +318,7 @@ func (s Customers) All(options ...Options) ([]*Customer, *Error) {
 
 		return nil, erri
 	}
+
 	return payload.Customers, nil
 }
 
@@ -325,10 +333,10 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *E
 	}
 
 	type Response struct {
-		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
-		Code     string `json:"error_type"`
+		Customer *Customer `json:"customer"`
+		Success  bool      `json:"success"`
+		Message  string    `json:"message"`
+		Code     string    `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -387,7 +395,8 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *E
 
 		return nil, erri
 	}
-	return &payload.Customer, nil
+
+	return payload.Customer, nil
 }
 
 // Find : Find a customer by its ID.
@@ -401,10 +410,10 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, *Erro
 	}
 
 	type Response struct {
-		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
-		Code     string `json:"error_type"`
+		Customer *Customer `json:"customer"`
+		Success  bool      `json:"success"`
+		Message  string    `json:"message"`
+		Code     string    `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -453,7 +462,8 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, *Erro
 
 		return nil, erri
 	}
-	return &payload.Customer, nil
+
+	return payload.Customer, nil
 }
 
 // Save : Save the updated customer attributes.
@@ -467,10 +477,10 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Err
 	}
 
 	type Response struct {
-		Customer `json:"customer"`
-		Success  bool   `json:"success"`
-		Message  string `json:"message"`
-		Code     string `json:"error_type"`
+		Customer *Customer `json:"customer"`
+		Success  bool      `json:"success"`
+		Message  string    `json:"message"`
+		Code     string    `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -529,7 +539,8 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Err
 
 		return nil, erri
 	}
-	return &payload.Customer, nil
+
+	return payload.Customer, nil
 }
 
 // Delete : Delete the customer.
@@ -594,6 +605,7 @@ func (s Customers) Delete(customer *Customer, options ...Options) *Error {
 
 		return erri
 	}
+
 	return nil
 }
 
