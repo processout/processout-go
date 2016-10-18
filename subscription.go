@@ -121,73 +121,6 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 	return payload.Customer, nil
 }
 
-// CustomerAction : Get the customer action needed to be continue the subscription authorization flow on the given gateway.
-func (s Subscriptions) CustomerAction(subscription *Subscription, gatewayConfigurationID string, options ...Options) (*CustomerAction, *Error) {
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	type Response struct {
-		CustomerAction *CustomerAction `json:"customer_action"`
-		Success        bool            `json:"success"`
-		Message        string          `json:"message"`
-		Code           string          `json:"error_type"`
-	}
-
-	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
-	})
-	if err != nil {
-		return nil, newError(err)
-	}
-
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/gateway-configurations/" + url.QueryEscape(gatewayConfigurationID) + "/customer-action"
-
-	req, err := http.NewRequest(
-		"GET",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, newError(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, newError(err)
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, newError(err)
-	}
-
-	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
-
-		return nil, erri
-	}
-
-	return payload.CustomerAction, nil
-}
-
 // Invoice : Get the invoice corresponding to the last iteration of the subscription.
 func (s Subscriptions) Invoice(subscription *Subscription, options ...Options) (*Invoice, *Error) {
 	opt := Options{}
@@ -535,7 +468,7 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 	return payload.Subscription, nil
 }
 
-// Activate : Activate the subscription with the provided token.
+// Activate : Activate the subscription using the provided source.
 func (s Subscriptions) Activate(subscription *Subscription, source string, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
@@ -563,7 +496,7 @@ func (s Subscriptions) Activate(subscription *Subscription, source string, optio
 	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
 
 	req, err := http.NewRequest(
-		"POST",
+		"PUT",
 		Host+path,
 		bytes.NewReader(body),
 	)
@@ -620,6 +553,74 @@ func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
+		"expand": opt.Expand,
+		"filter": opt.Filter,
+	})
+	if err != nil {
+		return nil, newError(err)
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, newError(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, newError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, newError(err)
+	}
+
+	if !payload.Success {
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
+	}
+
+	return payload.Subscription, nil
+}
+
+// UpdateSource : Update the subscription source.
+func (s Subscriptions) UpdateSource(subscription *Subscription, source string, options ...Options) (*Subscription, *Error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Subscription *Subscription `json:"subscription"`
+		Success      bool          `json:"success"`
+		Message      string        `json:"message"`
+		Code         string        `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"source": source,
 		"expand": opt.Expand,
 		"filter": opt.Filter,
 	})

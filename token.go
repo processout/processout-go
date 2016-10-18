@@ -31,7 +31,7 @@ type Token struct {
 }
 
 // Find : Find a customer's token by its ID.
-func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *Error) {
+func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *CustomerAction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -41,10 +41,11 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *E
 	}
 
 	type Response struct {
-		Token   *Token `json:"token"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Token          *Token          `json:"token"`
+		CustomerAction *CustomerAction `json:"customer_action"`
+		Success        bool            `json:"success"`
+		Message        string          `json:"message"`
+		Code           string          `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -52,7 +53,7 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *E
 		"filter": opt.Filter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, nil, newError(err)
 	}
 
 	path := "/customers/" + url.QueryEscape(customerID) + "/tokens/" + url.QueryEscape(tokenID) + ""
@@ -63,7 +64,7 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *E
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -78,27 +79,97 @@ func (s Tokens) Find(customerID, tokenID string, options ...Options) (*Token, *E
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, nil, newError(err)
 	}
 
 	if !payload.Success {
 		erri := newError(errors.New(payload.Message))
 		erri.Code = payload.Code
 
-		return nil, erri
+		return nil, nil, erri
 	}
 
-	return payload.Token, nil
+	return payload.Token, payload.CustomerAction, nil
 }
 
 // Create : Create a new token for the given customer ID.
-func (s Tokens) Create(token *Token, customerID, target, source string, options ...Options) (*Token, *Error) {
+func (s Tokens) Create(token *Token, customerID, source string, options ...Options) (*Token, *CustomerAction, *Error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Token          *Token          `json:"token"`
+		CustomerAction *CustomerAction `json:"customer_action"`
+		Success        bool            `json:"success"`
+		Message        string          `json:"message"`
+		Code           string          `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"metadata": token.Metadata,
+		"source":   source,
+		"expand":   opt.Expand,
+		"filter":   opt.Filter,
+	})
+	if err != nil {
+		return nil, nil, newError(err)
+	}
+
+	path := "/customers/" + url.QueryEscape(customerID) + "/tokens"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, nil, newError(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, nil, newError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, nil, newError(err)
+	}
+
+	if !payload.Success {
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, nil, erri
+	}
+
+	return payload.Token, payload.CustomerAction, nil
+}
+
+// CreateFromRequest : Create a new token for the given customer ID from an authorization request.
+func (s Tokens) CreateFromRequest(token *Token, customerID, target, source string, options ...Options) (*Token, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]

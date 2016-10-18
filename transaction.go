@@ -20,12 +20,18 @@ type Transaction struct {
 	ID string `json:"id"`
 	// Name : Name of the transaction
 	Name string `json:"name"`
-	// Amount : Amount of the transaction
-	Amount string `json:"amount"`
+	// AuthorizedAmount : Amount that was successfully authorized on the transaction
+	AuthorizedAmount string `json:"authorized_amount"`
+	// CapturedAmount : Amount that was successfully captured on the transaction
+	CapturedAmount string `json:"captured_amount"`
 	// Currency : Currency of the transaction
 	Currency string `json:"currency"`
 	// Status : Status of the transaction
 	Status string `json:"status"`
+	// Authorized : Whether the transaction was authorized or not
+	Authorized bool `json:"authorized"`
+	// Captured : Whether the transaction was captured or not
+	Captured bool `json:"captured"`
 	// ProcessoutFee : ProcessOut fee applied on the transaction
 	ProcessoutFee string `json:"processout_fee"`
 	// Metadata : Metadata related to the transaction, in the form of a dictionary (key-value pair)
