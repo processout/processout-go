@@ -26,6 +26,8 @@ type AuthorizationRequest struct {
 	Token *Token `json:"token"`
 	// URL : URL to which you may redirect your customer to proceed with the authorization
 	URL string `json:"url"`
+	// Authorized : Whether or not the authorization request was authorized
+	Authorized bool `json:"authorized"`
 	// Name : Name of the authorization
 	Name string `json:"name"`
 	// Currency : Currency of the authorization
