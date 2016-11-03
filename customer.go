@@ -20,8 +20,6 @@ type Customer struct {
 	ID string `json:"id"`
 	// Project : Project to which the customer belongs
 	Project *Project `json:"project"`
-	// Balance : Customer balance. Can be positive or negative. The balance is automatically applied to subscription invoices and is solely used for this purpose
-	Balance string `json:"balance"`
 	// Email : Email of the customer
 	Email string `json:"email"`
 	// FirstName : First name of the customer
@@ -40,6 +38,10 @@ type Customer struct {
 	Zip string `json:"zip"`
 	// CountryCode : Country code of the customer
 	CountryCode string `json:"country_code"`
+	// Balance : Customer balance. Can be positive or negative
+	Balance string `json:"balance"`
+	// Currency : Currency of the customer balance. Once the currency is set it cannot be modified
+	Currency string `json:"currency"`
 	// Metadata : Metadata related to the customer, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
 	// HasPin : Wether the customer has a PIN set or not
@@ -340,6 +342,8 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *E
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
+		"balance":      customer.Balance,
+		"currency":     customer.Currency,
 		"email":        customer.Email,
 		"first_name":   customer.FirstName,
 		"last_name":    customer.LastName,
@@ -484,6 +488,7 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Err
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
+		"balance":      customer.Balance,
 		"email":        customer.Email,
 		"first_name":   customer.FirstName,
 		"last_name":    customer.LastName,

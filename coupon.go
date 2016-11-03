@@ -10,42 +10,42 @@ import (
 	"time"
 )
 
-// Products manages the Product struct
-type Products struct {
+// Coupons manages the Coupon struct
+type Coupons struct {
 	p *ProcessOut
 }
 
-type Product struct {
-	// ID : ID of the product
+type Coupon struct {
+	// ID : ID of the coupon
 	ID string `json:"id"`
-	// Project : Project to which the product belongs
+	// Project : Project to which the coupon belongs
 	Project *Project `json:"project"`
-	// URL : URL to which you may redirect your customer to proceed with the payment
-	URL string `json:"url"`
-	// Name : Name of the product
+	// Name : Name of the coupon
 	Name string `json:"name"`
-	// Amount : Amount of the product
-	Amount string `json:"amount"`
-	// Currency : Currency of the product
+	// AmountOff : Amount to be removed from the subscription price
+	AmountOff string `json:"amount_off"`
+	// PercentOff : Percent of the subscription amount to be removed (integer between 0 and 100)
+	PercentOff int `json:"percent_off"`
+	// Currency : Currency of the coupon amount_off
 	Currency string `json:"currency"`
-	// Metadata : Metadata related to the product, in the form of a dictionary (key-value pair)
+	// MaxRedemptions : Number of time the coupon can be redeemed. If 0, there's no limit
+	MaxRedemptions int `json:"max_redemptions"`
+	// ExpiresAt : Date at which the coupon will expire
+	ExpiresAt time.Time `json:"expires_at"`
+	// Metadata : Metadata related to the coupon, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// RequestEmail : Choose whether or not to request the email during the checkout process
-	RequestEmail bool `json:"request_email"`
-	// RequestShipping : Choose whether or not to request the shipping address during the checkout process
-	RequestShipping bool `json:"request_shipping"`
-	// ReturnURL : URL where the customer will be redirected upon payment
-	ReturnURL string `json:"return_url"`
-	// CancelURL : URL where the customer will be redirected if the paymen was canceled
-	CancelURL string `json:"cancel_url"`
-	// Sandbox : Define whether or not the product is in sandbox environment
+	// IterationCount : Number billing cycles the coupon will last when applied to a subscription. If 0, will last forever
+	IterationCount int `json:"iteration_count"`
+	// RedeemedNumber : Number of time the coupon was redeemed
+	RedeemedNumber int `json:"redeemed_number"`
+	// Sandbox : Define whether or not the plan is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the product was created
+	// CreatedAt : Date at which the plan was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Invoice : Create a new invoice from the product.
-func (s Products) Invoice(product *Product, options ...Options) (*Invoice, *Error) {
+// All : Get all the coupons.
+func (s Coupons) All(options ...Options) ([]*Coupon, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -55,74 +55,7 @@ func (s Products) Invoice(product *Product, options ...Options) (*Invoice, *Erro
 	}
 
 	type Response struct {
-		Invoice *Invoice `json:"invoice"`
-		Success bool     `json:"success"`
-		Message string   `json:"message"`
-		Code    string   `json:"error_type"`
-	}
-
-	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
-	})
-	if err != nil {
-		return nil, newError(err)
-	}
-
-	path := "/products/" + url.QueryEscape(product.ID) + "/invoices"
-
-	req, err := http.NewRequest(
-		"POST",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, newError(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, newError(err)
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, newError(err)
-	}
-
-	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
-
-		return nil, erri
-	}
-
-	return payload.Invoice, nil
-}
-
-// All : Get all the products.
-func (s Products) All(options ...Options) ([]*Product, *Error) {
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	type Response struct {
-		Products []*Product `json:"products"`
+		Coupons []*Coupon `json:"coupons"`
 
 		Success bool   `json:"success"`
 		Message string `json:"message"`
@@ -137,7 +70,7 @@ func (s Products) All(options ...Options) ([]*Product, *Error) {
 		return nil, newError(err)
 	}
 
-	path := "/products"
+	path := "/coupons"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -176,11 +109,11 @@ func (s Products) All(options ...Options) ([]*Product, *Error) {
 		return nil, erri
 	}
 
-	return payload.Products, nil
+	return payload.Coupons, nil
 }
 
-// Create : Create a new product.
-func (s Products) Create(product *Product, options ...Options) (*Product, *Error) {
+// Create : Create a new coupon.
+func (s Coupons) Create(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -190,29 +123,29 @@ func (s Products) Create(product *Product, options ...Options) (*Product, *Error
 	}
 
 	type Response struct {
-		Product *Product `json:"product"`
-		Success bool     `json:"success"`
-		Message string   `json:"message"`
-		Code    string   `json:"error_type"`
+		Coupon  *Coupon `json:"coupon"`
+		Success bool    `json:"success"`
+		Message string  `json:"message"`
+		Code    string  `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":             product.Name,
-		"amount":           product.Amount,
-		"currency":         product.Currency,
-		"metadata":         product.Metadata,
-		"request_email":    product.RequestEmail,
-		"request_shipping": product.RequestShipping,
-		"return_url":       product.ReturnURL,
-		"cancel_url":       product.CancelURL,
-		"expand":           opt.Expand,
-		"filter":           opt.Filter,
+		"id":              coupon.ID,
+		"amount_off":      coupon.AmountOff,
+		"percent_off":     coupon.PercentOff,
+		"currency":        coupon.Currency,
+		"iteration_count": coupon.IterationCount,
+		"max_redemptions": coupon.MaxRedemptions,
+		"expires_at":      coupon.ExpiresAt,
+		"metadata":        coupon.Metadata,
+		"expand":          opt.Expand,
+		"filter":          opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
 	}
 
-	path := "/products"
+	path := "/coupons"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -251,11 +184,11 @@ func (s Products) Create(product *Product, options ...Options) (*Product, *Error
 		return nil, erri
 	}
 
-	return payload.Product, nil
+	return payload.Coupon, nil
 }
 
-// Find : Find a product by its ID.
-func (s Products) Find(productID string, options ...Options) (*Product, *Error) {
+// Find : Find a coupon by its ID.
+func (s Coupons) Find(couponID string, options ...Options) (*Coupon, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -265,10 +198,10 @@ func (s Products) Find(productID string, options ...Options) (*Product, *Error) 
 	}
 
 	type Response struct {
-		Product *Product `json:"product"`
-		Success bool     `json:"success"`
-		Message string   `json:"message"`
-		Code    string   `json:"error_type"`
+		Coupon  *Coupon `json:"coupon"`
+		Success bool    `json:"success"`
+		Message string  `json:"message"`
+		Code    string  `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -279,7 +212,7 @@ func (s Products) Find(productID string, options ...Options) (*Product, *Error) 
 		return nil, newError(err)
 	}
 
-	path := "/products/" + url.QueryEscape(productID) + ""
+	path := "/coupons/" + url.QueryEscape(couponID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -318,11 +251,11 @@ func (s Products) Find(productID string, options ...Options) (*Product, *Error) 
 		return nil, erri
 	}
 
-	return payload.Product, nil
+	return payload.Coupon, nil
 }
 
-// Save : Save the updated product attributes.
-func (s Products) Save(product *Product, options ...Options) (*Product, *Error) {
+// Save : Save the updated coupon attributes.
+func (s Coupons) Save(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -332,29 +265,22 @@ func (s Products) Save(product *Product, options ...Options) (*Product, *Error) 
 	}
 
 	type Response struct {
-		Product *Product `json:"product"`
-		Success bool     `json:"success"`
-		Message string   `json:"message"`
-		Code    string   `json:"error_type"`
+		Coupon  *Coupon `json:"coupon"`
+		Success bool    `json:"success"`
+		Message string  `json:"message"`
+		Code    string  `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":             product.Name,
-		"amount":           product.Amount,
-		"currency":         product.Currency,
-		"metadata":         product.Metadata,
-		"request_email":    product.RequestEmail,
-		"request_shipping": product.RequestShipping,
-		"return_url":       product.ReturnURL,
-		"cancel_url":       product.CancelURL,
-		"expand":           opt.Expand,
-		"filter":           opt.Filter,
+		"metadata": coupon.Metadata,
+		"expand":   opt.Expand,
+		"filter":   opt.Filter,
 	})
 	if err != nil {
 		return nil, newError(err)
 	}
 
-	path := "/products/" + url.QueryEscape(product.ID) + ""
+	path := "/coupons/" + url.QueryEscape(coupon.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -393,11 +319,11 @@ func (s Products) Save(product *Product, options ...Options) (*Product, *Error) 
 		return nil, erri
 	}
 
-	return payload.Product, nil
+	return payload.Coupon, nil
 }
 
-// Delete : Delete the product.
-func (s Products) Delete(product *Product, options ...Options) *Error {
+// Delete : Delete the coupon.
+func (s Coupons) Delete(coupon *Coupon, options ...Options) *Error {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -420,7 +346,7 @@ func (s Products) Delete(product *Product, options ...Options) *Error {
 		return newError(err)
 	}
 
-	path := "/products/" + url.QueryEscape(product.ID) + ""
+	path := "/coupons/" + url.QueryEscape(coupon.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -462,11 +388,11 @@ func (s Products) Delete(product *Product, options ...Options) *Error {
 	return nil
 }
 
-// dummyProduct is a dummy function that's only
+// dummyCoupon is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't
 // tell, everything is generated.
-func dummyProduct() {
+func dummyCoupon() {
 	type dummy struct {
 		a bytes.Buffer
 		b json.RawMessage

@@ -18,6 +18,8 @@ type Webhooks struct {
 type Webhook struct {
 	// ID : ID of the recurring invoice
 	ID string `json:"id"`
+	// Project : Project to which the webhook belongs
+	Project *Project `json:"project"`
 	// Event : Event the webhook is linked to
 	Event *Event `json:"event"`
 	// RequestURL : URL to which the webhook will be posted

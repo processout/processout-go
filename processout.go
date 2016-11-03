@@ -22,13 +22,17 @@ type ProcessOut struct {
 
 	Activities            *Activities
 	AuthorizationRequests *AuthorizationRequests
+	Cards                 *Cards
+	Coupons               *Coupons
 	Customers             *Customers
 	Tokens                *Tokens
+	Discounts             *Discounts
 	Events                *Events
 	Gatewaies             *Gatewaies
 	GatewayConfigurations *GatewayConfigurations
 	Invoices              *Invoices
 	CustomerActions       *CustomerActions
+	Plans                 *Plans
 	Products              *Products
 	Projects              *Projects
 	Refunds               *Refunds
@@ -74,13 +78,17 @@ func New(projectID, projectSecret string) *ProcessOut {
 	}
 	p.Activities = &Activities{p: p}
 	p.AuthorizationRequests = &AuthorizationRequests{p: p}
+	p.Cards = &Cards{p: p}
+	p.Coupons = &Coupons{p: p}
 	p.Customers = &Customers{p: p}
 	p.Tokens = &Tokens{p: p}
+	p.Discounts = &Discounts{p: p}
 	p.Events = &Events{p: p}
 	p.Gatewaies = &Gatewaies{p: p}
 	p.GatewayConfigurations = &GatewayConfigurations{p: p}
 	p.Invoices = &Invoices{p: p}
 	p.CustomerActions = &CustomerActions{p: p}
+	p.Plans = &Plans{p: p}
 	p.Products = &Products{p: p}
 	p.Projects = &Projects{p: p}
 	p.Refunds = &Refunds{p: p}

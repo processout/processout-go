@@ -18,6 +18,16 @@ type Transactions struct {
 type Transaction struct {
 	// ID : ID of the transaction
 	ID string `json:"id"`
+	// Project : Project to which the transaction belongs
+	Project *Project `json:"project"`
+	// Subscription : Subscription to which this transaction belongs
+	Subscription *Subscription `json:"subscription"`
+	// Customer : Customer that was linked to this transaction
+	Customer *Customer `json:"customer"`
+	// Token : Token that was used to capture the payment of this transaction
+	Token *Token `json:"token"`
+	// Card : Card that was used to capture the payment of this transaction
+	Card *Card `json:"card"`
 	// Name : Name of the transaction
 	Name string `json:"name"`
 	// AuthorizedAmount : Amount that was successfully authorized on the transaction

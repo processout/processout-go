@@ -42,7 +42,7 @@ type Invoice struct {
 	RequestShipping bool `json:"request_shipping"`
 	// ReturnURL : URL where the customer will be redirected upon payment
 	ReturnURL string `json:"return_url"`
-	// CancelURL : URL where the customer will be redirected if the paymen was canceled
+	// CancelURL : URL where the customer will be redirected if the payment was canceled
 	CancelURL string `json:"cancel_url"`
 	// Sandbox : Define whether or not the invoice is in sandbox environment
 	Sandbox bool `json:"sandbox"`
@@ -51,7 +51,7 @@ type Invoice struct {
 }
 
 // Authorize : Authorize the invoice using the given source (customer or token)
-func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options) (*Transaction, *CustomerAction, *Error) {
+func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options) (*Transaction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -61,11 +61,10 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 	}
 
 	type Response struct {
-		Transaction    *Transaction    `json:"transaction"`
-		CustomerAction *CustomerAction `json:"customer_action"`
-		Success        bool            `json:"success"`
-		Message        string          `json:"message"`
-		Code           string          `json:"error_type"`
+		Transaction *Transaction `json:"transaction"`
+		Success     bool         `json:"success"`
+		Message     string       `json:"message"`
+		Code        string       `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -74,7 +73,7 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 		"filter": opt.Filter,
 	})
 	if err != nil {
-		return nil, nil, newError(err)
+		return nil, newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/authorize"
@@ -85,7 +84,7 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, nil, newError(err)
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -100,27 +99,27 @@ func (s Invoices) Authorize(invoice *Invoice, source string, options ...Options)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, nil, newError(err)
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, nil, newError(err)
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
 		erri := newError(errors.New(payload.Message))
 		erri.Code = payload.Code
 
-		return nil, nil, erri
+		return nil, erri
 	}
 
-	return payload.Transaction, payload.CustomerAction, nil
+	return payload.Transaction, nil
 }
 
 // Capture : Capture the invoice using the given source (customer or token)
-func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) (*Transaction, *CustomerAction, *Error) {
+func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) (*Transaction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -130,11 +129,10 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) (
 	}
 
 	type Response struct {
-		Transaction    *Transaction    `json:"transaction"`
-		CustomerAction *CustomerAction `json:"customer_action"`
-		Success        bool            `json:"success"`
-		Message        string          `json:"message"`
-		Code           string          `json:"error_type"`
+		Transaction *Transaction `json:"transaction"`
+		Success     bool         `json:"success"`
+		Message     string       `json:"message"`
+		Code        string       `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -143,7 +141,7 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) (
 		"filter": opt.Filter,
 	})
 	if err != nil {
-		return nil, nil, newError(err)
+		return nil, newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/capture"
@@ -154,7 +152,7 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) (
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, nil, newError(err)
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -169,23 +167,23 @@ func (s Invoices) Capture(invoice *Invoice, source string, options ...Options) (
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, nil, newError(err)
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, nil, newError(err)
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
 		erri := newError(errors.New(payload.Message))
 		erri.Code = payload.Code
 
-		return nil, nil, erri
+		return nil, erri
 	}
 
-	return payload.Transaction, payload.CustomerAction, nil
+	return payload.Transaction, nil
 }
 
 // Customer : Get the customer linked to the invoice.
@@ -391,7 +389,7 @@ func (s Invoices) Transaction(invoice *Invoice, options ...Options) (*Transactio
 }
 
 // Void : Void the invoice
-func (s Invoices) Void(invoice *Invoice, options ...Options) *Error {
+func (s Invoices) Void(invoice *Invoice, options ...Options) (*Transaction, *Error) {
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -401,9 +399,10 @@ func (s Invoices) Void(invoice *Invoice, options ...Options) *Error {
 	}
 
 	type Response struct {
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Transaction *Transaction `json:"transaction"`
+		Success     bool         `json:"success"`
+		Message     string       `json:"message"`
+		Code        string       `json:"error_type"`
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
@@ -411,7 +410,7 @@ func (s Invoices) Void(invoice *Invoice, options ...Options) *Error {
 		"filter": opt.Filter,
 	})
 	if err != nil {
-		return newError(err)
+		return nil, newError(err)
 	}
 
 	path := "/invoices/" + url.QueryEscape(invoice.ID) + "/void"
@@ -422,7 +421,7 @@ func (s Invoices) Void(invoice *Invoice, options ...Options) *Error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return newError(err)
+		return nil, newError(err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", s.p.APIVersion)
@@ -437,23 +436,23 @@ func (s Invoices) Void(invoice *Invoice, options ...Options) *Error {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return newError(err)
+		return nil, newError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return newError(err)
+		return nil, newError(err)
 	}
 
 	if !payload.Success {
 		erri := newError(errors.New(payload.Message))
 		erri.Code = payload.Code
 
-		return erri
+		return nil, erri
 	}
 
-	return nil
+	return payload.Transaction, nil
 }
 
 // All : Get all the invoices.
@@ -550,6 +549,82 @@ func (s Invoices) Create(invoice *Invoice, options ...Options) (*Invoice, *Error
 		"request_shipping": invoice.RequestShipping,
 		"return_url":       invoice.ReturnURL,
 		"cancel_url":       invoice.CancelURL,
+		"expand":           opt.Expand,
+		"filter":           opt.Filter,
+	})
+	if err != nil {
+		return nil, newError(err)
+	}
+
+	path := "/invoices"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, newError(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, newError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, newError(err)
+	}
+
+	if !payload.Success {
+		erri := newError(errors.New(payload.Message))
+		erri.Code = payload.Code
+
+		return nil, erri
+	}
+
+	return payload.Invoice, nil
+}
+
+// CreateForCustomer : Create a new invoice for the given customer ID.
+func (s Invoices) CreateForCustomer(invoice *Invoice, customerID string, options ...Options) (*Invoice, *Error) {
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Invoice *Invoice `json:"invoice"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"name":             invoice.Name,
+		"amount":           invoice.Amount,
+		"currency":         invoice.Currency,
+		"metadata":         invoice.Metadata,
+		"request_email":    invoice.RequestEmail,
+		"request_shipping": invoice.RequestShipping,
+		"return_url":       invoice.ReturnURL,
+		"cancel_url":       invoice.CancelURL,
+		"customer_id":      customerID,
 		"expand":           opt.Expand,
 		"filter":           opt.Filter,
 	})
