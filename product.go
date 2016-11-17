@@ -3,7 +3,6 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -44,8 +43,8 @@ type Product struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Invoice allows you to create a new invoice from the product.
-func (s Product) Invoice(options ...Options) (*Invoice, error) {
+// CreateInvoice allows you to create a new invoice from the product.
+func (s Product) CreateInvoice(options ...Options) (*Invoice, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
@@ -523,5 +522,5 @@ func dummyProduct() {
 		e time.Time
 		f url.URL
 	}
-	errors.New("")
+	errors.New(nil, "", "")
 }

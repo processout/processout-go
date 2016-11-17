@@ -3,7 +3,6 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -66,8 +65,8 @@ type Subscription struct {
 	IterateAt time.Time `json:"iterate_at"`
 }
 
-// Customer allows you to get the customer owning the subscription.
-func (s Subscription) Customer(options ...Options) (*Customer, error) {
+// GetCustomer allows you to get the customer owning the subscription.
+func (s Subscription) GetCustomer(options ...Options) (*Customer, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -141,8 +140,8 @@ func (s Subscription) Customer(options ...Options) (*Customer, error) {
 	return payload.Customer, nil
 }
 
-// Discounts allows you to get the discounts applied to the subscription.
-func (s Subscription) Discounts(options ...Options) ([]*Discount, error) {
+// GetDiscounts allows you to get the discounts applied to the subscription.
+func (s Subscription) GetDiscounts(options ...Options) ([]*Discount, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -215,6 +214,81 @@ func (s Subscription) Discounts(options ...Options) ([]*Discount, error) {
 	}
 
 	return payload.Discounts, nil
+}
+
+// FindDiscount allows you to find a subscription's discount by its ID.
+func (s Subscription) FindDiscount(discountID string, options ...Options) (*Discount, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Discount *Discount `json:"discount"`
+		Success  bool      `json:"success"`
+		Message  string    `json:"message"`
+		Code     string    `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/discounts/" + url.QueryEscape(discountID) + ""
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
+
+		return nil, erri
+	}
+
+	return payload.Discount, nil
 }
 
 // RemoveDiscount allows you to remove a discount applied to a subscription.
@@ -292,8 +366,8 @@ func (s Subscription) RemoveDiscount(discountID string, options ...Options) (*Su
 	return payload.Subscription, nil
 }
 
-// Transactions allows you to get the subscriptions past transactions.
-func (s Subscription) Transactions(options ...Options) ([]*Transaction, error) {
+// GetTransactions allows you to get the subscriptions past transactions.
+func (s Subscription) GetTransactions(options ...Options) ([]*Transaction, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -996,8 +1070,8 @@ func (s Subscription) Cancel(cancellationReason string, options ...Options) (*Su
 	return payload.Subscription, nil
 }
 
-// CancelAt allows you to schedule the cancellation of the subscription. The reason may be provided as well.
-func (s Subscription) CancelAt(cancelAt, cancellationReason string, options ...Options) (*Subscription, error) {
+// CancelAtDate allows you to schedule the cancellation of the subscription. The reason may be provided as well.
+func (s Subscription) CancelAtDate(cancelAt, cancellationReason string, options ...Options) (*Subscription, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -1086,5 +1160,5 @@ func dummySubscription() {
 		e time.Time
 		f url.URL
 	}
-	errors.New("")
+	errors.New(nil, "", "")
 }

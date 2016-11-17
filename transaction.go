@@ -3,7 +3,6 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -20,13 +19,13 @@ type Transaction struct {
 	ID string `json:"id"`
 	// Project is the project to which the transaction belongs
 	Project *Project `json:"project"`
-	// Subscription is the subscription to which this transaction belongs
-	Subscription *Subscription `json:"subscription"`
 	// Customer is the customer that was linked to this transaction
 	Customer *Customer `json:"customer"`
-	// Token is the token that was used to capture the payment of this transaction
+	// Subscription is the subscription to which this transaction belongs
+	Subscription *Subscription `json:"subscription"`
+	// Token is the token that was used to capture the payment of this transaction, if any
 	Token *Token `json:"token"`
-	// Card is the card that was used to capture the payment of this transaction
+	// Card is the card that was used to capture the payment of this transaction, if any
 	Card *Card `json:"card"`
 	// Name is the name of the transaction
 	Name string `json:"name"`
@@ -52,8 +51,8 @@ type Transaction struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Refunds allows you to get the transaction's refunds.
-func (s Transaction) Refunds(options ...Options) ([]*Refund, error) {
+// GetRefunds allows you to get the transaction's refunds.
+func (s Transaction) GetRefunds(options ...Options) ([]*Refund, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewTransaction() method to create a new Transaction object")
 	}
@@ -126,6 +125,81 @@ func (s Transaction) Refunds(options ...Options) ([]*Refund, error) {
 	}
 
 	return payload.Refunds, nil
+}
+
+// FindRefund allows you to find a transaction's refund by its ID.
+func (s Transaction) FindRefund(refundID string, options ...Options) (*Refund, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewTransaction() method to create a new Transaction object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Refund  *Refund `json:"refund"`
+		Success bool    `json:"success"`
+		Message string  `json:"message"`
+		Code    string  `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/transactions/" + url.QueryEscape(s.ID) + "/refunds/" + url.QueryEscape(refundID) + ""
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
+
+		return nil, erri
+	}
+
+	return payload.Refund, nil
 }
 
 // All allows you to get all the transactions.
@@ -292,5 +366,5 @@ func dummyTransaction() {
 		e time.Time
 		f url.URL
 	}
-	errors.New("")
+	errors.New(nil, "", "")
 }

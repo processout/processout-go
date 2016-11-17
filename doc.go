@@ -8,15 +8,15 @@
 	To get started, you just need your API credentials, that you can find in your
 	project's settings.  Here is a simple example that creates an invoice and prints
 	its URL:
-	p := processout.New("<project-id>", "<project-secret>")
-	iv, err := p.NewInvoice(&processout.Invoice{
+	 p := processout.New("<project-id>", "<project-secret>")
+	 iv, err := p.NewInvoice(&processout.Invoice{
 		Name:     "Test item",
 		Amount:   "10.00",
 		Currency: "USD",
-	}).Create()
-	if err != nil {
+	 }).Create()
+	 if err != nil {
 		panic(err)
-	}
-	fmt.Println(iv.URL)
+	 }
+	 fmt.Println(iv.URL)
 */
 package processout

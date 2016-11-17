@@ -3,7 +3,6 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -202,8 +201,8 @@ func (s Invoice) Capture(source string, options ...Options) (*Transaction, error
 	return payload.Transaction, nil
 }
 
-// Customer allows you to get the customer linked to the invoice.
-func (s Invoice) Customer(options ...Options) (*Customer, error) {
+// GetCustomer allows you to get the customer linked to the invoice.
+func (s Invoice) GetCustomer(options ...Options) (*Customer, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -353,8 +352,8 @@ func (s Invoice) AssignCustomer(customerID string, options ...Options) (*Custome
 	return payload.Customer, nil
 }
 
-// Transaction allows you to get the transaction of the invoice.
-func (s Invoice) Transaction(options ...Options) (*Transaction, error) {
+// GetTransaction allows you to get the transaction of the invoice.
+func (s Invoice) GetTransaction(options ...Options) (*Transaction, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -834,5 +833,5 @@ func dummyInvoice() {
 		e time.Time
 		f url.URL
 	}
-	errors.New("")
+	errors.New(nil, "", "")
 }

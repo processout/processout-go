@@ -3,7 +3,6 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -52,8 +51,8 @@ type Customer struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Subscriptions allows you to get the subscriptions belonging to the customer.
-func (s Customer) Subscriptions(options ...Options) ([]*Subscription, error) {
+// GetSubscriptions allows you to get the subscriptions belonging to the customer.
+func (s Customer) GetSubscriptions(options ...Options) ([]*Subscription, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -128,8 +127,8 @@ func (s Customer) Subscriptions(options ...Options) ([]*Subscription, error) {
 	return payload.Subscriptions, nil
 }
 
-// Tokens allows you to get the customer's tokens.
-func (s Customer) Tokens(options ...Options) ([]*Token, error) {
+// GetTokens allows you to get the customer's tokens.
+func (s Customer) GetTokens(options ...Options) ([]*Token, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -202,6 +201,81 @@ func (s Customer) Tokens(options ...Options) ([]*Token, error) {
 	}
 
 	return payload.Tokens, nil
+}
+
+// FindToken allows you to find a customer's token by its ID.
+func (s Customer) FindToken(tokenID string, options ...Options) (*Token, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Token   *Token `json:"token"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/customers/" + url.QueryEscape(s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
+
+		return nil, erri
+	}
+
+	return payload.Token, nil
 }
 
 // Transactions allows you to get the transactions belonging to the customer.
@@ -691,5 +765,5 @@ func dummyCustomer() {
 		e time.Time
 		f url.URL
 	}
-	errors.New("")
+	errors.New(nil, "", "")
 }

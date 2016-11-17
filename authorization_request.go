@@ -3,7 +3,6 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -44,8 +43,8 @@ type AuthorizationRequest struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Customer allows you to get the customer linked to the authorization request.
-func (s AuthorizationRequest) Customer(options ...Options) (*Customer, error) {
+// GetCustomer allows you to get the customer linked to the authorization request.
+func (s AuthorizationRequest) GetCustomer(options ...Options) (*Customer, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
 	}
@@ -288,5 +287,5 @@ func dummyAuthorizationRequest() {
 		e time.Time
 		f url.URL
 	}
-	errors.New("")
+	errors.New(nil, "", "")
 }

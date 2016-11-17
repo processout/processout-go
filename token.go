@@ -3,7 +3,6 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -20,6 +19,8 @@ type Token struct {
 	ID string `json:"id"`
 	// Customer is the customer owning the token
 	Customer *Customer `json:"customer"`
+	// Card is the card used to create this token, if any
+	Card *Card `json:"card"`
 	// Metadata is the metadata related to the token, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
 	// IsSubscriptionOnly is the define whether or not the customer token is used on a recurring invoice
@@ -271,5 +272,5 @@ func dummyToken() {
 		e time.Time
 		f url.URL
 	}
-	errors.New("")
+	errors.New(nil, "", "")
 }
