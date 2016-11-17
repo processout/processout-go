@@ -8,39 +8,39 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Cards manages the Card struct
-type Cards struct {
-	p *ProcessOut
-}
-
+// Card represents the Card API object
 type Card struct {
-	// ID : ID of the card
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the card
 	ID string `json:"id"`
-	// Project : Project to which the card belongs
+	// Project is the project to which the card belongs
 	Project *Project `json:"project"`
-	// Brand : Brand of the card (Visa, Mastercard, ...)
+	// Brand is the brand of the card (Visa, Mastercard, ...)
 	Brand string `json:"brand"`
-	// Type : Type of the card (Credit, Debit, ...)
+	// Type is the type of the card (Credit, Debit, ...)
 	Type string `json:"type"`
-	// BankName : Name of the bank of the card
+	// BankName is the name of the bank of the card
 	BankName string `json:"bank_name"`
-	// Level : Level of the card (Electron, Classic, Gold, ...)
+	// Level is the level of the card (Electron, Classic, Gold, ...)
 	Level string `json:"level"`
-	// Iin : First 6 digits of the card
+	// Iin is the first 6 digits of the card
 	Iin string `json:"iin"`
-	// Last4Digits : Last 4 digits of the card
+	// Last4Digits is the last 4 digits of the card
 	Last4Digits string `json:"last_4_digits"`
-	// ExpMonth : Expiry month
+	// ExpMonth is the expiry month
 	ExpMonth int `json:"exp_month"`
-	// ExpYear : Expiry year, in a 4 digits format
+	// ExpYear is the expiry year, in a 4 digits format
 	ExpYear int `json:"exp_year"`
-	// Metadata : Metadata related to the card, in the form of a dictionary (key-value pair)
+	// Metadata is the metadata related to the card, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// Sandbox : Define whether or not the card is in sandbox environment
+	// Sandbox is the define whether or not the card is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the card was created
+	// CreatedAt is the date at which the card was created
 	CreatedAt time.Time `json:"created_at"`
 }
 

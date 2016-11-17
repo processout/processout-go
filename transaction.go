@@ -8,52 +8,56 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Transactions manages the Transaction struct
-type Transactions struct {
-	p *ProcessOut
-}
-
+// Transaction represents the Transaction API object
 type Transaction struct {
-	// ID : ID of the transaction
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the transaction
 	ID string `json:"id"`
-	// Project : Project to which the transaction belongs
+	// Project is the project to which the transaction belongs
 	Project *Project `json:"project"`
-	// Subscription : Subscription to which this transaction belongs
+	// Subscription is the subscription to which this transaction belongs
 	Subscription *Subscription `json:"subscription"`
-	// Customer : Customer that was linked to this transaction
+	// Customer is the customer that was linked to this transaction
 	Customer *Customer `json:"customer"`
-	// Token : Token that was used to capture the payment of this transaction
+	// Token is the token that was used to capture the payment of this transaction
 	Token *Token `json:"token"`
-	// Card : Card that was used to capture the payment of this transaction
+	// Card is the card that was used to capture the payment of this transaction
 	Card *Card `json:"card"`
-	// Name : Name of the transaction
+	// Name is the name of the transaction
 	Name string `json:"name"`
-	// AuthorizedAmount : Amount that was successfully authorized on the transaction
+	// AuthorizedAmount is the amount that was successfully authorized on the transaction
 	AuthorizedAmount string `json:"authorized_amount"`
-	// CapturedAmount : Amount that was successfully captured on the transaction
+	// CapturedAmount is the amount that was successfully captured on the transaction
 	CapturedAmount string `json:"captured_amount"`
-	// Currency : Currency of the transaction
+	// Currency is the currency of the transaction
 	Currency string `json:"currency"`
-	// Status : Status of the transaction
+	// Status is the status of the transaction
 	Status string `json:"status"`
-	// Authorized : Whether the transaction was authorized or not
+	// Authorized is the whether the transaction was authorized or not
 	Authorized bool `json:"authorized"`
-	// Captured : Whether the transaction was captured or not
+	// Captured is the whether the transaction was captured or not
 	Captured bool `json:"captured"`
-	// ProcessoutFee : ProcessOut fee applied on the transaction
+	// ProcessoutFee is the processOut fee applied on the transaction
 	ProcessoutFee string `json:"processout_fee"`
-	// Metadata : Metadata related to the transaction, in the form of a dictionary (key-value pair)
+	// Metadata is the metadata related to the transaction, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// Sandbox : Define whether or not the transaction is in sandbox environment
+	// Sandbox is the define whether or not the transaction is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the transaction was created
+	// CreatedAt is the date at which the transaction was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Refunds : Get the transaction's refunds.
-func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*Refund, *Error) {
+// Refunds allows you to get the transaction's refunds.
+func (s Transaction) Refunds(options ...Options) ([]*Refund, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewTransaction() method to create a new Transaction object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -71,14 +75,18 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/transactions/" + url.QueryEscape(transaction.ID) + "/refunds"
+	path := "/transactions/" + url.QueryEscape(s.ID) + "/refunds"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -86,10 +94,10 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -97,22 +105,22 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -120,8 +128,12 @@ func (s Transactions) Refunds(transaction *Transaction, options ...Options) ([]*
 	return payload.Refunds, nil
 }
 
-// All : Get all the transactions.
-func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
+// All allows you to get all the transactions.
+func (s Transaction) All(options ...Options) ([]*Transaction, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewTransaction() method to create a new Transaction object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -139,11 +151,15 @@ func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/transactions"
@@ -154,10 +170,10 @@ func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -165,22 +181,22 @@ func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -188,8 +204,12 @@ func (s Transactions) All(options ...Options) ([]*Transaction, *Error) {
 	return payload.Transactions, nil
 }
 
-// Find : Find a transaction by its ID.
-func (s Transactions) Find(transactionID string, options ...Options) (*Transaction, *Error) {
+// Find allows you to find a transaction by its ID.
+func (s Transaction) Find(transactionID string, options ...Options) (*Transaction, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewTransaction() method to create a new Transaction object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -206,11 +226,15 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/transactions/" + url.QueryEscape(transactionID) + ""
@@ -221,10 +245,10 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -232,22 +256,22 @@ func (s Transactions) Find(transactionID string, options ...Options) (*Transacti
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}

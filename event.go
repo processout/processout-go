@@ -8,30 +8,34 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Events manages the Event struct
-type Events struct {
-	p *ProcessOut
-}
-
+// Event represents the Event API object
 type Event struct {
-	// ID : ID of the event
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the event
 	ID string `json:"id"`
-	// Project : Project to which the event belongs
+	// Project is the project to which the event belongs
 	Project *Project `json:"project"`
-	// Name : Name of the event
+	// Name is the name of the event
 	Name string `json:"name"`
-	// Data : Data object associated to the event
+	// Data is the data object associated to the event
 	Data interface{} `json:"data"`
-	// Sandbox : Define whether or not the event is in sandbox environment
+	// Sandbox is the define whether or not the event is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// FiredAt : Date at which the event was fired
+	// FiredAt is the date at which the event was fired
 	FiredAt time.Time `json:"fired_at"`
 }
 
-// Webhooks : Get all the webhooks of the event.
-func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) {
+// Webhooks allows you to get all the webhooks of the event.
+func (s Event) Webhooks(options ...Options) ([]*Webhook, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewEvent() method to create a new Event object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -49,14 +53,18 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) 
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/events/" + url.QueryEscape(event.ID) + "/webhooks"
+	path := "/events/" + url.QueryEscape(s.ID) + "/webhooks"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -64,10 +72,10 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -75,22 +83,22 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) 
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -98,8 +106,12 @@ func (s Events) Webhooks(event *Event, options ...Options) ([]*Webhook, *Error) 
 	return payload.Webhooks, nil
 }
 
-// All : Get all the events.
-func (s Events) All(options ...Options) ([]*Event, *Error) {
+// All allows you to get all the events.
+func (s Event) All(options ...Options) ([]*Event, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewEvent() method to create a new Event object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -117,11 +129,15 @@ func (s Events) All(options ...Options) ([]*Event, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/events"
@@ -132,10 +148,10 @@ func (s Events) All(options ...Options) ([]*Event, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -143,22 +159,22 @@ func (s Events) All(options ...Options) ([]*Event, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -166,8 +182,12 @@ func (s Events) All(options ...Options) ([]*Event, *Error) {
 	return payload.Events, nil
 }
 
-// Find : Find an event by its ID.
-func (s Events) Find(eventID string, options ...Options) (*Event, *Error) {
+// Find allows you to find an event by its ID.
+func (s Event) Find(eventID string, options ...Options) (*Event, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewEvent() method to create a new Event object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -184,11 +204,15 @@ func (s Events) Find(eventID string, options ...Options) (*Event, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/events/" + url.QueryEscape(eventID) + ""
@@ -199,10 +223,10 @@ func (s Events) Find(eventID string, options ...Options) (*Event, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -210,22 +234,22 @@ func (s Events) Find(eventID string, options ...Options) (*Event, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}

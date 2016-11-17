@@ -8,52 +8,56 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Customers manages the Customer struct
-type Customers struct {
-	p *ProcessOut
-}
-
+// Customer represents the Customer API object
 type Customer struct {
-	// ID : ID of the customer
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the customer
 	ID string `json:"id"`
-	// Project : Project to which the customer belongs
+	// Project is the project to which the customer belongs
 	Project *Project `json:"project"`
-	// Email : Email of the customer
+	// Email is the email of the customer
 	Email string `json:"email"`
-	// FirstName : First name of the customer
+	// FirstName is the first name of the customer
 	FirstName string `json:"first_name"`
-	// LastName : Last name of the customer
+	// LastName is the last name of the customer
 	LastName string `json:"last_name"`
-	// Address1 : Address of the customer
+	// Address1 is the address of the customer
 	Address1 string `json:"address1"`
-	// Address2 : Secondary address of the customer
+	// Address2 is the secondary address of the customer
 	Address2 string `json:"address2"`
-	// City : City of the customer
+	// City is the city of the customer
 	City string `json:"city"`
-	// State : State of the customer
+	// State is the state of the customer
 	State string `json:"state"`
-	// Zip : ZIP code of the customer
+	// Zip is the zIP code of the customer
 	Zip string `json:"zip"`
-	// CountryCode : Country code of the customer
+	// CountryCode is the country code of the customer
 	CountryCode string `json:"country_code"`
-	// Balance : Customer balance. Can be positive or negative
+	// Balance is the customer balance. Can be positive or negative
 	Balance string `json:"balance"`
-	// Currency : Currency of the customer balance. Once the currency is set it cannot be modified
+	// Currency is the currency of the customer balance. Once the currency is set it cannot be modified
 	Currency string `json:"currency"`
-	// Metadata : Metadata related to the customer, in the form of a dictionary (key-value pair)
+	// Metadata is the metadata related to the customer, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// HasPin : Wether the customer has a PIN set or not
+	// HasPin is the wether the customer has a PIN set or not
 	HasPin bool `json:"has_pin"`
-	// Sandbox : Define whether or not the customer is in sandbox environment
+	// Sandbox is the define whether or not the customer is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the customer was created
+	// CreatedAt is the date at which the customer was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Subscriptions : Get the subscriptions belonging to the customer.
-func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Subscription, *Error) {
+// Subscriptions allows you to get the subscriptions belonging to the customer.
+func (s Customer) Subscriptions(options ...Options) ([]*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -71,14 +75,18 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(customer.ID) + "/subscriptions"
+	path := "/customers/" + url.QueryEscape(s.ID) + "/subscriptions"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -86,10 +94,10 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -97,22 +105,22 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -120,8 +128,12 @@ func (s Customers) Subscriptions(customer *Customer, options ...Options) ([]*Sub
 	return payload.Subscriptions, nil
 }
 
-// Tokens : Get the customer's tokens.
-func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Error) {
+// Tokens allows you to get the customer's tokens.
+func (s Customer) Tokens(options ...Options) ([]*Token, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -139,14 +151,18 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Er
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(customer.ID) + "/tokens"
+	path := "/customers/" + url.QueryEscape(s.ID) + "/tokens"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -154,10 +170,10 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Er
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -165,22 +181,22 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Er
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -188,8 +204,12 @@ func (s Customers) Tokens(customer *Customer, options ...Options) ([]*Token, *Er
 	return payload.Tokens, nil
 }
 
-// Transactions : Get the transactions belonging to the customer.
-func (s Customers) Transactions(customer *Customer, options ...Options) ([]*Transaction, *Error) {
+// Transactions allows you to get the transactions belonging to the customer.
+func (s Customer) Transactions(options ...Options) ([]*Transaction, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -207,14 +227,18 @@ func (s Customers) Transactions(customer *Customer, options ...Options) ([]*Tran
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(customer.ID) + "/transactions"
+	path := "/customers/" + url.QueryEscape(s.ID) + "/transactions"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -222,10 +246,10 @@ func (s Customers) Transactions(customer *Customer, options ...Options) ([]*Tran
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -233,22 +257,22 @@ func (s Customers) Transactions(customer *Customer, options ...Options) ([]*Tran
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -256,8 +280,12 @@ func (s Customers) Transactions(customer *Customer, options ...Options) ([]*Tran
 	return payload.Transactions, nil
 }
 
-// All : Get all the customers.
-func (s Customers) All(options ...Options) ([]*Customer, *Error) {
+// All allows you to get all the customers.
+func (s Customer) All(options ...Options) ([]*Customer, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -275,11 +303,15 @@ func (s Customers) All(options ...Options) ([]*Customer, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/customers"
@@ -290,10 +322,10 @@ func (s Customers) All(options ...Options) ([]*Customer, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -301,22 +333,22 @@ func (s Customers) All(options ...Options) ([]*Customer, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -324,8 +356,12 @@ func (s Customers) All(options ...Options) ([]*Customer, *Error) {
 	return payload.Customers, nil
 }
 
-// Create : Create a new customer.
-func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *Error) {
+// Create allows you to create a new customer.
+func (s Customer) Create(options ...Options) (*Customer, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -342,23 +378,27 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *E
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"balance":      customer.Balance,
-		"currency":     customer.Currency,
-		"email":        customer.Email,
-		"first_name":   customer.FirstName,
-		"last_name":    customer.LastName,
-		"address1":     customer.Address1,
-		"address2":     customer.Address2,
-		"city":         customer.City,
-		"state":        customer.State,
-		"zip":          customer.Zip,
-		"country_code": customer.CountryCode,
-		"metadata":     customer.Metadata,
+		"balance":      s.Balance,
+		"currency":     s.Currency,
+		"email":        s.Email,
+		"first_name":   s.FirstName,
+		"last_name":    s.LastName,
+		"address1":     s.Address1,
+		"address2":     s.Address2,
+		"city":         s.City,
+		"state":        s.State,
+		"zip":          s.Zip,
+		"country_code": s.CountryCode,
+		"metadata":     s.Metadata,
 		"expand":       opt.Expand,
 		"filter":       opt.Filter,
+		"limit":        opt.Limit,
+		"page":         opt.Page,
+		"end_before":   opt.EndBefore,
+		"start_after":  opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/customers"
@@ -369,10 +409,10 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *E
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -380,22 +420,22 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *E
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -403,8 +443,12 @@ func (s Customers) Create(customer *Customer, options ...Options) (*Customer, *E
 	return payload.Customer, nil
 }
 
-// Find : Find a customer by its ID.
-func (s Customers) Find(customerID string, options ...Options) (*Customer, *Error) {
+// Find allows you to find a customer by its ID.
+func (s Customer) Find(customerID string, options ...Options) (*Customer, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -421,11 +465,15 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, *Erro
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/customers/" + url.QueryEscape(customerID) + ""
@@ -436,10 +484,10 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, *Erro
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -447,22 +495,22 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, *Erro
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -470,8 +518,12 @@ func (s Customers) Find(customerID string, options ...Options) (*Customer, *Erro
 	return payload.Customer, nil
 }
 
-// Save : Save the updated customer attributes.
-func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Error) {
+// Save allows you to save the updated customer attributes.
+func (s Customer) Save(options ...Options) (*Customer, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -488,25 +540,29 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Err
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"balance":      customer.Balance,
-		"email":        customer.Email,
-		"first_name":   customer.FirstName,
-		"last_name":    customer.LastName,
-		"address1":     customer.Address1,
-		"address2":     customer.Address2,
-		"city":         customer.City,
-		"state":        customer.State,
-		"zip":          customer.Zip,
-		"country_code": customer.CountryCode,
-		"metadata":     customer.Metadata,
+		"balance":      s.Balance,
+		"email":        s.Email,
+		"first_name":   s.FirstName,
+		"last_name":    s.LastName,
+		"address1":     s.Address1,
+		"address2":     s.Address2,
+		"city":         s.City,
+		"state":        s.State,
+		"zip":          s.Zip,
+		"country_code": s.CountryCode,
+		"metadata":     s.Metadata,
 		"expand":       opt.Expand,
 		"filter":       opt.Filter,
+		"limit":        opt.Limit,
+		"page":         opt.Page,
+		"end_before":   opt.EndBefore,
+		"start_after":  opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(customer.ID) + ""
+	path := "/customers/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -514,10 +570,10 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Err
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -525,22 +581,22 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Err
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -548,8 +604,12 @@ func (s Customers) Save(customer *Customer, options ...Options) (*Customer, *Err
 	return payload.Customer, nil
 }
 
-// Delete : Delete the customer.
-func (s Customers) Delete(customer *Customer, options ...Options) *Error {
+// Delete allows you to delete the customer.
+func (s Customer) Delete(options ...Options) error {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -565,14 +625,18 @@ func (s Customers) Delete(customer *Customer, options ...Options) *Error {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(customer.ID) + ""
+	path := "/customers/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -580,10 +644,10 @@ func (s Customers) Delete(customer *Customer, options ...Options) *Error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -591,22 +655,22 @@ func (s Customers) Delete(customer *Customer, options ...Options) *Error {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return erri
 	}

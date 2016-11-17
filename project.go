@@ -8,28 +8,32 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Projects manages the Project struct
-type Projects struct {
-	p *ProcessOut
-}
-
+// Project represents the Project API object
 type Project struct {
-	// ID : ID of the project
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the project
 	ID string `json:"id"`
-	// Name : Name of the project
+	// Name is the name of the project
 	Name string `json:"name"`
-	// LogoURL : Name of the project
+	// LogoURL is the name of the project
 	LogoURL string `json:"logo_url"`
-	// Email : Email of the project
+	// Email is the email of the project
 	Email string `json:"email"`
-	// CreatedAt : Date at which the project was created
+	// CreatedAt is the date at which the project was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// GatewayConfigurations : Get all the gateway configurations of the project
-func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([]*GatewayConfiguration, *Error) {
+// GatewayConfigurations allows you to get all the gateway configurations of the project
+func (s Project) GatewayConfigurations(options ...Options) ([]*GatewayConfiguration, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewProject() method to create a new Project object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -47,14 +51,18 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/projects/" + url.QueryEscape(project.ID) + "/gateway-configurations"
+	path := "/projects/" + url.QueryEscape(s.ID) + "/gateway-configurations"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -62,10 +70,10 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -73,22 +81,22 @@ func (s Projects) GatewayConfigurations(project *Project, options ...Options) ([
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}

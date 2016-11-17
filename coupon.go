@@ -8,44 +8,48 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Coupons manages the Coupon struct
-type Coupons struct {
-	p *ProcessOut
-}
-
+// Coupon represents the Coupon API object
 type Coupon struct {
-	// ID : ID of the coupon
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the coupon
 	ID string `json:"id"`
-	// Project : Project to which the coupon belongs
+	// Project is the project to which the coupon belongs
 	Project *Project `json:"project"`
-	// Name : Name of the coupon
+	// Name is the name of the coupon
 	Name string `json:"name"`
-	// AmountOff : Amount to be removed from the subscription price
+	// AmountOff is the amount to be removed from the subscription price
 	AmountOff string `json:"amount_off"`
-	// PercentOff : Percent of the subscription amount to be removed (integer between 0 and 100)
+	// PercentOff is the percent of the subscription amount to be removed (integer between 0 and 100)
 	PercentOff int `json:"percent_off"`
-	// Currency : Currency of the coupon amount_off
+	// Currency is the currency of the coupon amount_off
 	Currency string `json:"currency"`
-	// MaxRedemptions : Number of time the coupon can be redeemed. If 0, there's no limit
+	// MaxRedemptions is the number of time the coupon can be redeemed. If 0, there's no limit
 	MaxRedemptions int `json:"max_redemptions"`
-	// ExpiresAt : Date at which the coupon will expire
+	// ExpiresAt is the date at which the coupon will expire
 	ExpiresAt time.Time `json:"expires_at"`
-	// Metadata : Metadata related to the coupon, in the form of a dictionary (key-value pair)
+	// Metadata is the metadata related to the coupon, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// IterationCount : Number billing cycles the coupon will last when applied to a subscription. If 0, will last forever
+	// IterationCount is the number billing cycles the coupon will last when applied to a subscription. If 0, will last forever
 	IterationCount int `json:"iteration_count"`
-	// RedeemedNumber : Number of time the coupon was redeemed
+	// RedeemedNumber is the number of time the coupon was redeemed
 	RedeemedNumber int `json:"redeemed_number"`
-	// Sandbox : Define whether or not the plan is in sandbox environment
+	// Sandbox is the define whether or not the plan is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the plan was created
+	// CreatedAt is the date at which the plan was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// All : Get all the coupons.
-func (s Coupons) All(options ...Options) ([]*Coupon, *Error) {
+// All allows you to get all the coupons.
+func (s Coupon) All(options ...Options) ([]*Coupon, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCoupon() method to create a new Coupon object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -63,11 +67,15 @@ func (s Coupons) All(options ...Options) ([]*Coupon, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/coupons"
@@ -78,10 +86,10 @@ func (s Coupons) All(options ...Options) ([]*Coupon, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -89,22 +97,22 @@ func (s Coupons) All(options ...Options) ([]*Coupon, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -112,8 +120,12 @@ func (s Coupons) All(options ...Options) ([]*Coupon, *Error) {
 	return payload.Coupons, nil
 }
 
-// Create : Create a new coupon.
-func (s Coupons) Create(coupon *Coupon, options ...Options) (*Coupon, *Error) {
+// Create allows you to create a new coupon.
+func (s Coupon) Create(options ...Options) (*Coupon, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCoupon() method to create a new Coupon object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -130,19 +142,23 @@ func (s Coupons) Create(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"id":              coupon.ID,
-		"amount_off":      coupon.AmountOff,
-		"percent_off":     coupon.PercentOff,
-		"currency":        coupon.Currency,
-		"iteration_count": coupon.IterationCount,
-		"max_redemptions": coupon.MaxRedemptions,
-		"expires_at":      coupon.ExpiresAt,
-		"metadata":        coupon.Metadata,
+		"id":              s.ID,
+		"amount_off":      s.AmountOff,
+		"percent_off":     s.PercentOff,
+		"currency":        s.Currency,
+		"iteration_count": s.IterationCount,
+		"max_redemptions": s.MaxRedemptions,
+		"expires_at":      s.ExpiresAt,
+		"metadata":        s.Metadata,
 		"expand":          opt.Expand,
 		"filter":          opt.Filter,
+		"limit":           opt.Limit,
+		"page":            opt.Page,
+		"end_before":      opt.EndBefore,
+		"start_after":     opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/coupons"
@@ -153,10 +169,10 @@ func (s Coupons) Create(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -164,22 +180,22 @@ func (s Coupons) Create(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -187,8 +203,12 @@ func (s Coupons) Create(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 	return payload.Coupon, nil
 }
 
-// Find : Find a coupon by its ID.
-func (s Coupons) Find(couponID string, options ...Options) (*Coupon, *Error) {
+// Find allows you to find a coupon by its ID.
+func (s Coupon) Find(couponID string, options ...Options) (*Coupon, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCoupon() method to create a new Coupon object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -205,11 +225,15 @@ func (s Coupons) Find(couponID string, options ...Options) (*Coupon, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/coupons/" + url.QueryEscape(couponID) + ""
@@ -220,10 +244,10 @@ func (s Coupons) Find(couponID string, options ...Options) (*Coupon, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -231,22 +255,22 @@ func (s Coupons) Find(couponID string, options ...Options) (*Coupon, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -254,8 +278,12 @@ func (s Coupons) Find(couponID string, options ...Options) (*Coupon, *Error) {
 	return payload.Coupon, nil
 }
 
-// Save : Save the updated coupon attributes.
-func (s Coupons) Save(coupon *Coupon, options ...Options) (*Coupon, *Error) {
+// Save allows you to save the updated coupon attributes.
+func (s Coupon) Save(options ...Options) (*Coupon, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCoupon() method to create a new Coupon object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -272,15 +300,19 @@ func (s Coupons) Save(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"metadata": coupon.Metadata,
-		"expand":   opt.Expand,
-		"filter":   opt.Filter,
+		"metadata":    s.Metadata,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/coupons/" + url.QueryEscape(coupon.ID) + ""
+	path := "/coupons/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -288,10 +320,10 @@ func (s Coupons) Save(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -299,22 +331,22 @@ func (s Coupons) Save(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -322,8 +354,12 @@ func (s Coupons) Save(coupon *Coupon, options ...Options) (*Coupon, *Error) {
 	return payload.Coupon, nil
 }
 
-// Delete : Delete the coupon.
-func (s Coupons) Delete(coupon *Coupon, options ...Options) *Error {
+// Delete allows you to delete the coupon.
+func (s Coupon) Delete(options ...Options) error {
+	if s.Client == nil {
+		panic("Please use the client.NewCoupon() method to create a new Coupon object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -339,14 +375,18 @@ func (s Coupons) Delete(coupon *Coupon, options ...Options) *Error {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 
-	path := "/coupons/" + url.QueryEscape(coupon.ID) + ""
+	path := "/coupons/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -354,10 +394,10 @@ func (s Coupons) Delete(coupon *Coupon, options ...Options) *Error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -365,22 +405,22 @@ func (s Coupons) Delete(coupon *Coupon, options ...Options) *Error {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return erri
 	}

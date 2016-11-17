@@ -8,37 +8,37 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Webhooks manages the Webhook struct
-type Webhooks struct {
-	p *ProcessOut
-}
-
+// Webhook represents the Webhook API object
 type Webhook struct {
-	// ID : ID of the recurring invoice
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the recurring invoice
 	ID string `json:"id"`
-	// Project : Project to which the webhook belongs
+	// Project is the project to which the webhook belongs
 	Project *Project `json:"project"`
-	// Event : Event the webhook is linked to
+	// Event is the event the webhook is linked to
 	Event *Event `json:"event"`
-	// RequestURL : URL to which the webhook will be posted
+	// RequestURL is the uRL to which the webhook will be posted
 	RequestURL string `json:"request_url"`
-	// RequestMethod : Method used to send the webhook (GET or POST)
+	// RequestMethod is the method used to send the webhook (GET or POST)
 	RequestMethod string `json:"request_method"`
-	// ResponseBody : The response body the webhook received when sending its payload
+	// ResponseBody is the the response body the webhook received when sending its payload
 	ResponseBody string `json:"response_body"`
-	// ResponseCode : The response code the webhook received when sending its payload
+	// ResponseCode is the the response code the webhook received when sending its payload
 	ResponseCode string `json:"response_code"`
-	// ResponseHeaders : The response headers the webhook received when sending its payload
+	// ResponseHeaders is the the response headers the webhook received when sending its payload
 	ResponseHeaders string `json:"response_headers"`
-	// ResponseTimeMs : The time it took for the webhook to send its payload
+	// ResponseTimeMs is the the time it took for the webhook to send its payload
 	ResponseTimeMs int `json:"response_time_ms"`
-	// Status : The status of the webhook. 0: pending, 1: success, 2: error
+	// Status is the the status of the webhook. 0: pending, 1: success, 2: error
 	Status int `json:"status"`
-	// CreatedAt : Date at which the webhook was created
+	// CreatedAt is the date at which the webhook was created
 	CreatedAt time.Time `json:"created_at"`
-	// ReleaseAt : Date at webhook will be/is released
+	// ReleaseAt is the date at webhook will be/is released
 	ReleaseAt time.Time `json:"release_at"`
 }
 

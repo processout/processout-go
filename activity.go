@@ -8,30 +8,34 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Activitys manages the Activity struct
-type Activities struct {
-	p *ProcessOut
-}
-
+// Activity represents the Activity API object
 type Activity struct {
-	// ID : ID of the activity
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the activity
 	ID string `json:"id"`
-	// Project : Project to which the activity belongs
+	// Project is the project to which the activity belongs
 	Project *Project `json:"project"`
-	// Title : Title of the activity
+	// Title is the title of the activity
 	Title string `json:"title"`
-	// Content : Content of the activity
+	// Content is the content of the activity
 	Content string `json:"content"`
-	// Level : Level of the activity
+	// Level is the level of the activity
 	Level int `json:"level"`
-	// CreatedAt : Date at which the transaction was created
+	// CreatedAt is the date at which the transaction was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// All : Get all the project activities.
-func (s Activities) All(options ...Options) ([]*Activity, *Error) {
+// All allows you to get all the project activities.
+func (s Activity) All(options ...Options) ([]*Activity, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewActivity() method to create a new Activity object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -49,11 +53,15 @@ func (s Activities) All(options ...Options) ([]*Activity, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/activities"
@@ -64,10 +72,10 @@ func (s Activities) All(options ...Options) ([]*Activity, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -75,22 +83,22 @@ func (s Activities) All(options ...Options) ([]*Activity, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -98,8 +106,12 @@ func (s Activities) All(options ...Options) ([]*Activity, *Error) {
 	return payload.Activities, nil
 }
 
-// Find : Find a specific activity and fetch its data.
-func (s Activities) Find(activityID string, options ...Options) (*Activity, *Error) {
+// Find allows you to find a specific activity and fetch its data.
+func (s Activity) Find(activityID string, options ...Options) (*Activity, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewActivity() method to create a new Activity object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -116,11 +128,15 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, *Err
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/activities/" + url.QueryEscape(activityID) + ""
@@ -131,10 +147,10 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, *Err
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -142,22 +158,22 @@ func (s Activities) Find(activityID string, options ...Options) (*Activity, *Err
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}

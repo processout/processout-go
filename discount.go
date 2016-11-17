@@ -8,36 +8,40 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Discounts manages the Discount struct
-type Discounts struct {
-	p *ProcessOut
-}
-
+// Discount represents the Discount API object
 type Discount struct {
-	// ID : ID of the discount
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the discount
 	ID string `json:"id"`
-	// Project : Project to which the discount belongs
+	// Project is the project to which the discount belongs
 	Project *Project `json:"project"`
-	// Subscription : Subscription to which the discount belongs
+	// Subscription is the subscription to which the discount belongs
 	Subscription *Subscription `json:"subscription"`
-	// Coupon : Coupon used to create this discount, if any
+	// Coupon is the coupon used to create this discount, if any
 	Coupon *Coupon `json:"coupon"`
-	// Amount : Amount discounted
+	// Amount is the amount discounted
 	Amount string `json:"amount"`
-	// ExpiresAt : Date at which the discount will expire
+	// ExpiresAt is the date at which the discount will expire
 	ExpiresAt time.Time `json:"expires_at"`
-	// Metadata : Metadata related to the coupon, in the form of a dictionary (key-value pair)
+	// Metadata is the metadata related to the coupon, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// Sandbox : Define whether or not the plan is in sandbox environment
+	// Sandbox is the define whether or not the plan is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the plan was created
+	// CreatedAt is the date at which the plan was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Apply : Apply a new discount to the given subscription ID.
-func (s Discounts) Apply(discount *Discount, subscriptionID string, options ...Options) (*Discount, *Error) {
+// Apply allows you to apply a new discount to the given subscription ID.
+func (s Discount) Apply(subscriptionID string, options ...Options) (*Discount, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewDiscount() method to create a new Discount object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -54,14 +58,18 @@ func (s Discounts) Apply(discount *Discount, subscriptionID string, options ...O
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"amount":     discount.Amount,
-		"expires_at": discount.ExpiresAt,
-		"metadata":   discount.Metadata,
-		"expand":     opt.Expand,
-		"filter":     opt.Filter,
+		"amount":      s.Amount,
+		"expires_at":  s.ExpiresAt,
+		"metadata":    s.Metadata,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/discounts"
@@ -72,10 +80,10 @@ func (s Discounts) Apply(discount *Discount, subscriptionID string, options ...O
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -83,22 +91,22 @@ func (s Discounts) Apply(discount *Discount, subscriptionID string, options ...O
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -106,8 +114,12 @@ func (s Discounts) Apply(discount *Discount, subscriptionID string, options ...O
 	return payload.Discount, nil
 }
 
-// ApplyCoupon : Apply a new discount to the given subscription ID from a coupon ID.
-func (s Discounts) ApplyCoupon(discount *Discount, subscriptionID, couponID string, options ...Options) (*Discount, *Error) {
+// ApplyCoupon allows you to apply a new discount to the given subscription ID from a coupon ID.
+func (s Discount) ApplyCoupon(subscriptionID, couponID string, options ...Options) (*Discount, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewDiscount() method to create a new Discount object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -124,15 +136,19 @@ func (s Discounts) ApplyCoupon(discount *Discount, subscriptionID, couponID stri
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"amount":     discount.Amount,
-		"expires_at": discount.ExpiresAt,
-		"metadata":   discount.Metadata,
-		"coupon_id":  couponID,
-		"expand":     opt.Expand,
-		"filter":     opt.Filter,
+		"amount":      s.Amount,
+		"expires_at":  s.ExpiresAt,
+		"metadata":    s.Metadata,
+		"coupon_id":   couponID,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/discounts"
@@ -143,10 +159,10 @@ func (s Discounts) ApplyCoupon(discount *Discount, subscriptionID, couponID stri
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -154,22 +170,22 @@ func (s Discounts) ApplyCoupon(discount *Discount, subscriptionID, couponID stri
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -177,8 +193,12 @@ func (s Discounts) ApplyCoupon(discount *Discount, subscriptionID, couponID stri
 	return payload.Discount, nil
 }
 
-// Find : Find a subscription's discount by its ID.
-func (s Discounts) Find(subscriptionID, discountID string, options ...Options) (*Discount, *Error) {
+// Find allows you to find a subscription's discount by its ID.
+func (s Discount) Find(subscriptionID, discountID string, options ...Options) (*Discount, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewDiscount() method to create a new Discount object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -195,11 +215,15 @@ func (s Discounts) Find(subscriptionID, discountID string, options ...Options) (
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/discounts/" + url.QueryEscape(discountID) + ""
@@ -210,10 +234,10 @@ func (s Discounts) Find(subscriptionID, discountID string, options ...Options) (
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -221,22 +245,22 @@ func (s Discounts) Find(subscriptionID, discountID string, options ...Options) (
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}

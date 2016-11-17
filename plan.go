@@ -8,42 +8,46 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Plans manages the Plan struct
-type Plans struct {
-	p *ProcessOut
-}
-
+// Plan represents the Plan API object
 type Plan struct {
-	// ID : ID of the plan
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the plan
 	ID string `json:"id"`
-	// Project : Project to which the plan belongs
+	// Project is the project to which the plan belongs
 	Project *Project `json:"project"`
-	// Name : Name of the plan
+	// Name is the name of the plan
 	Name string `json:"name"`
-	// Amount : Amount of the plan
+	// Amount is the amount of the plan
 	Amount string `json:"amount"`
-	// Currency : Currency of the plan
+	// Currency is the currency of the plan
 	Currency string `json:"currency"`
-	// Metadata : Metadata related to the plan, in the form of a dictionary (key-value pair)
+	// Metadata is the metadata related to the plan, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// Interval : The plan interval, formatted in the format "1d2w3m4y" (day, week, month, year)
+	// Interval is the the plan interval, formatted in the format "1d2w3m4y" (day, week, month, year)
 	Interval string `json:"interval"`
-	// TrialPeriod : The trial period. The customer will not be charged during this time span. Formatted in the format "1d2w3m4y" (day, week, month, year)
+	// TrialPeriod is the the trial period. The customer will not be charged during this time span. Formatted in the format "1d2w3m4y" (day, week, month, year)
 	TrialPeriod string `json:"trial_period"`
-	// ReturnURL : URL where the customer will be redirected when he activates the subscription created using this plan
+	// ReturnURL is the uRL where the customer will be redirected when he activates the subscription created using this plan
 	ReturnURL string `json:"return_url"`
-	// CancelURL : URL where the customer will be redirected when he cancelling the subscription created using this plan
+	// CancelURL is the uRL where the customer will be redirected when he cancelling the subscription created using this plan
 	CancelURL string `json:"cancel_url"`
-	// Sandbox : Define whether or not the plan is in sandbox environment
+	// Sandbox is the define whether or not the plan is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the plan was created
+	// CreatedAt is the date at which the plan was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// All : Get all the plans.
-func (s Plans) All(options ...Options) ([]*Plan, *Error) {
+// All allows you to get all the plans.
+func (s Plan) All(options ...Options) ([]*Plan, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewPlan() method to create a new Plan object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -61,11 +65,15 @@ func (s Plans) All(options ...Options) ([]*Plan, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/plans"
@@ -76,10 +84,10 @@ func (s Plans) All(options ...Options) ([]*Plan, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -87,22 +95,22 @@ func (s Plans) All(options ...Options) ([]*Plan, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -110,8 +118,12 @@ func (s Plans) All(options ...Options) ([]*Plan, *Error) {
 	return payload.Plans, nil
 }
 
-// Create : Create a new plan.
-func (s Plans) Create(plan *Plan, options ...Options) (*Plan, *Error) {
+// Create allows you to create a new plan.
+func (s Plan) Create(options ...Options) (*Plan, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewPlan() method to create a new Plan object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -128,20 +140,24 @@ func (s Plans) Create(plan *Plan, options ...Options) (*Plan, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"id":           plan.ID,
-		"name":         plan.Name,
-		"amount":       plan.Amount,
-		"currency":     plan.Currency,
-		"interval":     plan.Interval,
-		"trial_period": plan.TrialPeriod,
-		"metadata":     plan.Metadata,
-		"return_url":   plan.ReturnURL,
-		"cancel_url":   plan.CancelURL,
+		"id":           s.ID,
+		"name":         s.Name,
+		"amount":       s.Amount,
+		"currency":     s.Currency,
+		"interval":     s.Interval,
+		"trial_period": s.TrialPeriod,
+		"metadata":     s.Metadata,
+		"return_url":   s.ReturnURL,
+		"cancel_url":   s.CancelURL,
 		"expand":       opt.Expand,
 		"filter":       opt.Filter,
+		"limit":        opt.Limit,
+		"page":         opt.Page,
+		"end_before":   opt.EndBefore,
+		"start_after":  opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/plans"
@@ -152,10 +168,10 @@ func (s Plans) Create(plan *Plan, options ...Options) (*Plan, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -163,22 +179,22 @@ func (s Plans) Create(plan *Plan, options ...Options) (*Plan, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -186,8 +202,12 @@ func (s Plans) Create(plan *Plan, options ...Options) (*Plan, *Error) {
 	return payload.Plan, nil
 }
 
-// Find : Find a plan by its ID.
-func (s Plans) Find(planID string, options ...Options) (*Plan, *Error) {
+// Find allows you to find a plan by its ID.
+func (s Plan) Find(planID string, options ...Options) (*Plan, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewPlan() method to create a new Plan object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -204,11 +224,15 @@ func (s Plans) Find(planID string, options ...Options) (*Plan, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/plans/" + url.QueryEscape(planID) + ""
@@ -219,10 +243,10 @@ func (s Plans) Find(planID string, options ...Options) (*Plan, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -230,22 +254,22 @@ func (s Plans) Find(planID string, options ...Options) (*Plan, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -253,8 +277,12 @@ func (s Plans) Find(planID string, options ...Options) (*Plan, *Error) {
 	return payload.Plan, nil
 }
 
-// Update : Update the plan. This action won't affect subscriptions already linked to this plan.
-func (s Plans) Update(plan *Plan, options ...Options) (*Plan, *Error) {
+// Update allows you to update the plan. This action won't affect subscriptions already linked to this plan.
+func (s Plan) Update(options ...Options) (*Plan, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewPlan() method to create a new Plan object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -271,19 +299,23 @@ func (s Plans) Update(plan *Plan, options ...Options) (*Plan, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":         plan.Name,
-		"trial_period": plan.TrialPeriod,
-		"metadata":     plan.Metadata,
-		"return_url":   plan.ReturnURL,
-		"cancel_url":   plan.CancelURL,
+		"name":         s.Name,
+		"trial_period": s.TrialPeriod,
+		"metadata":     s.Metadata,
+		"return_url":   s.ReturnURL,
+		"cancel_url":   s.CancelURL,
 		"expand":       opt.Expand,
 		"filter":       opt.Filter,
+		"limit":        opt.Limit,
+		"page":         opt.Page,
+		"end_before":   opt.EndBefore,
+		"start_after":  opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/plans/" + url.QueryEscape(plan.ID) + ""
+	path := "/plans/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -291,10 +323,10 @@ func (s Plans) Update(plan *Plan, options ...Options) (*Plan, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -302,22 +334,22 @@ func (s Plans) Update(plan *Plan, options ...Options) (*Plan, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -325,8 +357,12 @@ func (s Plans) Update(plan *Plan, options ...Options) (*Plan, *Error) {
 	return payload.Plan, nil
 }
 
-// End : Delete a plan. Subscriptions linked to this plan won't be affected.
-func (s Plans) End(plan *Plan, options ...Options) *Error {
+// End allows you to delete a plan. Subscriptions linked to this plan won't be affected.
+func (s Plan) End(options ...Options) error {
+	if s.Client == nil {
+		panic("Please use the client.NewPlan() method to create a new Plan object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -342,14 +378,18 @@ func (s Plans) End(plan *Plan, options ...Options) *Error {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 
-	path := "/plans/" + url.QueryEscape(plan.ID) + ""
+	path := "/plans/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -357,10 +397,10 @@ func (s Plans) End(plan *Plan, options ...Options) *Error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -368,22 +408,22 @@ func (s Plans) End(plan *Plan, options ...Options) *Error {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return erri
 	}

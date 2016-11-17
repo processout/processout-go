@@ -8,34 +8,38 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Refunds manages the Refund struct
-type Refunds struct {
-	p *ProcessOut
-}
-
+// Refund represents the Refund API object
 type Refund struct {
-	// ID : ID of the refund
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the refund
 	ID string `json:"id"`
-	// Transaction : Transaction to which the refund is applied
+	// Transaction is the transaction to which the refund is applied
 	Transaction *Transaction `json:"transaction"`
-	// Reason : Reason for the refund. Either customer_request, duplicate or fraud
+	// Reason is the reason for the refund. Either customer_request, duplicate or fraud
 	Reason string `json:"reason"`
-	// Information : Custom details regarding the refund
+	// Information is the custom details regarding the refund
 	Information string `json:"information"`
-	// Amount : Amount to be refunded. Must not be greater than the amount still available on the transaction
+	// Amount is the amount to be refunded. Must not be greater than the amount still available on the transaction
 	Amount string `json:"amount"`
-	// Metadata : Metadata related to the refund, in the form of a dictionary (key-value pair)
+	// Metadata is the metadata related to the refund, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// Sandbox : Define whether or not the refund is in sandbox environment
+	// Sandbox is the define whether or not the refund is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the refund was done
+	// CreatedAt is the date at which the refund was done
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Find : Find a transaction's refund by its ID.
-func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refund, *Error) {
+// Find allows you to find a transaction's refund by its ID.
+func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refund, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewRefund() method to create a new Refund object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -52,11 +56,15 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds/" + url.QueryEscape(refundID) + ""
@@ -67,10 +75,10 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -78,22 +86,22 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -101,8 +109,12 @@ func (s Refunds) Find(transactionID, refundID string, options ...Options) (*Refu
 	return payload.Refund, nil
 }
 
-// Apply : Apply a refund to a transaction.
-func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options) *Error {
+// Apply allows you to apply a refund to a transaction.
+func (s Refund) Apply(transactionID string, options ...Options) error {
+	if s.Client == nil {
+		panic("Please use the client.NewRefund() method to create a new Refund object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -118,15 +130,19 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"amount":      refund.Amount,
-		"metadata":    refund.Metadata,
-		"reason":      refund.Reason,
-		"information": refund.Information,
+		"amount":      s.Amount,
+		"metadata":    s.Metadata,
+		"reason":      s.Reason,
+		"information": s.Information,
 		"expand":      opt.Expand,
 		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 
 	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds"
@@ -137,10 +153,10 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -148,22 +164,22 @@ func (s Refunds) Apply(refund *Refund, transactionID string, options ...Options)
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return newError(err)
+		return errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return erri
 	}

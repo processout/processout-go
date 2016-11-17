@@ -8,17 +8,17 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// CustomerActions manages the CustomerAction struct
-type CustomerActions struct {
-	p *ProcessOut
-}
-
+// CustomerAction represents the CustomerAction API object
 type CustomerAction struct {
-	// Type : Customer action type (such as url)
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// Type is the customer action type (such as url)
 	Type string `json:"type"`
-	// Value : Value of the customer action. If type is an URL, URL to which you should redirect your customer
+	// Value is the value of the customer action. If type is an URL, URL to which you should redirect your customer
 	Value string `json:"value"`
 }
 

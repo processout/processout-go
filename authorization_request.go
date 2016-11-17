@@ -8,44 +8,48 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// AuthorizationRequests manages the AuthorizationRequest struct
-type AuthorizationRequests struct {
-	p *ProcessOut
-}
-
+// AuthorizationRequest represents the AuthorizationRequest API object
 type AuthorizationRequest struct {
-	// ID : ID of the authorization
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the authorization
 	ID string `json:"id"`
-	// Project : Project to which the authorization request belongs
+	// Project is the project to which the authorization request belongs
 	Project *Project `json:"project"`
-	// Customer : Customer linked to the authorization request
+	// Customer is the customer linked to the authorization request
 	Customer *Customer `json:"customer"`
-	// Token : Token linked to the authorization request, once authorized
+	// Token is the token linked to the authorization request, once authorized
 	Token *Token `json:"token"`
-	// URL : URL to which you may redirect your customer to proceed with the authorization
+	// URL is the uRL to which you may redirect your customer to proceed with the authorization
 	URL string `json:"url"`
-	// Authorized : Whether or not the authorization request was authorized
+	// Authorized is the whether or not the authorization request was authorized
 	Authorized bool `json:"authorized"`
-	// Name : Name of the authorization
+	// Name is the name of the authorization
 	Name string `json:"name"`
-	// Currency : Currency of the authorization
+	// Currency is the currency of the authorization
 	Currency string `json:"currency"`
-	// ReturnURL : URL where the customer will be redirected upon authorization
+	// ReturnURL is the uRL where the customer will be redirected upon authorization
 	ReturnURL string `json:"return_url"`
-	// CancelURL : URL where the customer will be redirected if the authorization was canceled
+	// CancelURL is the uRL where the customer will be redirected if the authorization was canceled
 	CancelURL string `json:"cancel_url"`
-	// Custom : Custom variable passed along in the events/webhooks
+	// Custom is the custom variable passed along in the events/webhooks
 	Custom string `json:"custom"`
-	// Sandbox : Define whether or not the authorization is in sandbox environment
+	// Sandbox is the define whether or not the authorization is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the authorization was created
+	// CreatedAt is the date at which the authorization was created
 	CreatedAt time.Time `json:"created_at"`
 }
 
-// Customer : Get the customer linked to the authorization request.
-func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationRequest, options ...Options) (*Customer, *Error) {
+// Customer allows you to get the customer linked to the authorization request.
+func (s AuthorizationRequest) Customer(options ...Options) (*Customer, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -62,14 +66,18 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/authorization-requests/" + url.QueryEscape(authorizationRequest.ID) + "/customers"
+	path := "/authorization-requests/" + url.QueryEscape(s.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -77,10 +85,10 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -88,22 +96,22 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -111,8 +119,12 @@ func (s AuthorizationRequests) Customer(authorizationRequest *AuthorizationReque
 	return payload.Customer, nil
 }
 
-// Create : Create a new authorization request for the given customer ID.
-func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest, customerID string, options ...Options) (*AuthorizationRequest, *Error) {
+// Create allows you to create a new authorization request for the given customer ID.
+func (s AuthorizationRequest) Create(customerID string, options ...Options) (*AuthorizationRequest, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -129,17 +141,21 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":        authorizationRequest.Name,
-		"currency":    authorizationRequest.Currency,
-		"return_url":  authorizationRequest.ReturnURL,
-		"cancel_url":  authorizationRequest.CancelURL,
-		"custom":      authorizationRequest.Custom,
+		"name":        s.Name,
+		"currency":    s.Currency,
+		"return_url":  s.ReturnURL,
+		"cancel_url":  s.CancelURL,
+		"custom":      s.Custom,
 		"customer_id": customerID,
 		"expand":      opt.Expand,
 		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/authorization-requests"
@@ -150,10 +166,10 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -161,22 +177,22 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -184,8 +200,12 @@ func (s AuthorizationRequests) Create(authorizationRequest *AuthorizationRequest
 	return payload.AuthorizationRequest, nil
 }
 
-// Find : Find an authorization request by its ID.
-func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Options) (*AuthorizationRequest, *Error) {
+// Find allows you to find an authorization request by its ID.
+func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Options) (*AuthorizationRequest, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -202,11 +222,15 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/authorization-requests/" + url.QueryEscape(authorizationRequestID) + ""
@@ -217,10 +241,10 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -228,22 +252,22 @@ func (s AuthorizationRequests) Find(authorizationRequestID string, options ...Op
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}

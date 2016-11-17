@@ -8,66 +8,70 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"gopkg.in/processout.v3/errors"
 )
 
-// Subscriptions manages the Subscription struct
-type Subscriptions struct {
-	p *ProcessOut
-}
-
+// Subscription represents the Subscription API object
 type Subscription struct {
-	// ID : ID of the subscription
+	// Client is the ProcessOut client used to communicate with the API
+	Client *ProcessOut
+	// ID is the iD of the subscription
 	ID string `json:"id"`
-	// Project : Project to which the subscription belongs
+	// Project is the project to which the subscription belongs
 	Project *Project `json:"project"`
-	// Plan : Plan used to create this subscription
+	// Plan is the plan used to create this subscription
 	Plan *Plan `json:"plan"`
-	// Customer : Customer linked to the subscription
+	// Customer is the customer linked to the subscription
 	Customer *Customer `json:"customer"`
-	// Token : Token used to capture payments on this subscription
+	// Token is the token used to capture payments on this subscription
 	Token *Token `json:"token"`
-	// URL : URL to which you may redirect your customer to activate the subscription
+	// URL is the uRL to which you may redirect your customer to activate the subscription
 	URL string `json:"url"`
-	// Name : Name of the subscription
+	// Name is the name of the subscription
 	Name string `json:"name"`
-	// Amount : Amount to be paid at each billing cycle of the subscription
+	// Amount is the amount to be paid at each billing cycle of the subscription
 	Amount string `json:"amount"`
-	// Currency : Currency of the subscription
+	// Currency is the currency of the subscription
 	Currency string `json:"currency"`
-	// Metadata : Metadata related to the subscription, in the form of a dictionary (key-value pair)
+	// Metadata is the metadata related to the subscription, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
-	// Interval : The subscription interval, formatted in the format "1d2w3m4y" (day, week, month, year)
+	// Interval is the the subscription interval, formatted in the format "1d2w3m4y" (day, week, month, year)
 	Interval string `json:"interval"`
-	// TrialEndAt : Date at which the subscription trial should end. Can be null to set no trial
+	// TrialEndAt is the date at which the subscription trial should end. Can be null to set no trial
 	TrialEndAt time.Time `json:"trial_end_at"`
-	// Activated : Whether or not the subscription was activated. This field does not take into account whether or not the subscription was canceled. Used the active field to know if the subscription is currently active
+	// Activated is the whether or not the subscription was activated. This field does not take into account whether or not the subscription was canceled. Used the active field to know if the subscription is currently active
 	Activated bool `json:"activated"`
-	// Active : Whether or not the subscription is currently active (ie activated and not cancelled)
+	// Active is the whether or not the subscription is currently active (ie activated and not cancelled)
 	Active bool `json:"active"`
-	// Canceled : Whether or not the subscription was canceled. The cancellation reason can be found in the cancellation_reason field
+	// Canceled is the whether or not the subscription was canceled. The cancellation reason can be found in the cancellation_reason field
 	Canceled bool `json:"canceled"`
-	// CancellationReason : Reason as to why the subscription was cancelled
+	// CancellationReason is the reason as to why the subscription was cancelled
 	CancellationReason string `json:"cancellation_reason"`
-	// PendingCancellation : Wheither or not the subscription is pending cancellation (meaning a cancel_at date was set)
+	// PendingCancellation is the wheither or not the subscription is pending cancellation (meaning a cancel_at date was set)
 	PendingCancellation bool `json:"pending_cancellation"`
-	// CancelAt : Date at which the subscription will automatically be canceled. Can be null
+	// CancelAt is the date at which the subscription will automatically be canceled. Can be null
 	CancelAt time.Time `json:"cancel_at"`
-	// ReturnURL : URL where the customer will be redirected upon activation of the subscription
+	// ReturnURL is the uRL where the customer will be redirected upon activation of the subscription
 	ReturnURL string `json:"return_url"`
-	// CancelURL : URL where the customer will be redirected if the subscription activation was canceled
+	// CancelURL is the uRL where the customer will be redirected if the subscription activation was canceled
 	CancelURL string `json:"cancel_url"`
-	// Sandbox : Define whether or not the subscription is in sandbox environment
+	// Sandbox is the define whether or not the subscription is in sandbox environment
 	Sandbox bool `json:"sandbox"`
-	// CreatedAt : Date at which the subscription was created
+	// CreatedAt is the date at which the subscription was created
 	CreatedAt time.Time `json:"created_at"`
-	// ActivatedAt : Date at which the subscription was activated. Null if the subscription hasn't been activated yet
+	// ActivatedAt is the date at which the subscription was activated. Null if the subscription hasn't been activated yet
 	ActivatedAt time.Time `json:"activated_at"`
-	// IterateAt : Next iteration date, corresponding to the next billing cycle start date
+	// IterateAt is the next iteration date, corresponding to the next billing cycle start date
 	IterateAt time.Time `json:"iterate_at"`
 }
 
-// Customer : Get the customer owning the subscription.
-func (s Subscriptions) Customer(subscription *Subscription, options ...Options) (*Customer, *Error) {
+// Customer allows you to get the customer owning the subscription.
+func (s Subscription) Customer(options ...Options) (*Customer, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -84,14 +88,18 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/customers"
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -99,10 +107,10 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -110,22 +118,22 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -133,8 +141,12 @@ func (s Subscriptions) Customer(subscription *Subscription, options ...Options) 
 	return payload.Customer, nil
 }
 
-// Discounts : Get the discounts applied to the subscription.
-func (s Subscriptions) Discounts(subscription *Subscription, options ...Options) ([]*Discount, *Error) {
+// Discounts allows you to get the discounts applied to the subscription.
+func (s Subscription) Discounts(options ...Options) ([]*Discount, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -152,14 +164,18 @@ func (s Subscriptions) Discounts(subscription *Subscription, options ...Options)
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/discounts"
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/discounts"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -167,10 +183,10 @@ func (s Subscriptions) Discounts(subscription *Subscription, options ...Options)
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -178,22 +194,22 @@ func (s Subscriptions) Discounts(subscription *Subscription, options ...Options)
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -201,8 +217,87 @@ func (s Subscriptions) Discounts(subscription *Subscription, options ...Options)
 	return payload.Discounts, nil
 }
 
-// Transactions : Get the subscriptions past transactions.
-func (s Subscriptions) Transactions(subscription *Subscription, options ...Options) ([]*Transaction, *Error) {
+// RemoveDiscount allows you to remove a discount applied to a subscription.
+func (s Subscription) RemoveDiscount(discountID string, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Subscription *Subscription `json:"discount"`
+		Success      bool          `json:"success"`
+		Message      string        `json:"message"`
+		Code         string        `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/discounts/" + url.QueryEscape(discountID) + ""
+
+	req, err := http.NewRequest(
+		"DELETE",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
+
+		return nil, erri
+	}
+
+	return payload.Subscription, nil
+}
+
+// Transactions allows you to get the subscriptions past transactions.
+func (s Subscription) Transactions(options ...Options) ([]*Transaction, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -220,14 +315,18 @@ func (s Subscriptions) Transactions(subscription *Subscription, options ...Optio
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + "/transactions"
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/transactions"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -235,10 +334,10 @@ func (s Subscriptions) Transactions(subscription *Subscription, options ...Optio
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -246,22 +345,22 @@ func (s Subscriptions) Transactions(subscription *Subscription, options ...Optio
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -269,8 +368,12 @@ func (s Subscriptions) Transactions(subscription *Subscription, options ...Optio
 	return payload.Transactions, nil
 }
 
-// All : Get all the subscriptions.
-func (s Subscriptions) All(options ...Options) ([]*Subscription, *Error) {
+// All allows you to get all the subscriptions.
+func (s Subscription) All(options ...Options) ([]*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -288,11 +391,15 @@ func (s Subscriptions) All(options ...Options) ([]*Subscription, *Error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/subscriptions"
@@ -303,10 +410,10 @@ func (s Subscriptions) All(options ...Options) ([]*Subscription, *Error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -314,22 +421,22 @@ func (s Subscriptions) All(options ...Options) ([]*Subscription, *Error) {
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -337,8 +444,12 @@ func (s Subscriptions) All(options ...Options) ([]*Subscription, *Error) {
 	return payload.Subscriptions, nil
 }
 
-// Create : Create a new subscription for the given customer.
-func (s Subscriptions) Create(subscription *Subscription, customerID string, options ...Options) (*Subscription, *Error) {
+// Create allows you to create a new subscription for the given customer.
+func (s Subscription) Create(customerID string, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -355,21 +466,25 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"cancel_at":    subscription.CancelAt,
-		"name":         subscription.Name,
-		"amount":       subscription.Amount,
-		"currency":     subscription.Currency,
-		"metadata":     subscription.Metadata,
-		"interval":     subscription.Interval,
-		"trial_end_at": subscription.TrialEndAt,
-		"return_url":   subscription.ReturnURL,
-		"cancel_url":   subscription.CancelURL,
+		"cancel_at":    s.CancelAt,
+		"name":         s.Name,
+		"amount":       s.Amount,
+		"currency":     s.Currency,
+		"metadata":     s.Metadata,
+		"interval":     s.Interval,
+		"trial_end_at": s.TrialEndAt,
+		"return_url":   s.ReturnURL,
+		"cancel_url":   s.CancelURL,
 		"customer_id":  customerID,
 		"expand":       opt.Expand,
 		"filter":       opt.Filter,
+		"limit":        opt.Limit,
+		"page":         opt.Page,
+		"end_before":   opt.EndBefore,
+		"start_after":  opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/subscriptions"
@@ -380,10 +495,10 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -391,22 +506,22 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -414,8 +529,12 @@ func (s Subscriptions) Create(subscription *Subscription, customerID string, opt
 	return payload.Subscription, nil
 }
 
-// CreateFromPlan : Create a new subscription for the customer from the given plan ID.
-func (s Subscriptions) CreateFromPlan(subscription *Subscription, customerID, planID string, options ...Options) (*Subscription, *Error) {
+// CreateFromPlan allows you to create a new subscription for the customer from the given plan ID.
+func (s Subscription) CreateFromPlan(customerID, planID string, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -432,22 +551,26 @@ func (s Subscriptions) CreateFromPlan(subscription *Subscription, customerID, pl
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"cancel_at":    subscription.CancelAt,
-		"name":         subscription.Name,
-		"amount":       subscription.Amount,
-		"currency":     subscription.Currency,
-		"metadata":     subscription.Metadata,
-		"interval":     subscription.Interval,
-		"trial_end_at": subscription.TrialEndAt,
-		"return_url":   subscription.ReturnURL,
-		"cancel_url":   subscription.CancelURL,
+		"cancel_at":    s.CancelAt,
+		"name":         s.Name,
+		"amount":       s.Amount,
+		"currency":     s.Currency,
+		"metadata":     s.Metadata,
+		"interval":     s.Interval,
+		"trial_end_at": s.TrialEndAt,
+		"return_url":   s.ReturnURL,
+		"cancel_url":   s.CancelURL,
 		"customer_id":  customerID,
 		"plan_id":      planID,
 		"expand":       opt.Expand,
 		"filter":       opt.Filter,
+		"limit":        opt.Limit,
+		"page":         opt.Page,
+		"end_before":   opt.EndBefore,
+		"start_after":  opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/subscriptions"
@@ -458,10 +581,10 @@ func (s Subscriptions) CreateFromPlan(subscription *Subscription, customerID, pl
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -469,22 +592,22 @@ func (s Subscriptions) CreateFromPlan(subscription *Subscription, customerID, pl
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -492,8 +615,12 @@ func (s Subscriptions) CreateFromPlan(subscription *Subscription, customerID, pl
 	return payload.Subscription, nil
 }
 
-// Find : Find a subscription by its ID.
-func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscription, *Error) {
+// Find allows you to find a subscription by its ID.
+func (s Subscription) Find(subscriptionID string, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -510,11 +637,15 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + ""
@@ -525,10 +656,10 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -536,22 +667,22 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -559,8 +690,12 @@ func (s Subscriptions) Find(subscriptionID string, options ...Options) (*Subscri
 	return payload.Subscription, nil
 }
 
-// Update : Update the subscription.
-func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*Subscription, *Error) {
+// Update allows you to update the subscription.
+func (s Subscription) Update(prorate bool, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -577,15 +712,20 @@ func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"trial_end_at": subscription.TrialEndAt,
+		"trial_end_at": s.TrialEndAt,
+		"prorate":      prorate,
 		"expand":       opt.Expand,
 		"filter":       opt.Filter,
+		"limit":        opt.Limit,
+		"page":         opt.Page,
+		"end_before":   opt.EndBefore,
+		"start_after":  opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -593,10 +733,10 @@ func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -604,22 +744,22 @@ func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -627,8 +767,12 @@ func (s Subscriptions) Update(subscription *Subscription, options ...Options) (*
 	return payload.Subscription, nil
 }
 
-// UpdatePlan : Update the subscription's plan.
-func (s Subscriptions) UpdatePlan(subscription *Subscription, planID, prorate bool, options ...Options) (*Subscription, *Error) {
+// UpdatePlan allows you to update the subscription's plan.
+func (s Subscription) UpdatePlan(planID, prorate bool, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -645,16 +789,20 @@ func (s Subscriptions) UpdatePlan(subscription *Subscription, planID, prorate bo
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"plan_id": planID,
-		"prorate": prorate,
-		"expand":  opt.Expand,
-		"filter":  opt.Filter,
+		"plan_id":     planID,
+		"prorate":     prorate,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -662,10 +810,10 @@ func (s Subscriptions) UpdatePlan(subscription *Subscription, planID, prorate bo
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -673,22 +821,22 @@ func (s Subscriptions) UpdatePlan(subscription *Subscription, planID, prorate bo
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -696,8 +844,12 @@ func (s Subscriptions) UpdatePlan(subscription *Subscription, planID, prorate bo
 	return payload.Subscription, nil
 }
 
-// ApplySource : Apply a source to the subscription to activate or update the subscription's source.
-func (s Subscriptions) ApplySource(subscription *Subscription, source string, options ...Options) (*Subscription, *Error) {
+// ApplySource allows you to apply a source to the subscription to activate or update the subscription's source.
+func (s Subscription) ApplySource(source string, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -714,15 +866,19 @@ func (s Subscriptions) ApplySource(subscription *Subscription, source string, op
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"source": source,
-		"expand": opt.Expand,
-		"filter": opt.Filter,
+		"source":      source,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -730,10 +886,10 @@ func (s Subscriptions) ApplySource(subscription *Subscription, source string, op
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -741,22 +897,22 @@ func (s Subscriptions) ApplySource(subscription *Subscription, source string, op
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -764,8 +920,12 @@ func (s Subscriptions) ApplySource(subscription *Subscription, source string, op
 	return payload.Subscription, nil
 }
 
-// Cancel : Cancel a subscription. The reason may be provided as well.
-func (s Subscriptions) Cancel(subscription *Subscription, cancellationReason string, options ...Options) (*Subscription, *Error) {
+// Cancel allows you to cancel a subscription. The reason may be provided as well.
+func (s Subscription) Cancel(cancellationReason string, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -785,12 +945,16 @@ func (s Subscriptions) Cancel(subscription *Subscription, cancellationReason str
 		"cancellation_reason": cancellationReason,
 		"expand":              opt.Expand,
 		"filter":              opt.Filter,
+		"limit":               opt.Limit,
+		"page":                opt.Page,
+		"end_before":          opt.EndBefore,
+		"start_after":         opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -798,10 +962,10 @@ func (s Subscriptions) Cancel(subscription *Subscription, cancellationReason str
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -809,22 +973,22 @@ func (s Subscriptions) Cancel(subscription *Subscription, cancellationReason str
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
@@ -832,8 +996,12 @@ func (s Subscriptions) Cancel(subscription *Subscription, cancellationReason str
 	return payload.Subscription, nil
 }
 
-// CancelAt : Schedule the cancellation of the subscription. The reason may be provided as well.
-func (s Subscriptions) CancelAt(subscription *Subscription, cancelAt, cancellationReason string, options ...Options) (*Subscription, *Error) {
+// CancelAt allows you to schedule the cancellation of the subscription. The reason may be provided as well.
+func (s Subscription) CancelAt(cancelAt, cancellationReason string, options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
 	opt := Options{}
 	if len(options) == 1 {
 		opt = options[0]
@@ -854,12 +1022,16 @@ func (s Subscriptions) CancelAt(subscription *Subscription, cancelAt, cancellati
 		"cancellation_reason": cancellationReason,
 		"expand":              opt.Expand,
 		"filter":              opt.Filter,
+		"limit":               opt.Limit,
+		"page":                opt.Page,
+		"end_before":          opt.EndBefore,
+		"start_after":         opt.StartAfter,
 	})
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscription.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -867,10 +1039,10 @@ func (s Subscriptions) CancelAt(subscription *Subscription, cancelAt, cancellati
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.p.APIVersion)
+	req.Header.Set("API-Version", s.Client.APIVersion)
 	req.Header.Set("Accept", "application/json")
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
@@ -878,22 +1050,22 @@ func (s Subscriptions) CancelAt(subscription *Subscription, cancelAt, cancellati
 	if opt.DisableLogging {
 		req.Header.Set("Disable-Logging", "true")
 	}
-	req.SetBasicAuth(s.p.projectID, s.p.projectSecret)
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, newError(err)
+		return nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
-		erri := newError(errors.New(payload.Message))
-		erri.Code = payload.Code
+		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
+			payload.Code)
 
 		return nil, erri
 	}
