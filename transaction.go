@@ -48,11 +48,11 @@ type Transaction struct {
 	// Sandbox is the define whether or not the transaction is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the transaction was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
-// GetRefunds allows you to get the transaction's refunds.
-func (s Transaction) GetRefunds(options ...Options) ([]*Refund, error) {
+// FetchRefunds allows you to get the transaction's refunds.
+func (s Transaction) FetchRefunds(options ...Options) ([]*Refund, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewTransaction() method to create a new Transaction object")
 	}
@@ -118,8 +118,8 @@ func (s Transaction) GetRefunds(options ...Options) ([]*Refund, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -193,8 +193,8 @@ func (s Transaction) FindRefund(refundID string, options ...Options) (*Refund, e
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -269,8 +269,8 @@ func (s Transaction) All(options ...Options) ([]*Transaction, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -344,8 +344,8 @@ func (s Transaction) Find(transactionID string, options ...Options) (*Transactio
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}

@@ -46,7 +46,7 @@ type Invoice struct {
 	// Sandbox is the define whether or not the invoice is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the invoice was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
@@ -116,8 +116,8 @@ func (s Invoice) Authorize(source string, options ...Options) (*Transaction, err
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -192,8 +192,8 @@ func (s Invoice) Capture(source string, options ...Options) (*Transaction, error
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -201,8 +201,8 @@ func (s Invoice) Capture(source string, options ...Options) (*Transaction, error
 	return payload.Transaction, nil
 }
 
-// GetCustomer allows you to get the customer linked to the invoice.
-func (s Invoice) GetCustomer(options ...Options) (*Customer, error) {
+// FetchCustomer allows you to get the customer linked to the invoice.
+func (s Invoice) FetchCustomer(options ...Options) (*Customer, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -267,8 +267,8 @@ func (s Invoice) GetCustomer(options ...Options) (*Customer, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -343,8 +343,8 @@ func (s Invoice) AssignCustomer(customerID string, options ...Options) (*Custome
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -352,8 +352,8 @@ func (s Invoice) AssignCustomer(customerID string, options ...Options) (*Custome
 	return payload.Customer, nil
 }
 
-// GetTransaction allows you to get the transaction of the invoice.
-func (s Invoice) GetTransaction(options ...Options) (*Transaction, error) {
+// FetchTransaction allows you to get the transaction of the invoice.
+func (s Invoice) FetchTransaction(options ...Options) (*Transaction, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -418,8 +418,8 @@ func (s Invoice) GetTransaction(options ...Options) (*Transaction, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -493,8 +493,8 @@ func (s Invoice) Void(options ...Options) (*Transaction, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -569,8 +569,8 @@ func (s Invoice) All(options ...Options) ([]*Invoice, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -652,8 +652,8 @@ func (s Invoice) Create(options ...Options) (*Invoice, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -736,8 +736,8 @@ func (s Invoice) CreateForCustomer(customerID string, options ...Options) (*Invo
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -811,8 +811,8 @@ func (s Invoice) Find(invoiceID string, options ...Options) (*Invoice, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}

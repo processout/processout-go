@@ -48,11 +48,11 @@ type Customer struct {
 	// Sandbox is the define whether or not the customer is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the customer was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
-// GetSubscriptions allows you to get the subscriptions belonging to the customer.
-func (s Customer) GetSubscriptions(options ...Options) ([]*Subscription, error) {
+// FetchSubscriptions allows you to get the subscriptions belonging to the customer.
+func (s Customer) FetchSubscriptions(options ...Options) ([]*Subscription, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -118,8 +118,8 @@ func (s Customer) GetSubscriptions(options ...Options) ([]*Subscription, error) 
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -127,8 +127,8 @@ func (s Customer) GetSubscriptions(options ...Options) ([]*Subscription, error) 
 	return payload.Subscriptions, nil
 }
 
-// GetTokens allows you to get the customer's tokens.
-func (s Customer) GetTokens(options ...Options) ([]*Token, error) {
+// FetchTokens allows you to get the customer's tokens.
+func (s Customer) FetchTokens(options ...Options) ([]*Token, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -194,8 +194,8 @@ func (s Customer) GetTokens(options ...Options) ([]*Token, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -269,8 +269,8 @@ func (s Customer) FindToken(tokenID string, options ...Options) (*Token, error) 
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -278,8 +278,8 @@ func (s Customer) FindToken(tokenID string, options ...Options) (*Token, error) 
 	return payload.Token, nil
 }
 
-// Transactions allows you to get the transactions belonging to the customer.
-func (s Customer) Transactions(options ...Options) ([]*Transaction, error) {
+// FetchTransactions allows you to get the transactions belonging to the customer.
+func (s Customer) FetchTransactions(options ...Options) ([]*Transaction, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -345,8 +345,8 @@ func (s Customer) Transactions(options ...Options) ([]*Transaction, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -421,8 +421,8 @@ func (s Customer) All(options ...Options) ([]*Customer, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -508,8 +508,8 @@ func (s Customer) Create(options ...Options) (*Customer, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -583,8 +583,8 @@ func (s Customer) Find(customerID string, options ...Options) (*Customer, error)
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -669,8 +669,8 @@ func (s Customer) Save(options ...Options) (*Customer, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -743,8 +743,8 @@ func (s Customer) Delete(options ...Options) error {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return erri
 	}

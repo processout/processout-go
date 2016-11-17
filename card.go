@@ -40,7 +40,7 @@ type Card struct {
 	// Sandbox is the define whether or not the card is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the card was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 // dummyCard is a dummy function that's only

@@ -24,7 +24,7 @@ type Project struct {
 	// Email is the email of the project
 	Email string `json:"email"`
 	// CreatedAt is the date at which the project was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 // GatewayConfigurations allows you to get all the gateway configurations of the project
@@ -94,8 +94,8 @@ func (s Project) GatewayConfigurations(options ...Options) ([]*GatewayConfigurat
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}

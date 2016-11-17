@@ -30,7 +30,7 @@ type Coupon struct {
 	// MaxRedemptions is the number of time the coupon can be redeemed. If 0, there's no limit
 	MaxRedemptions int `json:"max_redemptions"`
 	// ExpiresAt is the date at which the coupon will expire
-	ExpiresAt time.Time `json:"expires_at"`
+	ExpiresAt *time.Time `json:"expires_at"`
 	// Metadata is the metadata related to the coupon, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
 	// IterationCount is the number billing cycles the coupon will last when applied to a subscription. If 0, will last forever
@@ -40,7 +40,7 @@ type Coupon struct {
 	// Sandbox is the define whether or not the plan is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the plan was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 // All allows you to get all the coupons.
@@ -110,8 +110,8 @@ func (s Coupon) All(options ...Options) ([]*Coupon, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -193,8 +193,8 @@ func (s Coupon) Create(options ...Options) (*Coupon, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -268,8 +268,8 @@ func (s Coupon) Find(couponID string, options ...Options) (*Coupon, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -344,8 +344,8 @@ func (s Coupon) Save(options ...Options) (*Coupon, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -418,8 +418,8 @@ func (s Coupon) Delete(options ...Options) error {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return erri
 	}

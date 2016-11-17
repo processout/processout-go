@@ -38,7 +38,7 @@ type Subscription struct {
 	// Interval is the the subscription interval, formatted in the format "1d2w3m4y" (day, week, month, year)
 	Interval string `json:"interval"`
 	// TrialEndAt is the date at which the subscription trial should end. Can be null to set no trial
-	TrialEndAt time.Time `json:"trial_end_at"`
+	TrialEndAt *time.Time `json:"trial_end_at"`
 	// Activated is the whether or not the subscription was activated. This field does not take into account whether or not the subscription was canceled. Used the active field to know if the subscription is currently active
 	Activated bool `json:"activated"`
 	// Active is the whether or not the subscription is currently active (ie activated and not cancelled)
@@ -50,7 +50,7 @@ type Subscription struct {
 	// PendingCancellation is the wheither or not the subscription is pending cancellation (meaning a cancel_at date was set)
 	PendingCancellation bool `json:"pending_cancellation"`
 	// CancelAt is the date at which the subscription will automatically be canceled. Can be null
-	CancelAt time.Time `json:"cancel_at"`
+	CancelAt *time.Time `json:"cancel_at"`
 	// ReturnURL is the uRL where the customer will be redirected upon activation of the subscription
 	ReturnURL string `json:"return_url"`
 	// CancelURL is the uRL where the customer will be redirected if the subscription activation was canceled
@@ -58,15 +58,15 @@ type Subscription struct {
 	// Sandbox is the define whether or not the subscription is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the subscription was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 	// ActivatedAt is the date at which the subscription was activated. Null if the subscription hasn't been activated yet
-	ActivatedAt time.Time `json:"activated_at"`
+	ActivatedAt *time.Time `json:"activated_at"`
 	// IterateAt is the next iteration date, corresponding to the next billing cycle start date
-	IterateAt time.Time `json:"iterate_at"`
+	IterateAt *time.Time `json:"iterate_at"`
 }
 
-// GetCustomer allows you to get the customer owning the subscription.
-func (s Subscription) GetCustomer(options ...Options) (*Customer, error) {
+// FetchCustomer allows you to get the customer owning the subscription.
+func (s Subscription) FetchCustomer(options ...Options) (*Customer, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -131,8 +131,8 @@ func (s Subscription) GetCustomer(options ...Options) (*Customer, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -140,8 +140,8 @@ func (s Subscription) GetCustomer(options ...Options) (*Customer, error) {
 	return payload.Customer, nil
 }
 
-// GetDiscounts allows you to get the discounts applied to the subscription.
-func (s Subscription) GetDiscounts(options ...Options) ([]*Discount, error) {
+// FetchDiscounts allows you to get the discounts applied to the subscription.
+func (s Subscription) FetchDiscounts(options ...Options) ([]*Discount, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -207,8 +207,8 @@ func (s Subscription) GetDiscounts(options ...Options) ([]*Discount, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -282,8 +282,8 @@ func (s Subscription) FindDiscount(discountID string, options ...Options) (*Disc
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -357,8 +357,8 @@ func (s Subscription) RemoveDiscount(discountID string, options ...Options) (*Su
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -366,8 +366,8 @@ func (s Subscription) RemoveDiscount(discountID string, options ...Options) (*Su
 	return payload.Subscription, nil
 }
 
-// GetTransactions allows you to get the subscriptions past transactions.
-func (s Subscription) GetTransactions(options ...Options) ([]*Transaction, error) {
+// FetchTransactions allows you to get the subscriptions past transactions.
+func (s Subscription) FetchTransactions(options ...Options) ([]*Transaction, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -433,8 +433,8 @@ func (s Subscription) GetTransactions(options ...Options) ([]*Transaction, error
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -509,8 +509,8 @@ func (s Subscription) All(options ...Options) ([]*Subscription, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -594,8 +594,8 @@ func (s Subscription) Create(customerID string, options ...Options) (*Subscripti
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -680,8 +680,8 @@ func (s Subscription) CreateFromPlan(customerID, planID string, options ...Optio
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -755,8 +755,8 @@ func (s Subscription) Find(subscriptionID string, options ...Options) (*Subscrip
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -832,8 +832,8 @@ func (s Subscription) Update(prorate bool, options ...Options) (*Subscription, e
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -909,8 +909,8 @@ func (s Subscription) UpdatePlan(planID, prorate bool, options ...Options) (*Sub
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -985,8 +985,8 @@ func (s Subscription) ApplySource(source string, options ...Options) (*Subscript
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -1061,8 +1061,8 @@ func (s Subscription) Cancel(cancellationReason string, options ...Options) (*Su
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -1138,8 +1138,8 @@ func (s Subscription) CancelAtDate(cancelAt, cancellationReason string, options 
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}

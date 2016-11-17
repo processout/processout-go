@@ -26,7 +26,7 @@ type Token struct {
 	// IsSubscriptionOnly is the define whether or not the customer token is used on a recurring invoice
 	IsSubscriptionOnly bool `json:"is_subscription_only"`
 	// CreatedAt is the date at which the customer token was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 // Find allows you to find a customer's token by its ID.
@@ -95,8 +95,8 @@ func (s Token) Find(customerID, tokenID string, options ...Options) (*Token, err
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -172,8 +172,8 @@ func (s Token) Create(customerID, source string, options ...Options) (*Token, er
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -250,8 +250,8 @@ func (s Token) CreateFromRequest(customerID, source, target string, options ...O
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}

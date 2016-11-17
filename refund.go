@@ -30,7 +30,7 @@ type Refund struct {
 	// Sandbox is the define whether or not the refund is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the refund was done
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 // Find allows you to find a transaction's refund by its ID.
@@ -99,8 +99,8 @@ func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refun
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -177,8 +177,8 @@ func (s Refund) Apply(transactionID string, options ...Options) error {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return erri
 	}

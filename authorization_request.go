@@ -40,11 +40,11 @@ type AuthorizationRequest struct {
 	// Sandbox is the define whether or not the authorization is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the authorization was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
-// GetCustomer allows you to get the customer linked to the authorization request.
-func (s AuthorizationRequest) GetCustomer(options ...Options) (*Customer, error) {
+// FetchCustomer allows you to get the customer linked to the authorization request.
+func (s AuthorizationRequest) FetchCustomer(options ...Options) (*Customer, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
 	}
@@ -109,8 +109,8 @@ func (s AuthorizationRequest) GetCustomer(options ...Options) (*Customer, error)
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -190,8 +190,8 @@ func (s AuthorizationRequest) Create(customerID string, options ...Options) (*Au
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -265,8 +265,8 @@ func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Opt
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}

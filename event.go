@@ -26,11 +26,11 @@ type Event struct {
 	// Sandbox is the define whether or not the event is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// FiredAt is the date at which the event was fired
-	FiredAt time.Time `json:"fired_at"`
+	FiredAt *time.Time `json:"fired_at"`
 }
 
-// Webhooks allows you to get all the webhooks of the event.
-func (s Event) Webhooks(options ...Options) ([]*Webhook, error) {
+// FetchWebhooks allows you to get all the webhooks of the event.
+func (s Event) FetchWebhooks(options ...Options) ([]*Webhook, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewEvent() method to create a new Event object")
 	}
@@ -96,8 +96,8 @@ func (s Event) Webhooks(options ...Options) ([]*Webhook, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -172,8 +172,8 @@ func (s Event) All(options ...Options) ([]*Event, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -247,8 +247,8 @@ func (s Event) Find(eventID string, options ...Options) (*Event, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}

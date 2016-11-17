@@ -26,13 +26,13 @@ type Discount struct {
 	// Amount is the amount discounted
 	Amount string `json:"amount"`
 	// ExpiresAt is the date at which the discount will expire
-	ExpiresAt time.Time `json:"expires_at"`
+	ExpiresAt *time.Time `json:"expires_at"`
 	// Metadata is the metadata related to the coupon, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
 	// Sandbox is the define whether or not the plan is in sandbox environment
 	Sandbox bool `json:"sandbox"`
 	// CreatedAt is the date at which the plan was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 // Apply allows you to apply a new discount to the given subscription ID.
@@ -104,8 +104,8 @@ func (s Discount) Apply(subscriptionID string, options ...Options) (*Discount, e
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -183,8 +183,8 @@ func (s Discount) ApplyCoupon(subscriptionID, couponID string, options ...Option
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -258,8 +258,8 @@ func (s Discount) Find(subscriptionID, discountID string, options ...Options) (*
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}

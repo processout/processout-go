@@ -36,9 +36,9 @@ type Webhook struct {
 	// Status is the the status of the webhook. 0: pending, 1: success, 2: error
 	Status int `json:"status"`
 	// CreatedAt is the date at which the webhook was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 	// ReleaseAt is the date at webhook will be/is released
-	ReleaseAt time.Time `json:"release_at"`
+	ReleaseAt *time.Time `json:"release_at"`
 }
 
 // dummyWebhook is a dummy function that's only

@@ -26,7 +26,7 @@ type Activity struct {
 	// Level is the level of the activity
 	Level int `json:"level"`
 	// CreatedAt is the date at which the transaction was created
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at"`
 }
 
 // All allows you to get all the project activities.
@@ -96,8 +96,8 @@ func (s Activity) All(options ...Options) ([]*Activity, error) {
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
@@ -171,8 +171,8 @@ func (s Activity) Find(activityID string, options ...Options) (*Activity, error)
 	}
 
 	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Message,
-			payload.Code)
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
 
 		return nil, erri
 	}
