@@ -27,8 +27,8 @@ type Project struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-// GatewayConfigurations allows you to get all the gateway configurations of the project
-func (s Project) GatewayConfigurations(options ...Options) ([]*GatewayConfiguration, error) {
+// FetchGatewayConfigurations allows you to get all the gateway configurations of the project
+func (s Project) FetchGatewayConfigurations(options ...Options) ([]*GatewayConfiguration, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewProject() method to create a new Project object")
 	}

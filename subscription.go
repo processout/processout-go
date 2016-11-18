@@ -216,6 +216,82 @@ func (s Subscription) FetchDiscounts(options ...Options) ([]*Discount, error) {
 	return payload.Discounts, nil
 }
 
+// ApplyCoupon allows you to apply a coupon on the subscription.
+func (s Subscription) ApplyCoupon(couponID string, options ...Options) (*Discount, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Discount *Discount `json:"discount"`
+		Success  bool      `json:"success"`
+		Message  string    `json:"message"`
+		Code     string    `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"coupon_id":   couponID,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/discounts"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	return payload.Discount, nil
+}
+
 // FindDiscount allows you to find a subscription's discount by its ID.
 func (s Subscription) FindDiscount(discountID string, options ...Options) (*Discount, error) {
 	if s.Client == nil {

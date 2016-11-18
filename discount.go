@@ -113,7 +113,7 @@ func (s Discount) Apply(subscriptionID string, options ...Options) (*Discount, e
 	return payload.Discount, nil
 }
 
-// ApplyCoupon allows you to apply a new discount to the given subscription ID from a coupon ID.
+// ApplyCoupon allows you to apply a new discount on the subscription from a coupon ID.
 func (s Discount) ApplyCoupon(subscriptionID, couponID string, options ...Options) (*Discount, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewDiscount() method to create a new Discount object")
@@ -135,9 +135,6 @@ func (s Discount) ApplyCoupon(subscriptionID, couponID string, options ...Option
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"amount":      s.Amount,
-		"expires_at":  s.ExpiresAt,
-		"metadata":    s.Metadata,
 		"coupon_id":   couponID,
 		"expand":      opt.Expand,
 		"filter":      opt.Filter,
