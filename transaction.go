@@ -51,22 +51,24 @@ type Transaction struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Transaction) setClient(c *ProcessOut) {
+// SetClient sets the client for the Transaction object and its
+// children
+func (s *Transaction) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 	if s.Customer != nil {
-		s.Customer.setClient(c)
+		s.Customer.SetClient(c)
 	}
 	if s.Subscription != nil {
-		s.Subscription.setClient(c)
+		s.Subscription.SetClient(c)
 	}
 	if s.Token != nil {
-		s.Token.setClient(c)
+		s.Token.SetClient(c)
 	}
 	if s.Card != nil {
-		s.Card.setClient(c)
+		s.Card.SetClient(c)
 	}
 }
 
@@ -144,7 +146,7 @@ func (s Transaction) FetchRefunds(options ...Options) ([]*Refund, error) {
 	}
 
 	for _, o := range payload.Refunds {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Refunds, nil
 }
@@ -221,7 +223,7 @@ func (s Transaction) FindRefund(refundID string, options ...Options) (*Refund, e
 		return nil, erri
 	}
 
-	payload.Refund.setClient(s.Client)
+	payload.Refund.SetClient(s.Client)
 	return payload.Refund, nil
 }
 
@@ -299,7 +301,7 @@ func (s Transaction) All(options ...Options) ([]*Transaction, error) {
 	}
 
 	for _, o := range payload.Transactions {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Transactions, nil
 }
@@ -376,7 +378,7 @@ func (s Transaction) Find(transactionID string, options ...Options) (*Transactio
 		return nil, erri
 	}
 
-	payload.Transaction.setClient(s.Client)
+	payload.Transaction.SetClient(s.Client)
 	return payload.Transaction, nil
 }
 

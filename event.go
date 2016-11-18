@@ -29,10 +29,12 @@ type Event struct {
 	FiredAt *time.Time `json:"fired_at"`
 }
 
-func (s *Event) setClient(c *ProcessOut) {
+// SetClient sets the client for the Event object and its
+// children
+func (s *Event) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 }
 
@@ -110,7 +112,7 @@ func (s Event) FetchWebhooks(options ...Options) ([]*Webhook, error) {
 	}
 
 	for _, o := range payload.Webhooks {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Webhooks, nil
 }
@@ -189,7 +191,7 @@ func (s Event) All(options ...Options) ([]*Event, error) {
 	}
 
 	for _, o := range payload.Events {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Events, nil
 }
@@ -266,7 +268,7 @@ func (s Event) Find(eventID string, options ...Options) (*Event, error) {
 		return nil, erri
 	}
 
-	payload.Event.setClient(s.Client)
+	payload.Event.SetClient(s.Client)
 	return payload.Event, nil
 }
 

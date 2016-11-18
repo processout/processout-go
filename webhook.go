@@ -41,13 +41,15 @@ type Webhook struct {
 	ReleaseAt *time.Time `json:"release_at"`
 }
 
-func (s *Webhook) setClient(c *ProcessOut) {
+// SetClient sets the client for the Webhook object and its
+// children
+func (s *Webhook) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 	if s.Event != nil {
-		s.Event.setClient(c)
+		s.Event.SetClient(c)
 	}
 }
 

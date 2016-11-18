@@ -41,10 +41,12 @@ type Plan struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Plan) setClient(c *ProcessOut) {
+// SetClient sets the client for the Plan object and its
+// children
+func (s *Plan) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 }
 
@@ -122,7 +124,7 @@ func (s Plan) All(options ...Options) ([]*Plan, error) {
 	}
 
 	for _, o := range payload.Plans {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Plans, nil
 }
@@ -208,7 +210,7 @@ func (s Plan) Create(options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.setClient(s.Client)
+	payload.Plan.SetClient(s.Client)
 	return payload.Plan, nil
 }
 
@@ -284,7 +286,7 @@ func (s Plan) Find(planID string, options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.setClient(s.Client)
+	payload.Plan.SetClient(s.Client)
 	return payload.Plan, nil
 }
 
@@ -365,7 +367,7 @@ func (s Plan) Update(options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.setClient(s.Client)
+	payload.Plan.SetClient(s.Client)
 	return payload.Plan, nil
 }
 

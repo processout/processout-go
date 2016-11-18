@@ -49,19 +49,21 @@ type Invoice struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Invoice) setClient(c *ProcessOut) {
+// SetClient sets the client for the Invoice object and its
+// children
+func (s *Invoice) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 	if s.Transaction != nil {
-		s.Transaction.setClient(c)
+		s.Transaction.SetClient(c)
 	}
 	if s.Customer != nil {
-		s.Customer.setClient(c)
+		s.Customer.SetClient(c)
 	}
 	if s.Subscription != nil {
-		s.Subscription.setClient(c)
+		s.Subscription.SetClient(c)
 	}
 }
 
@@ -138,7 +140,7 @@ func (s Invoice) Authorize(source string, options ...Options) (*Transaction, err
 		return nil, erri
 	}
 
-	payload.Transaction.setClient(s.Client)
+	payload.Transaction.SetClient(s.Client)
 	return payload.Transaction, nil
 }
 
@@ -215,7 +217,7 @@ func (s Invoice) Capture(source string, options ...Options) (*Transaction, error
 		return nil, erri
 	}
 
-	payload.Transaction.setClient(s.Client)
+	payload.Transaction.SetClient(s.Client)
 	return payload.Transaction, nil
 }
 
@@ -291,7 +293,7 @@ func (s Invoice) FetchCustomer(options ...Options) (*Customer, error) {
 		return nil, erri
 	}
 
-	payload.Customer.setClient(s.Client)
+	payload.Customer.SetClient(s.Client)
 	return payload.Customer, nil
 }
 
@@ -368,7 +370,7 @@ func (s Invoice) AssignCustomer(customerID string, options ...Options) (*Custome
 		return nil, erri
 	}
 
-	payload.Customer.setClient(s.Client)
+	payload.Customer.SetClient(s.Client)
 	return payload.Customer, nil
 }
 
@@ -444,7 +446,7 @@ func (s Invoice) FetchTransaction(options ...Options) (*Transaction, error) {
 		return nil, erri
 	}
 
-	payload.Transaction.setClient(s.Client)
+	payload.Transaction.SetClient(s.Client)
 	return payload.Transaction, nil
 }
 
@@ -520,7 +522,7 @@ func (s Invoice) Void(options ...Options) (*Transaction, error) {
 		return nil, erri
 	}
 
-	payload.Transaction.setClient(s.Client)
+	payload.Transaction.SetClient(s.Client)
 	return payload.Transaction, nil
 }
 
@@ -598,7 +600,7 @@ func (s Invoice) All(options ...Options) ([]*Invoice, error) {
 	}
 
 	for _, o := range payload.Invoices {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Invoices, nil
 }
@@ -683,7 +685,7 @@ func (s Invoice) Create(options ...Options) (*Invoice, error) {
 		return nil, erri
 	}
 
-	payload.Invoice.setClient(s.Client)
+	payload.Invoice.SetClient(s.Client)
 	return payload.Invoice, nil
 }
 
@@ -768,7 +770,7 @@ func (s Invoice) CreateForCustomer(customerID string, options ...Options) (*Invo
 		return nil, erri
 	}
 
-	payload.Invoice.setClient(s.Client)
+	payload.Invoice.SetClient(s.Client)
 	return payload.Invoice, nil
 }
 
@@ -844,7 +846,7 @@ func (s Invoice) Find(invoiceID string, options ...Options) (*Invoice, error) {
 		return nil, erri
 	}
 
-	payload.Invoice.setClient(s.Client)
+	payload.Invoice.SetClient(s.Client)
 	return payload.Invoice, nil
 }
 

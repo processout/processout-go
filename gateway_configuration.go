@@ -27,13 +27,15 @@ type GatewayConfiguration struct {
 	PublicKeys map[string]string `json:"public_keys"`
 }
 
-func (s *GatewayConfiguration) setClient(c *ProcessOut) {
+// SetClient sets the client for the GatewayConfiguration object and its
+// children
+func (s *GatewayConfiguration) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 	if s.Gateway != nil {
-		s.Gateway.setClient(c)
+		s.Gateway.SetClient(c)
 	}
 }
 

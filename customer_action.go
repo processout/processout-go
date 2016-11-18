@@ -21,7 +21,9 @@ type CustomerAction struct {
 	Value string `json:"value"`
 }
 
-func (s *CustomerAction) setClient(c *ProcessOut) {
+// SetClient sets the client for the CustomerAction object and its
+// children
+func (s *CustomerAction) SetClient(c *ProcessOut) {
 	s.Client = c
 }
 

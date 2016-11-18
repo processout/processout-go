@@ -27,7 +27,9 @@ type Project struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Project) setClient(c *ProcessOut) {
+// SetClient sets the client for the Project object and its
+// children
+func (s *Project) SetClient(c *ProcessOut) {
 	s.Client = c
 }
 
@@ -105,7 +107,7 @@ func (s Project) FetchGatewayConfigurations(options ...Options) ([]*GatewayConfi
 	}
 
 	for _, o := range payload.GatewayConfigurations {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.GatewayConfigurations, nil
 }

@@ -43,16 +43,18 @@ type AuthorizationRequest struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *AuthorizationRequest) setClient(c *ProcessOut) {
+// SetClient sets the client for the AuthorizationRequest object and its
+// children
+func (s *AuthorizationRequest) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 	if s.Customer != nil {
-		s.Customer.setClient(c)
+		s.Customer.SetClient(c)
 	}
 	if s.Token != nil {
-		s.Token.setClient(c)
+		s.Token.SetClient(c)
 	}
 }
 
@@ -128,7 +130,7 @@ func (s AuthorizationRequest) FetchCustomer(options ...Options) (*Customer, erro
 		return nil, erri
 	}
 
-	payload.Customer.setClient(s.Client)
+	payload.Customer.SetClient(s.Client)
 	return payload.Customer, nil
 }
 
@@ -210,7 +212,7 @@ func (s AuthorizationRequest) Create(customerID string, options ...Options) (*Au
 		return nil, erri
 	}
 
-	payload.AuthorizationRequest.setClient(s.Client)
+	payload.AuthorizationRequest.SetClient(s.Client)
 	return payload.AuthorizationRequest, nil
 }
 
@@ -286,7 +288,7 @@ func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Opt
 		return nil, erri
 	}
 
-	payload.AuthorizationRequest.setClient(s.Client)
+	payload.AuthorizationRequest.SetClient(s.Client)
 	return payload.AuthorizationRequest, nil
 }
 

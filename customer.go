@@ -51,10 +51,12 @@ type Customer struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Customer) setClient(c *ProcessOut) {
+// SetClient sets the client for the Customer object and its
+// children
+func (s *Customer) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 }
 
@@ -132,7 +134,7 @@ func (s Customer) FetchSubscriptions(options ...Options) ([]*Subscription, error
 	}
 
 	for _, o := range payload.Subscriptions {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Subscriptions, nil
 }
@@ -211,7 +213,7 @@ func (s Customer) FetchTokens(options ...Options) ([]*Token, error) {
 	}
 
 	for _, o := range payload.Tokens {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Tokens, nil
 }
@@ -288,7 +290,7 @@ func (s Customer) FindToken(tokenID string, options ...Options) (*Token, error) 
 		return nil, erri
 	}
 
-	payload.Token.setClient(s.Client)
+	payload.Token.SetClient(s.Client)
 	return payload.Token, nil
 }
 
@@ -366,7 +368,7 @@ func (s Customer) FetchTransactions(options ...Options) ([]*Transaction, error) 
 	}
 
 	for _, o := range payload.Transactions {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Transactions, nil
 }
@@ -445,7 +447,7 @@ func (s Customer) All(options ...Options) ([]*Customer, error) {
 	}
 
 	for _, o := range payload.Customers {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Customers, nil
 }
@@ -534,7 +536,7 @@ func (s Customer) Create(options ...Options) (*Customer, error) {
 		return nil, erri
 	}
 
-	payload.Customer.setClient(s.Client)
+	payload.Customer.SetClient(s.Client)
 	return payload.Customer, nil
 }
 
@@ -610,7 +612,7 @@ func (s Customer) Find(customerID string, options ...Options) (*Customer, error)
 		return nil, erri
 	}
 
-	payload.Customer.setClient(s.Client)
+	payload.Customer.SetClient(s.Client)
 	return payload.Customer, nil
 }
 
@@ -697,7 +699,7 @@ func (s Customer) Save(options ...Options) (*Customer, error) {
 		return nil, erri
 	}
 
-	payload.Customer.setClient(s.Client)
+	payload.Customer.SetClient(s.Client)
 	return payload.Customer, nil
 }
 

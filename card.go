@@ -43,10 +43,12 @@ type Card struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Card) setClient(c *ProcessOut) {
+// SetClient sets the client for the Card object and its
+// children
+func (s *Card) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 }
 

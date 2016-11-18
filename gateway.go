@@ -33,7 +33,9 @@ type Gateway struct {
 	Description string `json:"description"`
 }
 
-func (s *Gateway) setClient(c *ProcessOut) {
+// SetClient sets the client for the Gateway object and its
+// children
+func (s *Gateway) SetClient(c *ProcessOut) {
 	s.Client = c
 }
 

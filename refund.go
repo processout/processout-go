@@ -33,10 +33,12 @@ type Refund struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Refund) setClient(c *ProcessOut) {
+// SetClient sets the client for the Refund object and its
+// children
+func (s *Refund) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Transaction != nil {
-		s.Transaction.setClient(c)
+		s.Transaction.SetClient(c)
 	}
 }
 
@@ -112,7 +114,7 @@ func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refun
 		return nil, erri
 	}
 
-	payload.Refund.setClient(s.Client)
+	payload.Refund.SetClient(s.Client)
 	return payload.Refund, nil
 }
 

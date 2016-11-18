@@ -29,13 +29,15 @@ type Token struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Token) setClient(c *ProcessOut) {
+// SetClient sets the client for the Token object and its
+// children
+func (s *Token) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Customer != nil {
-		s.Customer.setClient(c)
+		s.Customer.SetClient(c)
 	}
 	if s.Card != nil {
-		s.Card.setClient(c)
+		s.Card.SetClient(c)
 	}
 }
 
@@ -111,7 +113,7 @@ func (s Token) Find(customerID, tokenID string, options ...Options) (*Token, err
 		return nil, erri
 	}
 
-	payload.Token.setClient(s.Client)
+	payload.Token.SetClient(s.Client)
 	return payload.Token, nil
 }
 
@@ -189,7 +191,7 @@ func (s Token) Create(customerID, source string, options ...Options) (*Token, er
 		return nil, erri
 	}
 
-	payload.Token.setClient(s.Client)
+	payload.Token.SetClient(s.Client)
 	return payload.Token, nil
 }
 
@@ -268,7 +270,7 @@ func (s Token) CreateFromRequest(customerID, source, target string, options ...O
 		return nil, erri
 	}
 
-	payload.Token.setClient(s.Client)
+	payload.Token.SetClient(s.Client)
 	return payload.Token, nil
 }
 

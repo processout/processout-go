@@ -43,10 +43,12 @@ type Product struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
-func (s *Product) setClient(c *ProcessOut) {
+// SetClient sets the client for the Product object and its
+// children
+func (s *Product) SetClient(c *ProcessOut) {
 	s.Client = c
 	if s.Project != nil {
-		s.Project.setClient(c)
+		s.Project.SetClient(c)
 	}
 }
 
@@ -122,7 +124,7 @@ func (s Product) CreateInvoice(options ...Options) (*Invoice, error) {
 		return nil, erri
 	}
 
-	payload.Invoice.setClient(s.Client)
+	payload.Invoice.SetClient(s.Client)
 	return payload.Invoice, nil
 }
 
@@ -200,7 +202,7 @@ func (s Product) All(options ...Options) ([]*Product, error) {
 	}
 
 	for _, o := range payload.Products {
-		o.setClient(s.Client)
+		o.SetClient(s.Client)
 	}
 	return payload.Products, nil
 }
@@ -285,7 +287,7 @@ func (s Product) Create(options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
-	payload.Product.setClient(s.Client)
+	payload.Product.SetClient(s.Client)
 	return payload.Product, nil
 }
 
@@ -361,7 +363,7 @@ func (s Product) Find(productID string, options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
-	payload.Product.setClient(s.Client)
+	payload.Product.SetClient(s.Client)
 	return payload.Product, nil
 }
 
@@ -445,7 +447,7 @@ func (s Product) Save(options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
-	payload.Product.setClient(s.Client)
+	payload.Product.SetClient(s.Client)
 	return payload.Product, nil
 }
 
