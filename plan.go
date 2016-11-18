@@ -41,6 +41,13 @@ type Plan struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *Plan) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Project != nil {
+		s.Project.setClient(c)
+	}
+}
+
 // All allows you to get all the plans.
 func (s Plan) All(options ...Options) ([]*Plan, error) {
 	if s.Client == nil {
@@ -115,7 +122,7 @@ func (s Plan) All(options ...Options) ([]*Plan, error) {
 	}
 
 	for _, o := range payload.Plans {
-		o.Client = s.Client
+		o.setClient(s.Client)
 	}
 	return payload.Plans, nil
 }
@@ -201,7 +208,7 @@ func (s Plan) Create(options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.Client = s.Client
+	payload.Plan.setClient(s.Client)
 	return payload.Plan, nil
 }
 
@@ -277,7 +284,7 @@ func (s Plan) Find(planID string, options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.Client = s.Client
+	payload.Plan.setClient(s.Client)
 	return payload.Plan, nil
 }
 
@@ -358,7 +365,7 @@ func (s Plan) Update(options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.Client = s.Client
+	payload.Plan.setClient(s.Client)
 	return payload.Plan, nil
 }
 

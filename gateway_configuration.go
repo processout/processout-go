@@ -27,6 +27,16 @@ type GatewayConfiguration struct {
 	PublicKeys map[string]string `json:"public_keys"`
 }
 
+func (s *GatewayConfiguration) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Project != nil {
+		s.Project.setClient(c)
+	}
+	if s.Gateway != nil {
+		s.Gateway.setClient(c)
+	}
+}
+
 // dummyGatewayConfiguration is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't

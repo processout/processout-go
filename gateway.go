@@ -33,6 +33,10 @@ type Gateway struct {
 	Description string `json:"description"`
 }
 
+func (s *Gateway) setClient(c *ProcessOut) {
+	s.Client = c
+}
+
 // dummyGateway is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't

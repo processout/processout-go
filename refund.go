@@ -33,6 +33,13 @@ type Refund struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *Refund) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Transaction != nil {
+		s.Transaction.setClient(c)
+	}
+}
+
 // Find allows you to find a transaction's refund by its ID.
 func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refund, error) {
 	if s.Client == nil {
@@ -105,7 +112,7 @@ func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refun
 		return nil, erri
 	}
 
-	payload.Refund.Client = s.Client
+	payload.Refund.setClient(s.Client)
 	return payload.Refund, nil
 }
 

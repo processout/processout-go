@@ -51,6 +51,25 @@ type Transaction struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *Transaction) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Project != nil {
+		s.Project.setClient(c)
+	}
+	if s.Customer != nil {
+		s.Customer.setClient(c)
+	}
+	if s.Subscription != nil {
+		s.Subscription.setClient(c)
+	}
+	if s.Token != nil {
+		s.Token.setClient(c)
+	}
+	if s.Card != nil {
+		s.Card.setClient(c)
+	}
+}
+
 // FetchRefunds allows you to get the transaction's refunds.
 func (s Transaction) FetchRefunds(options ...Options) ([]*Refund, error) {
 	if s.Client == nil {
@@ -125,7 +144,7 @@ func (s Transaction) FetchRefunds(options ...Options) ([]*Refund, error) {
 	}
 
 	for _, o := range payload.Refunds {
-		o.Client = s.Client
+		o.setClient(s.Client)
 	}
 	return payload.Refunds, nil
 }
@@ -202,7 +221,7 @@ func (s Transaction) FindRefund(refundID string, options ...Options) (*Refund, e
 		return nil, erri
 	}
 
-	payload.Refund.Client = s.Client
+	payload.Refund.setClient(s.Client)
 	return payload.Refund, nil
 }
 
@@ -280,7 +299,7 @@ func (s Transaction) All(options ...Options) ([]*Transaction, error) {
 	}
 
 	for _, o := range payload.Transactions {
-		o.Client = s.Client
+		o.setClient(s.Client)
 	}
 	return payload.Transactions, nil
 }
@@ -357,7 +376,7 @@ func (s Transaction) Find(transactionID string, options ...Options) (*Transactio
 		return nil, erri
 	}
 
-	payload.Transaction.Client = s.Client
+	payload.Transaction.setClient(s.Client)
 	return payload.Transaction, nil
 }
 

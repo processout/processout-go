@@ -21,6 +21,10 @@ type CustomerAction struct {
 	Value string `json:"value"`
 }
 
+func (s *CustomerAction) setClient(c *ProcessOut) {
+	s.Client = c
+}
+
 // dummyCustomerAction is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't

@@ -27,6 +27,10 @@ type Project struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *Project) setClient(c *ProcessOut) {
+	s.Client = c
+}
+
 // FetchGatewayConfigurations allows you to get all the gateway configurations of the project
 func (s Project) FetchGatewayConfigurations(options ...Options) ([]*GatewayConfiguration, error) {
 	if s.Client == nil {
@@ -101,7 +105,7 @@ func (s Project) FetchGatewayConfigurations(options ...Options) ([]*GatewayConfi
 	}
 
 	for _, o := range payload.GatewayConfigurations {
-		o.Client = s.Client
+		o.setClient(s.Client)
 	}
 	return payload.GatewayConfigurations, nil
 }

@@ -43,6 +43,19 @@ type AuthorizationRequest struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *AuthorizationRequest) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Project != nil {
+		s.Project.setClient(c)
+	}
+	if s.Customer != nil {
+		s.Customer.setClient(c)
+	}
+	if s.Token != nil {
+		s.Token.setClient(c)
+	}
+}
+
 // FetchCustomer allows you to get the customer linked to the authorization request.
 func (s AuthorizationRequest) FetchCustomer(options ...Options) (*Customer, error) {
 	if s.Client == nil {
@@ -115,7 +128,7 @@ func (s AuthorizationRequest) FetchCustomer(options ...Options) (*Customer, erro
 		return nil, erri
 	}
 
-	payload.Customer.Client = s.Client
+	payload.Customer.setClient(s.Client)
 	return payload.Customer, nil
 }
 
@@ -197,7 +210,7 @@ func (s AuthorizationRequest) Create(customerID string, options ...Options) (*Au
 		return nil, erri
 	}
 
-	payload.AuthorizationRequest.Client = s.Client
+	payload.AuthorizationRequest.setClient(s.Client)
 	return payload.AuthorizationRequest, nil
 }
 
@@ -273,7 +286,7 @@ func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Opt
 		return nil, erri
 	}
 
-	payload.AuthorizationRequest.Client = s.Client
+	payload.AuthorizationRequest.setClient(s.Client)
 	return payload.AuthorizationRequest, nil
 }
 

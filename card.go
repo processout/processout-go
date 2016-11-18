@@ -43,6 +43,13 @@ type Card struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *Card) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Project != nil {
+		s.Project.setClient(c)
+	}
+}
+
 // dummyCard is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't

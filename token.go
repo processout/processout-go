@@ -29,6 +29,16 @@ type Token struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *Token) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Customer != nil {
+		s.Customer.setClient(c)
+	}
+	if s.Card != nil {
+		s.Card.setClient(c)
+	}
+}
+
 // Find allows you to find a customer's token by its ID.
 func (s Token) Find(customerID, tokenID string, options ...Options) (*Token, error) {
 	if s.Client == nil {
@@ -101,7 +111,7 @@ func (s Token) Find(customerID, tokenID string, options ...Options) (*Token, err
 		return nil, erri
 	}
 
-	payload.Token.Client = s.Client
+	payload.Token.setClient(s.Client)
 	return payload.Token, nil
 }
 
@@ -179,7 +189,7 @@ func (s Token) Create(customerID, source string, options ...Options) (*Token, er
 		return nil, erri
 	}
 
-	payload.Token.Client = s.Client
+	payload.Token.setClient(s.Client)
 	return payload.Token, nil
 }
 
@@ -258,7 +268,7 @@ func (s Token) CreateFromRequest(customerID, source, target string, options ...O
 		return nil, erri
 	}
 
-	payload.Token.Client = s.Client
+	payload.Token.setClient(s.Client)
 	return payload.Token, nil
 }
 

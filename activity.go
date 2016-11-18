@@ -29,6 +29,13 @@ type Activity struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *Activity) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Project != nil {
+		s.Project.setClient(c)
+	}
+}
+
 // All allows you to get all the project activities.
 func (s Activity) All(options ...Options) ([]*Activity, error) {
 	if s.Client == nil {
@@ -103,7 +110,7 @@ func (s Activity) All(options ...Options) ([]*Activity, error) {
 	}
 
 	for _, o := range payload.Activities {
-		o.Client = s.Client
+		o.setClient(s.Client)
 	}
 	return payload.Activities, nil
 }
@@ -180,7 +187,7 @@ func (s Activity) Find(activityID string, options ...Options) (*Activity, error)
 		return nil, erri
 	}
 
-	payload.Activity.Client = s.Client
+	payload.Activity.setClient(s.Client)
 	return payload.Activity, nil
 }
 

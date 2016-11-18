@@ -43,6 +43,13 @@ type Coupon struct {
 	CreatedAt *time.Time `json:"created_at"`
 }
 
+func (s *Coupon) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Project != nil {
+		s.Project.setClient(c)
+	}
+}
+
 // All allows you to get all the coupons.
 func (s Coupon) All(options ...Options) ([]*Coupon, error) {
 	if s.Client == nil {
@@ -117,7 +124,7 @@ func (s Coupon) All(options ...Options) ([]*Coupon, error) {
 	}
 
 	for _, o := range payload.Coupons {
-		o.Client = s.Client
+		o.setClient(s.Client)
 	}
 	return payload.Coupons, nil
 }
@@ -202,7 +209,7 @@ func (s Coupon) Create(options ...Options) (*Coupon, error) {
 		return nil, erri
 	}
 
-	payload.Coupon.Client = s.Client
+	payload.Coupon.setClient(s.Client)
 	return payload.Coupon, nil
 }
 
@@ -278,7 +285,7 @@ func (s Coupon) Find(couponID string, options ...Options) (*Coupon, error) {
 		return nil, erri
 	}
 
-	payload.Coupon.Client = s.Client
+	payload.Coupon.setClient(s.Client)
 	return payload.Coupon, nil
 }
 
@@ -355,7 +362,7 @@ func (s Coupon) Save(options ...Options) (*Coupon, error) {
 		return nil, erri
 	}
 
-	payload.Coupon.Client = s.Client
+	payload.Coupon.setClient(s.Client)
 	return payload.Coupon, nil
 }
 

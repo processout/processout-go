@@ -41,6 +41,16 @@ type Webhook struct {
 	ReleaseAt *time.Time `json:"release_at"`
 }
 
+func (s *Webhook) setClient(c *ProcessOut) {
+	s.Client = c
+	if s.Project != nil {
+		s.Project.setClient(c)
+	}
+	if s.Event != nil {
+		s.Event.setClient(c)
+	}
+}
+
 // dummyWebhook is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't
