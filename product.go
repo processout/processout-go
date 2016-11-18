@@ -115,6 +115,7 @@ func (s Product) CreateInvoice(options ...Options) (*Invoice, error) {
 		return nil, erri
 	}
 
+	payload.Invoice.Client = s.Client
 	return payload.Invoice, nil
 }
 
@@ -191,6 +192,9 @@ func (s Product) All(options ...Options) ([]*Product, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Products {
+		o.Client = s.Client
+	}
 	return payload.Products, nil
 }
 
@@ -274,6 +278,7 @@ func (s Product) Create(options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
+	payload.Product.Client = s.Client
 	return payload.Product, nil
 }
 
@@ -349,6 +354,7 @@ func (s Product) Find(productID string, options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
+	payload.Product.Client = s.Client
 	return payload.Product, nil
 }
 
@@ -432,6 +438,7 @@ func (s Product) Save(options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
+	payload.Product.Client = s.Client
 	return payload.Product, nil
 }
 

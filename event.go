@@ -102,6 +102,9 @@ func (s Event) FetchWebhooks(options ...Options) ([]*Webhook, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Webhooks {
+		o.Client = s.Client
+	}
 	return payload.Webhooks, nil
 }
 
@@ -178,6 +181,9 @@ func (s Event) All(options ...Options) ([]*Event, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Events {
+		o.Client = s.Client
+	}
 	return payload.Events, nil
 }
 
@@ -253,6 +259,7 @@ func (s Event) Find(eventID string, options ...Options) (*Event, error) {
 		return nil, erri
 	}
 
+	payload.Event.Client = s.Client
 	return payload.Event, nil
 }
 

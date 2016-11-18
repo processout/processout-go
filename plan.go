@@ -114,6 +114,9 @@ func (s Plan) All(options ...Options) ([]*Plan, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Plans {
+		o.Client = s.Client
+	}
 	return payload.Plans, nil
 }
 
@@ -198,6 +201,7 @@ func (s Plan) Create(options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
+	payload.Plan.Client = s.Client
 	return payload.Plan, nil
 }
 
@@ -273,6 +277,7 @@ func (s Plan) Find(planID string, options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
+	payload.Plan.Client = s.Client
 	return payload.Plan, nil
 }
 
@@ -353,6 +358,7 @@ func (s Plan) Update(options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
+	payload.Plan.Client = s.Client
 	return payload.Plan, nil
 }
 

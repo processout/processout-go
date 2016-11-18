@@ -110,6 +110,7 @@ func (s Discount) Apply(subscriptionID string, options ...Options) (*Discount, e
 		return nil, erri
 	}
 
+	payload.Discount.Client = s.Client
 	return payload.Discount, nil
 }
 
@@ -186,6 +187,7 @@ func (s Discount) ApplyCoupon(subscriptionID, couponID string, options ...Option
 		return nil, erri
 	}
 
+	payload.Discount.Client = s.Client
 	return payload.Discount, nil
 }
 
@@ -261,6 +263,7 @@ func (s Discount) Find(subscriptionID, discountID string, options ...Options) (*
 		return nil, erri
 	}
 
+	payload.Discount.Client = s.Client
 	return payload.Discount, nil
 }
 

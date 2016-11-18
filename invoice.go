@@ -122,6 +122,7 @@ func (s Invoice) Authorize(source string, options ...Options) (*Transaction, err
 		return nil, erri
 	}
 
+	payload.Transaction.Client = s.Client
 	return payload.Transaction, nil
 }
 
@@ -198,6 +199,7 @@ func (s Invoice) Capture(source string, options ...Options) (*Transaction, error
 		return nil, erri
 	}
 
+	payload.Transaction.Client = s.Client
 	return payload.Transaction, nil
 }
 
@@ -273,6 +275,7 @@ func (s Invoice) FetchCustomer(options ...Options) (*Customer, error) {
 		return nil, erri
 	}
 
+	payload.Customer.Client = s.Client
 	return payload.Customer, nil
 }
 
@@ -349,6 +352,7 @@ func (s Invoice) AssignCustomer(customerID string, options ...Options) (*Custome
 		return nil, erri
 	}
 
+	payload.Customer.Client = s.Client
 	return payload.Customer, nil
 }
 
@@ -424,6 +428,7 @@ func (s Invoice) FetchTransaction(options ...Options) (*Transaction, error) {
 		return nil, erri
 	}
 
+	payload.Transaction.Client = s.Client
 	return payload.Transaction, nil
 }
 
@@ -499,6 +504,7 @@ func (s Invoice) Void(options ...Options) (*Transaction, error) {
 		return nil, erri
 	}
 
+	payload.Transaction.Client = s.Client
 	return payload.Transaction, nil
 }
 
@@ -575,6 +581,9 @@ func (s Invoice) All(options ...Options) ([]*Invoice, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Invoices {
+		o.Client = s.Client
+	}
 	return payload.Invoices, nil
 }
 
@@ -658,6 +667,7 @@ func (s Invoice) Create(options ...Options) (*Invoice, error) {
 		return nil, erri
 	}
 
+	payload.Invoice.Client = s.Client
 	return payload.Invoice, nil
 }
 
@@ -742,6 +752,7 @@ func (s Invoice) CreateForCustomer(customerID string, options ...Options) (*Invo
 		return nil, erri
 	}
 
+	payload.Invoice.Client = s.Client
 	return payload.Invoice, nil
 }
 
@@ -817,6 +828,7 @@ func (s Invoice) Find(invoiceID string, options ...Options) (*Invoice, error) {
 		return nil, erri
 	}
 
+	payload.Invoice.Client = s.Client
 	return payload.Invoice, nil
 }
 

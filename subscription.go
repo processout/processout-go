@@ -137,6 +137,7 @@ func (s Subscription) FetchCustomer(options ...Options) (*Customer, error) {
 		return nil, erri
 	}
 
+	payload.Customer.Client = s.Client
 	return payload.Customer, nil
 }
 
@@ -213,6 +214,9 @@ func (s Subscription) FetchDiscounts(options ...Options) ([]*Discount, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Discounts {
+		o.Client = s.Client
+	}
 	return payload.Discounts, nil
 }
 
@@ -289,6 +293,7 @@ func (s Subscription) ApplyCoupon(couponID string, options ...Options) (*Discoun
 		return nil, erri
 	}
 
+	payload.Discount.Client = s.Client
 	return payload.Discount, nil
 }
 
@@ -364,6 +369,7 @@ func (s Subscription) FindDiscount(discountID string, options ...Options) (*Disc
 		return nil, erri
 	}
 
+	payload.Discount.Client = s.Client
 	return payload.Discount, nil
 }
 
@@ -439,6 +445,7 @@ func (s Subscription) RemoveDiscount(discountID string, options ...Options) (*Su
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 
@@ -515,6 +522,9 @@ func (s Subscription) FetchTransactions(options ...Options) ([]*Transaction, err
 		return nil, erri
 	}
 
+	for _, o := range payload.Transactions {
+		o.Client = s.Client
+	}
 	return payload.Transactions, nil
 }
 
@@ -591,6 +601,9 @@ func (s Subscription) All(options ...Options) ([]*Subscription, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Subscriptions {
+		o.Client = s.Client
+	}
 	return payload.Subscriptions, nil
 }
 
@@ -676,6 +689,7 @@ func (s Subscription) Create(customerID string, options ...Options) (*Subscripti
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 
@@ -762,6 +776,7 @@ func (s Subscription) CreateFromPlan(customerID, planID string, options ...Optio
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 
@@ -837,6 +852,7 @@ func (s Subscription) Find(subscriptionID string, options ...Options) (*Subscrip
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 
@@ -914,6 +930,7 @@ func (s Subscription) Update(prorate bool, options ...Options) (*Subscription, e
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 
@@ -991,6 +1008,7 @@ func (s Subscription) UpdatePlan(planID, prorate bool, options ...Options) (*Sub
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 
@@ -1067,6 +1085,7 @@ func (s Subscription) ApplySource(source string, options ...Options) (*Subscript
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 
@@ -1143,6 +1162,7 @@ func (s Subscription) Cancel(cancellationReason string, options ...Options) (*Su
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 
@@ -1220,6 +1240,7 @@ func (s Subscription) CancelAtDate(cancelAt, cancellationReason string, options 
 		return nil, erri
 	}
 
+	payload.Subscription.Client = s.Client
 	return payload.Subscription, nil
 }
 

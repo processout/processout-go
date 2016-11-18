@@ -101,6 +101,7 @@ func (s Token) Find(customerID, tokenID string, options ...Options) (*Token, err
 		return nil, erri
 	}
 
+	payload.Token.Client = s.Client
 	return payload.Token, nil
 }
 
@@ -178,6 +179,7 @@ func (s Token) Create(customerID, source string, options ...Options) (*Token, er
 		return nil, erri
 	}
 
+	payload.Token.Client = s.Client
 	return payload.Token, nil
 }
 
@@ -256,6 +258,7 @@ func (s Token) CreateFromRequest(customerID, source, target string, options ...O
 		return nil, erri
 	}
 
+	payload.Token.Client = s.Client
 	return payload.Token, nil
 }
 

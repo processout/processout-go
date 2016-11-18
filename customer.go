@@ -124,6 +124,9 @@ func (s Customer) FetchSubscriptions(options ...Options) ([]*Subscription, error
 		return nil, erri
 	}
 
+	for _, o := range payload.Subscriptions {
+		o.Client = s.Client
+	}
 	return payload.Subscriptions, nil
 }
 
@@ -200,6 +203,9 @@ func (s Customer) FetchTokens(options ...Options) ([]*Token, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Tokens {
+		o.Client = s.Client
+	}
 	return payload.Tokens, nil
 }
 
@@ -275,6 +281,7 @@ func (s Customer) FindToken(tokenID string, options ...Options) (*Token, error) 
 		return nil, erri
 	}
 
+	payload.Token.Client = s.Client
 	return payload.Token, nil
 }
 
@@ -351,6 +358,9 @@ func (s Customer) FetchTransactions(options ...Options) ([]*Transaction, error) 
 		return nil, erri
 	}
 
+	for _, o := range payload.Transactions {
+		o.Client = s.Client
+	}
 	return payload.Transactions, nil
 }
 
@@ -427,6 +437,9 @@ func (s Customer) All(options ...Options) ([]*Customer, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Customers {
+		o.Client = s.Client
+	}
 	return payload.Customers, nil
 }
 
@@ -514,6 +527,7 @@ func (s Customer) Create(options ...Options) (*Customer, error) {
 		return nil, erri
 	}
 
+	payload.Customer.Client = s.Client
 	return payload.Customer, nil
 }
 
@@ -589,6 +603,7 @@ func (s Customer) Find(customerID string, options ...Options) (*Customer, error)
 		return nil, erri
 	}
 
+	payload.Customer.Client = s.Client
 	return payload.Customer, nil
 }
 
@@ -675,6 +690,7 @@ func (s Customer) Save(options ...Options) (*Customer, error) {
 		return nil, erri
 	}
 
+	payload.Customer.Client = s.Client
 	return payload.Customer, nil
 }
 

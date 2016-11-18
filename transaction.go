@@ -124,6 +124,9 @@ func (s Transaction) FetchRefunds(options ...Options) ([]*Refund, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Refunds {
+		o.Client = s.Client
+	}
 	return payload.Refunds, nil
 }
 
@@ -199,6 +202,7 @@ func (s Transaction) FindRefund(refundID string, options ...Options) (*Refund, e
 		return nil, erri
 	}
 
+	payload.Refund.Client = s.Client
 	return payload.Refund, nil
 }
 
@@ -275,6 +279,9 @@ func (s Transaction) All(options ...Options) ([]*Transaction, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Transactions {
+		o.Client = s.Client
+	}
 	return payload.Transactions, nil
 }
 
@@ -350,6 +357,7 @@ func (s Transaction) Find(transactionID string, options ...Options) (*Transactio
 		return nil, erri
 	}
 
+	payload.Transaction.Client = s.Client
 	return payload.Transaction, nil
 }
 

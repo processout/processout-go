@@ -115,6 +115,7 @@ func (s AuthorizationRequest) FetchCustomer(options ...Options) (*Customer, erro
 		return nil, erri
 	}
 
+	payload.Customer.Client = s.Client
 	return payload.Customer, nil
 }
 
@@ -196,6 +197,7 @@ func (s AuthorizationRequest) Create(customerID string, options ...Options) (*Au
 		return nil, erri
 	}
 
+	payload.AuthorizationRequest.Client = s.Client
 	return payload.AuthorizationRequest, nil
 }
 
@@ -271,6 +273,7 @@ func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Opt
 		return nil, erri
 	}
 
+	payload.AuthorizationRequest.Client = s.Client
 	return payload.AuthorizationRequest, nil
 }
 

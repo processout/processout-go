@@ -116,6 +116,9 @@ func (s Coupon) All(options ...Options) ([]*Coupon, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Coupons {
+		o.Client = s.Client
+	}
 	return payload.Coupons, nil
 }
 
@@ -199,6 +202,7 @@ func (s Coupon) Create(options ...Options) (*Coupon, error) {
 		return nil, erri
 	}
 
+	payload.Coupon.Client = s.Client
 	return payload.Coupon, nil
 }
 
@@ -274,6 +278,7 @@ func (s Coupon) Find(couponID string, options ...Options) (*Coupon, error) {
 		return nil, erri
 	}
 
+	payload.Coupon.Client = s.Client
 	return payload.Coupon, nil
 }
 
@@ -350,6 +355,7 @@ func (s Coupon) Save(options ...Options) (*Coupon, error) {
 		return nil, erri
 	}
 
+	payload.Coupon.Client = s.Client
 	return payload.Coupon, nil
 }
 

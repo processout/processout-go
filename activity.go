@@ -102,6 +102,9 @@ func (s Activity) All(options ...Options) ([]*Activity, error) {
 		return nil, erri
 	}
 
+	for _, o := range payload.Activities {
+		o.Client = s.Client
+	}
 	return payload.Activities, nil
 }
 
@@ -177,6 +180,7 @@ func (s Activity) Find(activityID string, options ...Options) (*Activity, error)
 		return nil, erri
 	}
 
+	payload.Activity.Client = s.Client
 	return payload.Activity, nil
 }
 

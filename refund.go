@@ -105,6 +105,7 @@ func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refun
 		return nil, erri
 	}
 
+	payload.Refund.Client = s.Client
 	return payload.Refund, nil
 }
 

@@ -100,6 +100,9 @@ func (s Project) FetchGatewayConfigurations(options ...Options) ([]*GatewayConfi
 		return nil, erri
 	}
 
+	for _, o := range payload.GatewayConfigurations {
+		o.Client = s.Client
+	}
 	return payload.GatewayConfigurations, nil
 }
 
