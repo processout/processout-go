@@ -44,6 +44,9 @@ type Plan struct {
 // SetClient sets the client for the Plan object and its
 // children
 func (s *Plan) SetClient(c *ProcessOut) {
+	if s == nil {
+		return
+	}
 	s.Client = c
 	if s.Project != nil {
 		s.Project.SetClient(c)

@@ -24,6 +24,9 @@ type CustomerAction struct {
 // SetClient sets the client for the CustomerAction object and its
 // children
 func (s *CustomerAction) SetClient(c *ProcessOut) {
+	if s == nil {
+		return
+	}
 	s.Client = c
 }
 

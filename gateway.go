@@ -36,6 +36,9 @@ type Gateway struct {
 // SetClient sets the client for the Gateway object and its
 // children
 func (s *Gateway) SetClient(c *ProcessOut) {
+	if s == nil {
+		return
+	}
 	s.Client = c
 }
 

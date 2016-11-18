@@ -30,6 +30,9 @@ type Project struct {
 // SetClient sets the client for the Project object and its
 // children
 func (s *Project) SetClient(c *ProcessOut) {
+	if s == nil {
+		return
+	}
 	s.Client = c
 }
 

@@ -32,6 +32,9 @@ type Token struct {
 // SetClient sets the client for the Token object and its
 // children
 func (s *Token) SetClient(c *ProcessOut) {
+	if s == nil {
+		return
+	}
 	s.Client = c
 	if s.Customer != nil {
 		s.Customer.SetClient(c)

@@ -52,6 +52,9 @@ type Invoice struct {
 // SetClient sets the client for the Invoice object and its
 // children
 func (s *Invoice) SetClient(c *ProcessOut) {
+	if s == nil {
+		return
+	}
 	s.Client = c
 	if s.Project != nil {
 		s.Project.SetClient(c)

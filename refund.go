@@ -36,6 +36,9 @@ type Refund struct {
 // SetClient sets the client for the Refund object and its
 // children
 func (s *Refund) SetClient(c *ProcessOut) {
+	if s == nil {
+		return
+	}
 	s.Client = c
 	if s.Transaction != nil {
 		s.Transaction.SetClient(c)

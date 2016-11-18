@@ -54,6 +54,9 @@ type Customer struct {
 // SetClient sets the client for the Customer object and its
 // children
 func (s *Customer) SetClient(c *ProcessOut) {
+	if s == nil {
+		return
+	}
 	s.Client = c
 	if s.Project != nil {
 		s.Project.SetClient(c)
