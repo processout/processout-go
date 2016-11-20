@@ -21,6 +21,8 @@ type Token struct {
 	Customer *Customer `json:"customer"`
 	// Card is the card used to create this token, if any
 	Card *Card `json:"card"`
+	// Type is the type of the token. Can be card or gateway_token
+	Type string `json:"type"`
 	// Metadata is the metadata related to the token, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata"`
 	// IsSubscriptionOnly is the define whether or not the customer token is used on a recurring invoice
