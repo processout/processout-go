@@ -19,6 +19,8 @@ type Token struct {
 	ID string `json:"id"`
 	// Customer is the customer owning the token
 	Customer *Customer `json:"customer"`
+	// CustomerID is the iD of the customer linked to the token, if any
+	CustomerID string `json:"customer_id"`
 	// Card is the card used to create this token, if any
 	Card *Card `json:"card"`
 	// Type is the type of the token. Can be card or gateway_token
@@ -277,6 +279,80 @@ func (s Token) CreateFromRequest(customerID, source, target string, options ...O
 
 	payload.Token.SetClient(s.Client)
 	return payload.Token, nil
+}
+
+// Delete allows you to delete a customer token
+func (s Token) Delete(options ...Options) error {
+	if s.Client == nil {
+		panic("Please use the client.NewToken() method to create a new Token object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "customers/" + url.QueryEscape(s.CustomerID) + "/tokens/" + url.QueryEscape(s.ID) + ""
+
+	req, err := http.NewRequest(
+		"DELETE",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
 }
 
 // dummyToken is a dummy function that's only

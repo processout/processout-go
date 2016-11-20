@@ -297,6 +297,80 @@ func (s Customer) FindToken(tokenID string, options ...Options) (*Token, error) 
 	return payload.Token, nil
 }
 
+// DeleteToken allows you to delete a customer's token by its ID.
+func (s Customer) DeleteToken(tokenID string, options ...Options) error {
+	if s.Client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "customers/" + url.QueryEscape(s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
+
+	req, err := http.NewRequest(
+		"DELETE",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
+}
+
 // FetchTransactions allows you to get the transactions belonging to the customer.
 func (s Customer) FetchTransactions(options ...Options) ([]*Transaction, error) {
 	if s.Client == nil {
