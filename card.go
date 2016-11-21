@@ -19,14 +19,14 @@ type Card struct {
 	ID string `json:"id"`
 	// Project is the project to which the card belongs
 	Project *Project `json:"project"`
-	// Brand is the brand of the card (Visa, Mastercard, ...)
-	Brand string `json:"brand"`
+	// Scheme is the scheme of the card, such as visa or mastercard
+	Scheme string `json:"scheme"`
 	// Type is the type of the card (Credit, Debit, ...)
 	Type string `json:"type"`
 	// BankName is the name of the bank of the card
 	BankName string `json:"bank_name"`
-	// Level is the level of the card (Electron, Classic, Gold, ...)
-	Level string `json:"level"`
+	// Brand is the level of the card (Electron, Classic, Gold, ...)
+	Brand string `json:"brand"`
 	// Iin is the first 6 digits of the card
 	Iin string `json:"iin"`
 	// Last4Digits is the last 4 digits of the card
