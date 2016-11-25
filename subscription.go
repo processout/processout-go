@@ -16,53 +16,53 @@ type Subscription struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the subscription
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the subscription belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Plan is the plan used to create this subscription
-	Plan *Plan `json:"plan"`
+	Plan *Plan `json:"plan,omitempty"`
 	// Customer is the customer linked to the subscription
-	Customer *Customer `json:"customer"`
+	Customer *Customer `json:"customer,omitempty"`
 	// Token is the token used to capture payments on this subscription
-	Token *Token `json:"token"`
+	Token *Token `json:"token,omitempty"`
 	// URL is the uRL to which you may redirect your customer to activate the subscription
-	URL string `json:"url"`
+	URL string `json:"url,omitempty"`
 	// Name is the name of the subscription
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// Amount is the amount to be paid at each billing cycle of the subscription
-	Amount string `json:"amount"`
+	Amount string `json:"amount,omitempty"`
 	// Currency is the currency of the subscription
-	Currency string `json:"currency"`
+	Currency string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the subscription, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Interval is the the subscription interval, formatted in the format "1d2w3m4y" (day, week, month, year)
-	Interval string `json:"interval"`
+	Interval string `json:"interval,omitempty"`
 	// TrialEndAt is the date at which the subscription trial should end. Can be null to set no trial
-	TrialEndAt *time.Time `json:"trial_end_at"`
+	TrialEndAt *time.Time `json:"trial_end_at,omitempty"`
 	// Activated is the whether or not the subscription was activated. This field does not take into account whether or not the subscription was canceled. Used the active field to know if the subscription is currently active
-	Activated bool `json:"activated"`
+	Activated bool `json:"activated,omitempty"`
 	// Active is the whether or not the subscription is currently active (ie activated and not cancelled)
-	Active bool `json:"active"`
+	Active bool `json:"active,omitempty"`
 	// Canceled is the whether or not the subscription was canceled. The cancellation reason can be found in the cancellation_reason field
-	Canceled bool `json:"canceled"`
+	Canceled bool `json:"canceled,omitempty"`
 	// CancellationReason is the reason as to why the subscription was cancelled
-	CancellationReason string `json:"cancellation_reason"`
+	CancellationReason string `json:"cancellation_reason,omitempty"`
 	// PendingCancellation is the wheither or not the subscription is pending cancellation (meaning a cancel_at date was set)
-	PendingCancellation bool `json:"pending_cancellation"`
+	PendingCancellation bool `json:"pending_cancellation,omitempty"`
 	// CancelAt is the date at which the subscription will automatically be canceled. Can be null
-	CancelAt *time.Time `json:"cancel_at"`
+	CancelAt *time.Time `json:"cancel_at,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon activation of the subscription
-	ReturnURL string `json:"return_url"`
+	ReturnURL string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the subscription activation was canceled
-	CancelURL string `json:"cancel_url"`
+	CancelURL string `json:"cancel_url,omitempty"`
 	// Sandbox is the define whether or not the subscription is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the subscription was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// ActivatedAt is the date at which the subscription was activated. Null if the subscription hasn't been activated yet
-	ActivatedAt *time.Time `json:"activated_at"`
+	ActivatedAt *time.Time `json:"activated_at,omitempty"`
 	// IterateAt is the next iteration date, corresponding to the next billing cycle start date
-	IterateAt *time.Time `json:"iterate_at"`
+	IterateAt *time.Time `json:"iterate_at,omitempty"`
 }
 
 // SetClient sets the client for the Subscription object and its
@@ -877,84 +877,6 @@ func (s Subscription) Find(subscriptionID string, options ...Options) (*Subscrip
 	return payload.Subscription, nil
 }
 
-// Update allows you to update the subscription.
-func (s Subscription) Update(prorate bool, options ...Options) (*Subscription, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewSubscription() method to create a new Subscription object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	type Response struct {
-		Subscription *Subscription `json:"subscription"`
-		Success      bool          `json:"success"`
-		Message      string        `json:"message"`
-		Code         string        `json:"error_type"`
-	}
-
-	body, err := json.Marshal(map[string]interface{}{
-		"trial_end_at": s.TrialEndAt,
-		"prorate":      prorate,
-		"expand":       opt.Expand,
-		"filter":       opt.Filter,
-		"limit":        opt.Limit,
-		"page":         opt.Page,
-		"end_before":   opt.EndBefore,
-		"start_after":  opt.StartAfter,
-	})
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
-
-	req, err := http.NewRequest(
-		"PUT",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
-			payload.Message)
-
-		return nil, erri
-	}
-
-	payload.Subscription.SetClient(s.Client)
-	return payload.Subscription, nil
-}
-
 // UpdatePlan allows you to update the subscription's plan.
 func (s Subscription) UpdatePlan(planID, prorate bool, options ...Options) (*Subscription, error) {
 	if s.Client == nil {
@@ -1062,6 +984,87 @@ func (s Subscription) ApplySource(source string, options ...Options) (*Subscript
 		"page":        opt.Page,
 		"end_before":  opt.EndBefore,
 		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Subscription.SetClient(s.Client)
+	return payload.Subscription, nil
+}
+
+// Save allows you to save the updated subscription attributes.
+func (s Subscription) Save(options ...Options) (*Subscription, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewSubscription() method to create a new Subscription object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Subscription *Subscription `json:"subscription"`
+		Success      bool          `json:"success"`
+		Message      string        `json:"message"`
+		Code         string        `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"name":         s.Name,
+		"amount":       s.Amount,
+		"interval":     s.Interval,
+		"trial_end_at": s.TrialEndAt,
+		"metadata":     s.Metadata,
+		"expand":       opt.Expand,
+		"filter":       opt.Filter,
+		"limit":        opt.Limit,
+		"page":         opt.Page,
+		"end_before":   opt.EndBefore,
+		"start_after":  opt.StartAfter,
 	})
 	if err != nil {
 		return nil, errors.New(err, "", "")

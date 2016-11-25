@@ -16,29 +16,29 @@ type Plan struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the plan
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the plan belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Name is the name of the plan
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// Amount is the amount of the plan
-	Amount string `json:"amount"`
+	Amount string `json:"amount,omitempty"`
 	// Currency is the currency of the plan
-	Currency string `json:"currency"`
+	Currency string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the plan, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Interval is the the plan interval, formatted in the format "1d2w3m4y" (day, week, month, year)
-	Interval string `json:"interval"`
+	Interval string `json:"interval,omitempty"`
 	// TrialPeriod is the the trial period. The customer will not be charged during this time span. Formatted in the format "1d2w3m4y" (day, week, month, year)
-	TrialPeriod string `json:"trial_period"`
+	TrialPeriod string `json:"trial_period,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected when he activates the subscription created using this plan
-	ReturnURL string `json:"return_url"`
+	ReturnURL string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected when he cancelling the subscription created using this plan
-	CancelURL string `json:"cancel_url"`
+	CancelURL string `json:"cancel_url,omitempty"`
 	// Sandbox is the define whether or not the plan is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the plan was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Plan object and its
@@ -293,8 +293,8 @@ func (s Plan) Find(planID string, options ...Options) (*Plan, error) {
 	return payload.Plan, nil
 }
 
-// Update allows you to update the plan. This action won't affect subscriptions already linked to this plan.
-func (s Plan) Update(options ...Options) (*Plan, error) {
+// Save allows you to save the updated plan attributes. This action won't affect subscriptions already linked to this plan.
+func (s Plan) Save(options ...Options) (*Plan, error) {
 	if s.Client == nil {
 		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}

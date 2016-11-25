@@ -16,21 +16,21 @@ type Refund struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the refund
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Transaction is the transaction to which the refund is applied
-	Transaction *Transaction `json:"transaction"`
+	Transaction *Transaction `json:"transaction,omitempty"`
 	// Reason is the reason for the refund. Either customer_request, duplicate or fraud
-	Reason string `json:"reason"`
+	Reason string `json:"reason,omitempty"`
 	// Information is the custom details regarding the refund
-	Information string `json:"information"`
+	Information string `json:"information,omitempty"`
 	// Amount is the amount to be refunded. Must not be greater than the amount still available on the transaction
-	Amount string `json:"amount"`
+	Amount string `json:"amount,omitempty"`
 	// Metadata is the metadata related to the refund, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the refund is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the refund was done
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Refund object and its

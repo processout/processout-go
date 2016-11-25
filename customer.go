@@ -16,39 +16,37 @@ type Customer struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the customer
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the customer belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Email is the email of the customer
-	Email string `json:"email"`
+	Email string `json:"email,omitempty"`
 	// FirstName is the first name of the customer
-	FirstName string `json:"first_name"`
+	FirstName string `json:"first_name,omitempty"`
 	// LastName is the last name of the customer
-	LastName string `json:"last_name"`
+	LastName string `json:"last_name,omitempty"`
 	// Address1 is the address of the customer
-	Address1 string `json:"address1"`
+	Address1 string `json:"address1,omitempty"`
 	// Address2 is the secondary address of the customer
-	Address2 string `json:"address2"`
+	Address2 string `json:"address2,omitempty"`
 	// City is the city of the customer
-	City string `json:"city"`
+	City string `json:"city,omitempty"`
 	// State is the state of the customer
-	State string `json:"state"`
+	State string `json:"state,omitempty"`
 	// Zip is the zIP code of the customer
-	Zip string `json:"zip"`
+	Zip string `json:"zip,omitempty"`
 	// CountryCode is the country code of the customer
-	CountryCode string `json:"country_code"`
+	CountryCode string `json:"country_code,omitempty"`
 	// Balance is the customer balance. Can be positive or negative
-	Balance string `json:"balance"`
+	Balance string `json:"balance,omitempty"`
 	// Currency is the currency of the customer balance. Once the currency is set it cannot be modified
-	Currency string `json:"currency"`
+	Currency string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the customer, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
-	// HasPin is the wether the customer has a PIN set or not
-	HasPin bool `json:"has_pin"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the customer is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the customer was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Customer object and its

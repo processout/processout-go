@@ -16,17 +16,17 @@ type Activity struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the activity
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the activity belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Title is the title of the activity
-	Title string `json:"title"`
+	Title string `json:"title,omitempty"`
 	// Content is the content of the activity
-	Content string `json:"content"`
+	Content string `json:"content,omitempty"`
 	// Level is the level of the activity
-	Level int `json:"level"`
+	Level int `json:"level,omitempty"`
 	// CreatedAt is the date at which the transaction was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Activity object and its

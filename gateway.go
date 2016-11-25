@@ -16,21 +16,21 @@ type Gateway struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the gateway
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Name is the name of the payment gateway
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// DisplayName is the name of the payment gateway that can be displayed
-	DisplayName string `json:"display_name"`
+	DisplayName string `json:"display_name,omitempty"`
 	// LogoURL is the logo URL of the payment gateway
-	LogoURL string `json:"logo_url"`
+	LogoURL string `json:"logo_url,omitempty"`
 	// URL is the uRL of the payment gateway
-	URL string `json:"url"`
+	URL string `json:"url,omitempty"`
 	// Flows is the supported flow by the gateway (one-off, subscription or tokenization)
-	Flows []string `json:"flows"`
+	Flows []string `json:"flows,omitempty"`
 	// Tags is the gateway tags. Mainly used to filter gateways depending on their attributes (e-wallets and such)
-	Tags []string `json:"tags"`
+	Tags []string `json:"tags,omitempty"`
 	// Description is the description of the payment gateway
-	Description string `json:"description"`
+	Description string `json:"description,omitempty"`
 }
 
 // SetClient sets the client for the Gateway object and its

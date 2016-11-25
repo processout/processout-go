@@ -16,39 +16,39 @@ type Transaction struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the transaction
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the transaction belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Customer is the customer that was linked to this transaction
-	Customer *Customer `json:"customer"`
+	Customer *Customer `json:"customer,omitempty"`
 	// Subscription is the subscription to which this transaction belongs
-	Subscription *Subscription `json:"subscription"`
+	Subscription *Subscription `json:"subscription,omitempty"`
 	// Token is the token that was used to capture the payment of this transaction, if any
-	Token *Token `json:"token"`
+	Token *Token `json:"token,omitempty"`
 	// Card is the card that was used to capture the payment of this transaction, if any
-	Card *Card `json:"card"`
+	Card *Card `json:"card,omitempty"`
 	// Name is the name of the transaction
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// AuthorizedAmount is the amount that was successfully authorized on the transaction
-	AuthorizedAmount string `json:"authorized_amount"`
+	AuthorizedAmount string `json:"authorized_amount,omitempty"`
 	// CapturedAmount is the amount that was successfully captured on the transaction
-	CapturedAmount string `json:"captured_amount"`
+	CapturedAmount string `json:"captured_amount,omitempty"`
 	// Currency is the currency of the transaction
-	Currency string `json:"currency"`
+	Currency string `json:"currency,omitempty"`
 	// Status is the status of the transaction
-	Status string `json:"status"`
+	Status string `json:"status,omitempty"`
 	// Authorized is the whether the transaction was authorized or not
-	Authorized bool `json:"authorized"`
+	Authorized bool `json:"authorized,omitempty"`
 	// Captured is the whether the transaction was captured or not
-	Captured bool `json:"captured"`
+	Captured bool `json:"captured,omitempty"`
 	// ProcessoutFee is the processOut fee applied on the transaction
-	ProcessoutFee string `json:"processout_fee"`
+	ProcessoutFee string `json:"processout_fee,omitempty"`
 	// Metadata is the metadata related to the transaction, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the transaction is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the transaction was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Transaction object and its

@@ -16,15 +16,15 @@ type GatewayConfiguration struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the gateway configuration
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the gateway configuration belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Gateway is the gateway that the configuration configures
-	Gateway *Gateway `json:"gateway"`
+	Gateway *Gateway `json:"gateway,omitempty"`
 	// Enabled is the define whether or not the gateway configuration is enabled
-	Enabled bool `json:"enabled"`
+	Enabled bool `json:"enabled,omitempty"`
 	// PublicKeys is the public keys of the payment gateway configuration (key-value pair)
-	PublicKeys map[string]string `json:"public_keys"`
+	PublicKeys map[string]string `json:"public_keys,omitempty"`
 }
 
 // SetClient sets the client for the GatewayConfiguration object and its

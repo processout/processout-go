@@ -16,31 +16,29 @@ type AuthorizationRequest struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the authorization
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the authorization request belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Customer is the customer linked to the authorization request
-	Customer *Customer `json:"customer"`
+	Customer *Customer `json:"customer,omitempty"`
 	// Token is the token linked to the authorization request, once authorized
-	Token *Token `json:"token"`
+	Token *Token `json:"token,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the authorization
-	URL string `json:"url"`
+	URL string `json:"url,omitempty"`
 	// Authorized is the whether or not the authorization request was authorized
-	Authorized bool `json:"authorized"`
+	Authorized bool `json:"authorized,omitempty"`
 	// Name is the name of the authorization
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// Currency is the currency of the authorization
-	Currency string `json:"currency"`
+	Currency string `json:"currency,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon authorization
-	ReturnURL string `json:"return_url"`
+	ReturnURL string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the authorization was canceled
-	CancelURL string `json:"cancel_url"`
-	// Custom is the custom variable passed along in the events/webhooks
-	Custom string `json:"custom"`
+	CancelURL string `json:"cancel_url,omitempty"`
 	// Sandbox is the define whether or not the authorization is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the authorization was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the AuthorizationRequest object and its
@@ -163,7 +161,6 @@ func (s AuthorizationRequest) Create(customerID string, options ...Options) (*Au
 		"currency":    s.Currency,
 		"return_url":  s.ReturnURL,
 		"cancel_url":  s.CancelURL,
-		"custom":      s.Custom,
 		"customer_id": customerID,
 		"expand":      opt.Expand,
 		"filter":      opt.Filter,

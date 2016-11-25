@@ -16,21 +16,21 @@ type Token struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the customer token
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Customer is the customer owning the token
-	Customer *Customer `json:"customer"`
+	Customer *Customer `json:"customer,omitempty"`
 	// CustomerID is the iD of the customer linked to the token, if any
-	CustomerID string `json:"customer_id"`
+	CustomerID string `json:"customer_id,omitempty"`
 	// Card is the card used to create this token, if any
-	Card *Card `json:"card"`
+	Card *Card `json:"card,omitempty"`
 	// Type is the type of the token. Can be card or gateway_token
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 	// Metadata is the metadata related to the token, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// IsSubscriptionOnly is the define whether or not the customer token is used on a recurring invoice
-	IsSubscriptionOnly bool `json:"is_subscription_only"`
+	IsSubscriptionOnly bool `json:"is_subscription_only,omitempty"`
 	// CreatedAt is the date at which the customer token was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Token object and its

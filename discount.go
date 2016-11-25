@@ -16,23 +16,23 @@ type Discount struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the discount
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the discount belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Subscription is the subscription to which the discount belongs
-	Subscription *Subscription `json:"subscription"`
+	Subscription *Subscription `json:"subscription,omitempty"`
 	// Coupon is the coupon used to create this discount, if any
-	Coupon *Coupon `json:"coupon"`
+	Coupon *Coupon `json:"coupon,omitempty"`
 	// Amount is the amount discounted
-	Amount string `json:"amount"`
+	Amount string `json:"amount,omitempty"`
 	// ExpiresAt is the date at which the discount will expire
-	ExpiresAt *time.Time `json:"expires_at"`
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Metadata is the metadata related to the coupon, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the plan is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the plan was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Discount object and its

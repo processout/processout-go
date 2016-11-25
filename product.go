@@ -16,31 +16,31 @@ type Product struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the product
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the product belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the payment
-	URL string `json:"url"`
+	URL string `json:"url,omitempty"`
 	// Name is the name of the product
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// Amount is the amount of the product
-	Amount string `json:"amount"`
+	Amount string `json:"amount,omitempty"`
 	// Currency is the currency of the product
-	Currency string `json:"currency"`
+	Currency string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the product, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// RequestEmail is the choose whether or not to request the email during the checkout process
-	RequestEmail bool `json:"request_email"`
+	RequestEmail bool `json:"request_email,omitempty"`
 	// RequestShipping is the choose whether or not to request the shipping address during the checkout process
-	RequestShipping bool `json:"request_shipping"`
+	RequestShipping bool `json:"request_shipping,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon payment
-	ReturnURL string `json:"return_url"`
+	ReturnURL string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the paymen was canceled
-	CancelURL string `json:"cancel_url"`
+	CancelURL string `json:"cancel_url,omitempty"`
 	// Sandbox is the define whether or not the product is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the product was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Product object and its

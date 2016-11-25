@@ -16,9 +16,9 @@ type CustomerAction struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// Type is the customer action type (such as url)
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 	// Value is the value of the customer action. If type is an URL, URL to which you should redirect your customer
-	Value string `json:"value"`
+	Value string `json:"value,omitempty"`
 }
 
 // SetClient sets the client for the CustomerAction object and its

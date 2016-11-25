@@ -16,15 +16,15 @@ type Project struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the project
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Name is the name of the project
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// LogoURL is the name of the project
-	LogoURL string `json:"logo_url"`
+	LogoURL string `json:"logo_url,omitempty"`
 	// Email is the email of the project
-	Email string `json:"email"`
+	Email string `json:"email,omitempty"`
 	// CreatedAt is the date at which the project was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Project object and its

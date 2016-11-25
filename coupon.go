@@ -16,31 +16,31 @@ type Coupon struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the coupon
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the coupon belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Name is the name of the coupon
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// AmountOff is the amount to be removed from the subscription price
-	AmountOff string `json:"amount_off"`
+	AmountOff string `json:"amount_off,omitempty"`
 	// PercentOff is the percent of the subscription amount to be removed (integer between 0 and 100)
-	PercentOff int `json:"percent_off"`
+	PercentOff int `json:"percent_off,omitempty"`
 	// Currency is the currency of the coupon amount_off
-	Currency string `json:"currency"`
+	Currency string `json:"currency,omitempty"`
 	// MaxRedemptions is the number of time the coupon can be redeemed. If 0, there's no limit
-	MaxRedemptions int `json:"max_redemptions"`
+	MaxRedemptions int `json:"max_redemptions,omitempty"`
 	// ExpiresAt is the date at which the coupon will expire
-	ExpiresAt *time.Time `json:"expires_at"`
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Metadata is the metadata related to the coupon, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata"`
+	Metadata map[string]string `json:"metadata,omitempty"`
 	// IterationCount is the number billing cycles the coupon will last when applied to a subscription. If 0, will last forever
-	IterationCount int `json:"iteration_count"`
+	IterationCount int `json:"iteration_count,omitempty"`
 	// RedeemedNumber is the number of time the coupon was redeemed
-	RedeemedNumber int `json:"redeemed_number"`
+	RedeemedNumber int `json:"redeemed_number,omitempty"`
 	// Sandbox is the define whether or not the plan is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the plan was created
-	CreatedAt *time.Time `json:"created_at"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 }
 
 // SetClient sets the client for the Coupon object and its

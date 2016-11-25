@@ -16,17 +16,17 @@ type Event struct {
 	// Client is the ProcessOut client used to communicate with the API
 	Client *ProcessOut
 	// ID is the iD of the event
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Project is the project to which the event belongs
-	Project *Project `json:"project"`
+	Project *Project `json:"project,omitempty"`
 	// Name is the name of the event
-	Name string `json:"name"`
+	Name string `json:"name,omitempty"`
 	// Data is the data object associated to the event
-	Data interface{} `json:"data"`
+	Data interface{} `json:"data,omitempty"`
 	// Sandbox is the define whether or not the event is in sandbox environment
-	Sandbox bool `json:"sandbox"`
+	Sandbox bool `json:"sandbox,omitempty"`
 	// FiredAt is the date at which the event was fired
-	FiredAt *time.Time `json:"fired_at"`
+	FiredAt *time.Time `json:"fired_at,omitempty"`
 }
 
 // SetClient sets the client for the Event object and its
