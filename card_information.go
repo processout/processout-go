@@ -53,7 +53,7 @@ func (s CardInformation) Fetch(iin string, options ...Options) (*CardInformation
 	}
 
 	type Response struct {
-		CardInformation *CardInformation `json:"coupon"`
+		CardInformation *CardInformation `json:"card_information"`
 		Success         bool             `json:"success"`
 		Message         string           `json:"message"`
 		Code            string           `json:"error_type"`

@@ -151,7 +151,7 @@ func (s Card) Find(cardID string, options ...Options) (*Card, error) {
 	}
 
 	type Response struct {
-		Card    *Card  `json:"card_information"`
+		Card    *Card  `json:"card"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
