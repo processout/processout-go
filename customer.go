@@ -35,8 +35,8 @@ type Customer struct {
 	State string `json:"state,omitempty"`
 	// Zip is the zIP code of the customer
 	Zip string `json:"zip,omitempty"`
-	// CountryCode is the country code of the customer
-	CountryCode string `json:"country_code,omitempty"`
+	// Country is the country code of the customer
+	Country string `json:"country,omitempty"`
 	// Balance is the customer balance. Can be positive or negative
 	Balance string `json:"balance,omitempty"`
 	// Currency is the currency of the customer balance. Once the currency is set it cannot be modified
@@ -327,7 +327,7 @@ func (s Customer) DeleteToken(tokenID string, options ...Options) error {
 		return errors.New(err, "", "")
 	}
 
-	path := "customers/" + url.QueryEscape(s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
+	path := "/customers/" + url.QueryEscape(s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -549,24 +549,24 @@ func (s Customer) Create(options ...Options) (*Customer, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"balance":      s.Balance,
-		"currency":     s.Currency,
-		"email":        s.Email,
-		"first_name":   s.FirstName,
-		"last_name":    s.LastName,
-		"address1":     s.Address1,
-		"address2":     s.Address2,
-		"city":         s.City,
-		"state":        s.State,
-		"zip":          s.Zip,
-		"country_code": s.CountryCode,
-		"metadata":     s.Metadata,
-		"expand":       opt.Expand,
-		"filter":       opt.Filter,
-		"limit":        opt.Limit,
-		"page":         opt.Page,
-		"end_before":   opt.EndBefore,
-		"start_after":  opt.StartAfter,
+		"balance":     s.Balance,
+		"currency":    s.Currency,
+		"email":       s.Email,
+		"first_name":  s.FirstName,
+		"last_name":   s.LastName,
+		"address1":    s.Address1,
+		"address2":    s.Address2,
+		"city":        s.City,
+		"state":       s.State,
+		"zip":         s.Zip,
+		"country":     s.Country,
+		"metadata":    s.Metadata,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -713,23 +713,23 @@ func (s Customer) Save(options ...Options) (*Customer, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"balance":      s.Balance,
-		"email":        s.Email,
-		"first_name":   s.FirstName,
-		"last_name":    s.LastName,
-		"address1":     s.Address1,
-		"address2":     s.Address2,
-		"city":         s.City,
-		"state":        s.State,
-		"zip":          s.Zip,
-		"country_code": s.CountryCode,
-		"metadata":     s.Metadata,
-		"expand":       opt.Expand,
-		"filter":       opt.Filter,
-		"limit":        opt.Limit,
-		"page":         opt.Page,
-		"end_before":   opt.EndBefore,
-		"start_after":  opt.StartAfter,
+		"balance":     s.Balance,
+		"email":       s.Email,
+		"first_name":  s.FirstName,
+		"last_name":   s.LastName,
+		"address1":    s.Address1,
+		"address2":    s.Address2,
+		"city":        s.City,
+		"state":       s.State,
+		"zip":         s.Zip,
+		"country":     s.Country,
+		"metadata":    s.Metadata,
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
 	})
 	if err != nil {
 		return nil, errors.New(err, "", "")

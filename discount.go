@@ -25,6 +25,8 @@ type Discount struct {
 	Coupon *Coupon `json:"coupon,omitempty"`
 	// Amount is the amount discounted
 	Amount string `json:"amount,omitempty"`
+	// Percent is the percentage discounted
+	Percent int `json:"percent,omitempty"`
 	// ExpiresAt is the date at which the discount will expire
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Metadata is the metadata related to the coupon, in the form of a dictionary (key-value pair)

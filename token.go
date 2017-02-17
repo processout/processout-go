@@ -313,7 +313,7 @@ func (s Token) Delete(options ...Options) error {
 		return errors.New(err, "", "")
 	}
 
-	path := "customers/" + url.QueryEscape(s.CustomerID) + "/tokens/" + url.QueryEscape(s.ID) + ""
+	path := "/customers/" + url.QueryEscape(s.CustomerID) + "/tokens/" + url.QueryEscape(s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

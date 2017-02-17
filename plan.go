@@ -19,6 +19,8 @@ type Plan struct {
 	ID string `json:"id,omitempty"`
 	// Project is the project to which the plan belongs
 	Project *Project `json:"project,omitempty"`
+	// URL is the uRL to which you may redirect your customer to activate the subscription plan
+	URL string `json:"url,omitempty"`
 	// Name is the name of the plan
 	Name string `json:"name,omitempty"`
 	// Amount is the amount of the plan

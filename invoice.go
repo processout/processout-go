@@ -25,20 +25,28 @@ type Invoice struct {
 	Customer *Customer `json:"customer,omitempty"`
 	// Subscription is the subscription to which the invoice is linked to, if any
 	Subscription *Subscription `json:"subscription,omitempty"`
+	// Details is the details of the invoice
+	Details []*InvoiceDetail `json:"details,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the payment
 	URL string `json:"url,omitempty"`
 	// Name is the name of the invoice
 	Name string `json:"name,omitempty"`
+	// StatementDescriptor is the statement to be shown on the bank statement of your customer
+	StatementDescriptor string `json:"statement_descriptor,omitempty"`
+	// StatementDescriptorPhone is the support phone number shown on the customer's bank statement
+	StatementDescriptorPhone string `json:"statement_descriptor_phone,omitempty"`
+	// StatementDescriptorCity is the city shown on the customer's bank statement
+	StatementDescriptorCity string `json:"statement_descriptor_city,omitempty"`
+	// StatementDescriptorCompany is the your company name shown on the customer's bank statement
+	StatementDescriptorCompany string `json:"statement_descriptor_company,omitempty"`
+	// StatementDescriptorURL is the uRL shown on the customer's bank statement
+	StatementDescriptorURL string `json:"statement_descriptor_url,omitempty"`
 	// Amount is the amount to be paid
 	Amount string `json:"amount,omitempty"`
 	// Currency is the currency of the invoice
 	Currency string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the invoice, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata,omitempty"`
-	// RequestEmail is the choose whether or not to request the email during the checkout process
-	RequestEmail bool `json:"request_email,omitempty"`
-	// RequestShipping is the choose whether or not to request the shipping address during the checkout process
-	RequestShipping bool `json:"request_shipping,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon payment
 	ReturnURL string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the payment was canceled
@@ -630,20 +638,24 @@ func (s Invoice) Create(options ...Options) (*Invoice, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":             s.Name,
-		"amount":           s.Amount,
-		"currency":         s.Currency,
-		"metadata":         s.Metadata,
-		"request_email":    s.RequestEmail,
-		"request_shipping": s.RequestShipping,
-		"return_url":       s.ReturnURL,
-		"cancel_url":       s.CancelURL,
-		"expand":           opt.Expand,
-		"filter":           opt.Filter,
-		"limit":            opt.Limit,
-		"page":             opt.Page,
-		"end_before":       opt.EndBefore,
-		"start_after":      opt.StartAfter,
+		"name":                         s.Name,
+		"amount":                       s.Amount,
+		"currency":                     s.Currency,
+		"metadata":                     s.Metadata,
+		"details":                      s.Details,
+		"statement_descriptor":         s.StatementDescriptor,
+		"statement_descriptor_phone":   s.StatementDescriptorPhone,
+		"statement_descriptor_city":    s.StatementDescriptorCity,
+		"statement_descriptor_company": s.StatementDescriptorCompany,
+		"statement_descriptor_url":     s.StatementDescriptorURL,
+		"return_url":                   s.ReturnURL,
+		"cancel_url":                   s.CancelURL,
+		"expand":                       opt.Expand,
+		"filter":                       opt.Filter,
+		"limit":                        opt.Limit,
+		"page":                         opt.Page,
+		"end_before":                   opt.EndBefore,
+		"start_after":                  opt.StartAfter,
 	})
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -714,21 +726,25 @@ func (s Invoice) CreateForCustomer(customerID string, options ...Options) (*Invo
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
-		"name":             s.Name,
-		"amount":           s.Amount,
-		"currency":         s.Currency,
-		"metadata":         s.Metadata,
-		"request_email":    s.RequestEmail,
-		"request_shipping": s.RequestShipping,
-		"return_url":       s.ReturnURL,
-		"cancel_url":       s.CancelURL,
-		"customer_id":      customerID,
-		"expand":           opt.Expand,
-		"filter":           opt.Filter,
-		"limit":            opt.Limit,
-		"page":             opt.Page,
-		"end_before":       opt.EndBefore,
-		"start_after":      opt.StartAfter,
+		"name":                         s.Name,
+		"amount":                       s.Amount,
+		"currency":                     s.Currency,
+		"metadata":                     s.Metadata,
+		"details":                      s.Details,
+		"statement_descriptor":         s.StatementDescriptor,
+		"statement_descriptor_phone":   s.StatementDescriptorPhone,
+		"statement_descriptor_city":    s.StatementDescriptorCity,
+		"statement_descriptor_company": s.StatementDescriptorCompany,
+		"statement_descriptor_url":     s.StatementDescriptorURL,
+		"return_url":                   s.ReturnURL,
+		"cancel_url":                   s.CancelURL,
+		"customer_id":                  customerID,
+		"expand":                       opt.Expand,
+		"filter":                       opt.Filter,
+		"limit":                        opt.Limit,
+		"page":                         opt.Page,
+		"end_before":                   opt.EndBefore,
+		"start_after":                  opt.StartAfter,
 	})
 	if err != nil {
 		return nil, errors.New(err, "", "")

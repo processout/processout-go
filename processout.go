@@ -88,6 +88,21 @@ func (p *ProcessOut) NewCard(prefill ...*Card) *Card {
 	return prefill[0]
 }
 
+// NewCardInformation creates a new CardInformation object
+func (p *ProcessOut) NewCardInformation(prefill ...*CardInformation) *CardInformation {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the CardInformation, or none.")
+	}
+	if len(prefill) == 0 {
+		return &CardInformation{
+			Client: p,
+		}
+	}
+
+	prefill[0].Client = p
+	return prefill[0]
+}
+
 // NewCoupon creates a new Coupon object
 func (p *ProcessOut) NewCoupon(prefill ...*Coupon) *Coupon {
 	if len(prefill) > 1 {
@@ -200,6 +215,21 @@ func (p *ProcessOut) NewInvoice(prefill ...*Invoice) *Invoice {
 	}
 	if len(prefill) == 0 {
 		return &Invoice{
+			Client: p,
+		}
+	}
+
+	prefill[0].Client = p
+	return prefill[0]
+}
+
+// NewInvoiceDetail creates a new InvoiceDetail object
+func (p *ProcessOut) NewInvoiceDetail(prefill ...*InvoiceDetail) *InvoiceDetail {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the InvoiceDetail, or none.")
+	}
+	if len(prefill) == 0 {
+		return &InvoiceDetail{
 			Client: p,
 		}
 	}

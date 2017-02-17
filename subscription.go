@@ -19,7 +19,9 @@ type Subscription struct {
 	ID string `json:"id,omitempty"`
 	// Project is the project to which the subscription belongs
 	Project *Project `json:"project,omitempty"`
-	// Plan is the plan used to create this subscription
+	// PlanID is the iD of the plan linked to this subscription
+	PlanID string `json:"plan_id,omitempty"`
+	// Plan is the plan linked to this subscription
 	Plan *Plan `json:"plan,omitempty"`
 	// Customer is the customer linked to the subscription
 	Customer *Customer `json:"customer,omitempty"`
@@ -650,6 +652,7 @@ func (s Subscription) Create(customerID string, options ...Options) (*Subscripti
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
+		"plan_id":      s.PlanID,
 		"cancel_at":    s.CancelAt,
 		"name":         s.Name,
 		"amount":       s.Amount,
@@ -877,161 +880,6 @@ func (s Subscription) Find(subscriptionID string, options ...Options) (*Subscrip
 	return payload.Subscription, nil
 }
 
-// UpdatePlan allows you to update the subscription's plan.
-func (s Subscription) UpdatePlan(planID, prorate bool, options ...Options) (*Subscription, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewSubscription() method to create a new Subscription object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	type Response struct {
-		Subscription *Subscription `json:"subscription"`
-		Success      bool          `json:"success"`
-		Message      string        `json:"message"`
-		Code         string        `json:"error_type"`
-	}
-
-	body, err := json.Marshal(map[string]interface{}{
-		"plan_id":     planID,
-		"prorate":     prorate,
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
-
-	req, err := http.NewRequest(
-		"PUT",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
-			payload.Message)
-
-		return nil, erri
-	}
-
-	payload.Subscription.SetClient(s.Client)
-	return payload.Subscription, nil
-}
-
-// ApplySource allows you to apply a source to the subscription to activate or update the subscription's source.
-func (s Subscription) ApplySource(source string, options ...Options) (*Subscription, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewSubscription() method to create a new Subscription object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	type Response struct {
-		Subscription *Subscription `json:"subscription"`
-		Success      bool          `json:"success"`
-		Message      string        `json:"message"`
-		Code         string        `json:"error_type"`
-	}
-
-	body, err := json.Marshal(map[string]interface{}{
-		"source":      source,
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
-
-	req, err := http.NewRequest(
-		"PUT",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
-			payload.Message)
-
-		return nil, erri
-	}
-
-	payload.Subscription.SetClient(s.Client)
-	return payload.Subscription, nil
-}
-
 // Save allows you to save the updated subscription attributes.
 func (s Subscription) Save(options ...Options) (*Subscription, error) {
 	if s.Client == nil {
@@ -1054,6 +902,7 @@ func (s Subscription) Save(options ...Options) (*Subscription, error) {
 	}
 
 	body, err := json.Marshal(map[string]interface{}{
+		"plan_id":      s.PlanID,
 		"name":         s.Name,
 		"amount":       s.Amount,
 		"interval":     s.Interval,

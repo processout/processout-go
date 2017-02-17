@@ -43,6 +43,10 @@ type Transaction struct {
 	Captured bool `json:"captured,omitempty"`
 	// ProcessoutFee is the processOut fee applied on the transaction
 	ProcessoutFee string `json:"processout_fee,omitempty"`
+	// EstimatedFee is the gateway fee estimated before processing the payment
+	EstimatedFee string `json:"estimated_fee,omitempty"`
+	// GatewayFee is the fee taken by the payment gateway to process the payment
+	GatewayFee string `json:"gateway_fee,omitempty"`
 	// Metadata is the metadata related to the transaction, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the transaction is in sandbox environment

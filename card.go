@@ -27,6 +27,8 @@ type Card struct {
 	BankName string `json:"bank_name,omitempty"`
 	// Brand is the level of the card (Electron, Classic, Gold, ...)
 	Brand string `json:"brand,omitempty"`
+	// Country is the country that issued the card
+	Country string `json:"country,omitempty"`
 	// Iin is the first 6 digits of the card
 	Iin string `json:"iin,omitempty"`
 	// Last4Digits is the last 4 digits of the card
@@ -53,6 +55,161 @@ func (s *Card) SetClient(c *ProcessOut) {
 	if s.Project != nil {
 		s.Project.SetClient(c)
 	}
+}
+
+// All allows you to get all the cards.
+func (s Card) All(options ...Options) ([]*Card, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCard() method to create a new Card object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Cards []*Card `json:"cards"`
+
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/cards"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	for _, o := range payload.Cards {
+		o.SetClient(s.Client)
+	}
+	return payload.Cards, nil
+}
+
+// Find allows you to find a card by its ID.
+func (s Card) Find(cardID string, options ...Options) (*Card, error) {
+	if s.Client == nil {
+		panic("Please use the client.NewCard() method to create a new Card object")
+	}
+
+	opt := Options{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	type Response struct {
+		Card    *Card  `json:"card_information"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	body, err := json.Marshal(map[string]interface{}{
+		"expand":      opt.Expand,
+		"filter":      opt.Filter,
+		"limit":       opt.Limit,
+		"page":        opt.Page,
+		"end_before":  opt.EndBefore,
+		"start_after": opt.StartAfter,
+	})
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/cards/" + url.QueryEscape(cardID) + ""
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("API-Version", s.Client.APIVersion)
+	req.Header.Set("Accept", "application/json")
+	if opt.IdempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
+	}
+	if opt.DisableLogging {
+		req.Header.Set("Disable-Logging", "true")
+	}
+	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Card.SetClient(s.Client)
+	return payload.Card, nil
 }
 
 // dummyCard is a dummy function that's only
