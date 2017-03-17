@@ -5,9 +5,9 @@
 ## Installation
 
 ```sh
-go get gopkg.in/processout.v3
+go get gopkg.in/processout.v4
 ```
 
 ## Versioning
 
-Versioning is done using gopkg.in, available at `gopkg.in/processout.v3`.
+Versioning is done using gopkg.in, available at `gopkg.in/processout.v4`.
