@@ -1,6 +1,6 @@
 # ProcessOut Go
 
-[![GoDoc](https://godoc.org/gopkg.in/processout.v3?status.svg)](https://godoc.org/gopkg.in/processout.v3)
+[![GoDoc](https://godoc.org/gopkg.in/processout.v4?status.svg)](https://godoc.org/gopkg.in/processout.v4)
 
 ## Installation
 
