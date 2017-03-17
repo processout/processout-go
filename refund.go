@@ -3,6 +3,7 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,67 +14,104 @@ import (
 
 // Refund represents the Refund API object
 type Refund struct {
-	// Client is the ProcessOut client used to communicate with the API
-	Client *ProcessOut
-	// ID is the iD of the refund
-	ID string `json:"id,omitempty"`
+	Identifier
+
 	// Transaction is the transaction to which the refund is applied
 	Transaction *Transaction `json:"transaction,omitempty"`
+	// TransactionID is the iD of the transaction to which the refund is applied
+	TransactionID string `json:"transaction_id,omitempty"`
+	// Amount is the amount to be refunded. Must not be greater than the amount still available on the transaction
+	Amount string `json:"amount,omitempty"`
 	// Reason is the reason for the refund. Either customer_request, duplicate or fraud
 	Reason string `json:"reason,omitempty"`
 	// Information is the custom details regarding the refund
 	Information string `json:"information,omitempty"`
-	// Amount is the amount to be refunded. Must not be greater than the amount still available on the transaction
-	Amount string `json:"amount,omitempty"`
+	// HasFailed is the true if the refund was asynchronously failed, false otherwise
+	HasFailed bool `json:"has_failed,omitempty"`
 	// Metadata is the metadata related to the refund, in the form of a dictionary (key-value pair)
 	Metadata map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the refund is in sandbox environment
 	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the refund was done
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+
+	client *ProcessOut
 }
 
 // SetClient sets the client for the Refund object and its
 // children
-func (s *Refund) SetClient(c *ProcessOut) {
+func (s *Refund) SetClient(c *ProcessOut) *Refund {
 	if s == nil {
-		return
+		return s
 	}
-	s.Client = c
+	s.client = c
 	if s.Transaction != nil {
 		s.Transaction.SetClient(c)
 	}
+
+	return s
+}
+
+// Prefil prefills the object with data provided in the parameter
+func (s *Refund) Prefill(c *Refund) *Refund {
+	if c == nil {
+		return s
+	}
+
+	s.ID = c.ID
+	s.Transaction = c.Transaction
+	s.TransactionID = c.TransactionID
+	s.Amount = c.Amount
+	s.Reason = c.Reason
+	s.Information = c.Information
+	s.HasFailed = c.HasFailed
+	s.Metadata = c.Metadata
+	s.Sandbox = c.Sandbox
+	s.CreatedAt = c.CreatedAt
+
+	return s
+}
+
+// RefundFindParameters is the structure representing the
+// additional parameters used to call Refund.Find
+type RefundFindParameters struct {
+	*Options
+	*Refund
 }
 
 // Find allows you to find a transaction's refund by its ID.
-func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refund, error) {
-	if s.Client == nil {
+func (s Refund) Find(transactionID, refundID string, options ...RefundFindParameters) (*Refund, error) {
+	if s.client == nil {
 		panic("Please use the client.NewRefund() method to create a new Refund object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := RefundFindParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Refund)
+
 	type Response struct {
 		Refund  *Refund `json:"refund"`
+		HasMore bool    `json:"has_more"`
 		Success bool    `json:"success"`
 		Message string  `json:"message"`
 		Code    string  `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -88,16 +126,7 @@ func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refun
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -117,42 +146,57 @@ func (s Refund) Find(transactionID, refundID string, options ...Options) (*Refun
 		return nil, erri
 	}
 
-	payload.Refund.SetClient(s.Client)
+	payload.Refund.SetClient(s.client)
 	return payload.Refund, nil
 }
 
-// Apply allows you to apply a refund to a transaction.
-func (s Refund) Apply(transactionID string, options ...Options) error {
-	if s.Client == nil {
-		panic("Please use the client.NewRefund() method to create a new Refund object")
-	}
+// RefundApplyParameters is the structure representing the
+// additional parameters used to call Refund.Apply
+type RefundApplyParameters struct {
+	*Options
+	*Refund
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// Apply allows you to apply a refund to a transaction.
+func (s Refund) Apply(transactionID string, options ...RefundApplyParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewRefund() method to create a new Refund object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := RefundApplyParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Refund)
+
 	type Response struct {
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"amount":      s.Amount,
-		"metadata":    s.Metadata,
-		"reason":      s.Reason,
-		"information": s.Information,
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+		Amount      interface{} `json:"amount"`
+		Metadata    interface{} `json:"metadata"`
+		Reason      interface{} `json:"reason"`
+		Information interface{} `json:"information"`
+	}{
+		Options:     opt.Options,
+		Amount:      s.Amount,
+		Metadata:    s.Metadata,
+		Reason:      s.Reason,
+		Information: s.Information,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return errors.New(err, "", "")
 	}
@@ -167,16 +211,7 @@ func (s Refund) Apply(transactionID string, options ...Options) error {
 	if err != nil {
 		return errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -211,6 +246,7 @@ func dummyRefund() {
 		d strings.Reader
 		e time.Time
 		f url.URL
+		g io.Reader
 	}
 	errors.New(nil, "", "")
 }

@@ -3,6 +3,7 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,12 +14,12 @@ import (
 
 // Activity represents the Activity API object
 type Activity struct {
-	// Client is the ProcessOut client used to communicate with the API
-	Client *ProcessOut
-	// ID is the iD of the activity
-	ID string `json:"id,omitempty"`
+	Identifier
+
 	// Project is the project to which the activity belongs
 	Project *Project `json:"project,omitempty"`
+	// ProjectID is the iD of the project to which the activity belongs
+	ProjectID string `json:"project_id,omitempty"`
 	// Title is the title of the activity
 	Title string `json:"title,omitempty"`
 	// Content is the content of the activity
@@ -26,51 +27,83 @@ type Activity struct {
 	// Level is the level of the activity
 	Level int `json:"level,omitempty"`
 	// CreatedAt is the date at which the transaction was created
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+
+	client *ProcessOut
 }
 
 // SetClient sets the client for the Activity object and its
 // children
-func (s *Activity) SetClient(c *ProcessOut) {
+func (s *Activity) SetClient(c *ProcessOut) *Activity {
 	if s == nil {
-		return
+		return s
 	}
-	s.Client = c
+	s.client = c
 	if s.Project != nil {
 		s.Project.SetClient(c)
 	}
+
+	return s
+}
+
+// Prefil prefills the object with data provided in the parameter
+func (s *Activity) Prefill(c *Activity) *Activity {
+	if c == nil {
+		return s
+	}
+
+	s.ID = c.ID
+	s.Project = c.Project
+	s.ProjectID = c.ProjectID
+	s.Title = c.Title
+	s.Content = c.Content
+	s.Level = c.Level
+	s.CreatedAt = c.CreatedAt
+
+	return s
+}
+
+// ActivityAllParameters is the structure representing the
+// additional parameters used to call Activity.All
+type ActivityAllParameters struct {
+	*Options
+	*Activity
 }
 
 // All allows you to get all the project activities.
-func (s Activity) All(options ...Options) ([]*Activity, error) {
-	if s.Client == nil {
+func (s Activity) All(options ...ActivityAllParameters) (*Iterator, error) {
+	if s.client == nil {
 		panic("Please use the client.NewActivity() method to create a new Activity object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := ActivityAllParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Activity)
+
 	type Response struct {
 		Activities []*Activity `json:"activities"`
 
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -85,16 +118,7 @@ func (s Activity) All(options ...Options) ([]*Activity, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -114,41 +138,75 @@ func (s Activity) All(options ...Options) ([]*Activity, error) {
 		return nil, erri
 	}
 
+	activitiesList := []Identifiable{}
 	for _, o := range payload.Activities {
-		o.SetClient(s.Client)
+		activitiesList = append(activitiesList, o.SetClient(s.client))
 	}
-	return payload.Activities, nil
+	activitiesIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    activitiesList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"activities"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return activitiesIterator, nil
+}
+
+// ActivityFindParameters is the structure representing the
+// additional parameters used to call Activity.Find
+type ActivityFindParameters struct {
+	*Options
+	*Activity
 }
 
 // Find allows you to find a specific activity and fetch its data.
-func (s Activity) Find(activityID string, options ...Options) (*Activity, error) {
-	if s.Client == nil {
+func (s Activity) Find(activityID string, options ...ActivityFindParameters) (*Activity, error) {
+	if s.client == nil {
 		panic("Please use the client.NewActivity() method to create a new Activity object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := ActivityFindParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Activity)
+
 	type Response struct {
 		Activity *Activity `json:"activity"`
+		HasMore  bool      `json:"has_more"`
 		Success  bool      `json:"success"`
 		Message  string    `json:"message"`
 		Code     string    `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -163,16 +221,7 @@ func (s Activity) Find(activityID string, options ...Options) (*Activity, error)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -192,7 +241,7 @@ func (s Activity) Find(activityID string, options ...Options) (*Activity, error)
 		return nil, erri
 	}
 
-	payload.Activity.SetClient(s.Client)
+	payload.Activity.SetClient(s.client)
 	return payload.Activity, nil
 }
 
@@ -208,6 +257,7 @@ func dummyActivity() {
 		d strings.Reader
 		e time.Time
 		f url.URL
+		g io.Reader
 	}
 	errors.New(nil, "", "")
 }

@@ -3,6 +3,7 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,12 +14,12 @@ import (
 
 // Event represents the Event API object
 type Event struct {
-	// Client is the ProcessOut client used to communicate with the API
-	Client *ProcessOut
-	// ID is the iD of the event
-	ID string `json:"id,omitempty"`
+	Identifier
+
 	// Project is the project to which the event belongs
 	Project *Project `json:"project,omitempty"`
+	// ProjectID is the iD of the project to which the event belongs
+	ProjectID string `json:"project_id,omitempty"`
 	// Name is the name of the event
 	Name string `json:"name,omitempty"`
 	// Data is the data object associated to the event
@@ -26,51 +27,83 @@ type Event struct {
 	// Sandbox is the define whether or not the event is in sandbox environment
 	Sandbox bool `json:"sandbox,omitempty"`
 	// FiredAt is the date at which the event was fired
-	FiredAt *time.Time `json:"fired_at,omitempty"`
+	FiredAt time.Time `json:"fired_at,omitempty"`
+
+	client *ProcessOut
 }
 
 // SetClient sets the client for the Event object and its
 // children
-func (s *Event) SetClient(c *ProcessOut) {
+func (s *Event) SetClient(c *ProcessOut) *Event {
 	if s == nil {
-		return
+		return s
 	}
-	s.Client = c
+	s.client = c
 	if s.Project != nil {
 		s.Project.SetClient(c)
 	}
+
+	return s
+}
+
+// Prefil prefills the object with data provided in the parameter
+func (s *Event) Prefill(c *Event) *Event {
+	if c == nil {
+		return s
+	}
+
+	s.ID = c.ID
+	s.Project = c.Project
+	s.ProjectID = c.ProjectID
+	s.Name = c.Name
+	s.Data = c.Data
+	s.Sandbox = c.Sandbox
+	s.FiredAt = c.FiredAt
+
+	return s
+}
+
+// EventFetchWebhooksParameters is the structure representing the
+// additional parameters used to call Event.FetchWebhooks
+type EventFetchWebhooksParameters struct {
+	*Options
+	*Event
 }
 
 // FetchWebhooks allows you to get all the webhooks of the event.
-func (s Event) FetchWebhooks(options ...Options) ([]*Webhook, error) {
-	if s.Client == nil {
+func (s Event) FetchWebhooks(options ...EventFetchWebhooksParameters) (*Iterator, error) {
+	if s.client == nil {
 		panic("Please use the client.NewEvent() method to create a new Event object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := EventFetchWebhooksParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Event)
+
 	type Response struct {
 		Webhooks []*Webhook `json:"webhooks"`
 
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -85,16 +118,7 @@ func (s Event) FetchWebhooks(options ...Options) ([]*Webhook, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -114,42 +138,76 @@ func (s Event) FetchWebhooks(options ...Options) ([]*Webhook, error) {
 		return nil, erri
 	}
 
+	webhooksList := []Identifiable{}
 	for _, o := range payload.Webhooks {
-		o.SetClient(s.Client)
+		webhooksList = append(webhooksList, o.SetClient(s.client))
 	}
-	return payload.Webhooks, nil
+	webhooksIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    webhooksList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"webhooks"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return webhooksIterator, nil
+}
+
+// EventAllParameters is the structure representing the
+// additional parameters used to call Event.All
+type EventAllParameters struct {
+	*Options
+	*Event
 }
 
 // All allows you to get all the events.
-func (s Event) All(options ...Options) ([]*Event, error) {
-	if s.Client == nil {
+func (s Event) All(options ...EventAllParameters) (*Iterator, error) {
+	if s.client == nil {
 		panic("Please use the client.NewEvent() method to create a new Event object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := EventAllParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Event)
+
 	type Response struct {
 		Events []*Event `json:"events"`
 
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -164,16 +222,7 @@ func (s Event) All(options ...Options) ([]*Event, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -193,41 +242,75 @@ func (s Event) All(options ...Options) ([]*Event, error) {
 		return nil, erri
 	}
 
+	eventsList := []Identifiable{}
 	for _, o := range payload.Events {
-		o.SetClient(s.Client)
+		eventsList = append(eventsList, o.SetClient(s.client))
 	}
-	return payload.Events, nil
+	eventsIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    eventsList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"events"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return eventsIterator, nil
+}
+
+// EventFindParameters is the structure representing the
+// additional parameters used to call Event.Find
+type EventFindParameters struct {
+	*Options
+	*Event
 }
 
 // Find allows you to find an event by its ID.
-func (s Event) Find(eventID string, options ...Options) (*Event, error) {
-	if s.Client == nil {
+func (s Event) Find(eventID string, options ...EventFindParameters) (*Event, error) {
+	if s.client == nil {
 		panic("Please use the client.NewEvent() method to create a new Event object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := EventFindParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Event)
+
 	type Response struct {
 		Event   *Event `json:"event"`
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -242,16 +325,7 @@ func (s Event) Find(eventID string, options ...Options) (*Event, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -271,7 +345,7 @@ func (s Event) Find(eventID string, options ...Options) (*Event, error) {
 		return nil, erri
 	}
 
-	payload.Event.SetClient(s.Client)
+	payload.Event.SetClient(s.client)
 	return payload.Event, nil
 }
 
@@ -287,6 +361,7 @@ func dummyEvent() {
 		d strings.Reader
 		e time.Time
 		f url.URL
+		g io.Reader
 	}
 	errors.New(nil, "", "")
 }

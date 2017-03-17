@@ -3,6 +3,7 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,41 +14,47 @@ import (
 
 // AuthorizationRequest represents the AuthorizationRequest API object
 type AuthorizationRequest struct {
-	// Client is the ProcessOut client used to communicate with the API
-	Client *ProcessOut
-	// ID is the iD of the authorization
-	ID string `json:"id,omitempty"`
+	Identifier
+
 	// Project is the project to which the authorization request belongs
 	Project *Project `json:"project,omitempty"`
+	// ProjectID is the iD of the project to which the authorization request belongs
+	ProjectID string `json:"project_id,omitempty"`
 	// Customer is the customer linked to the authorization request
 	Customer *Customer `json:"customer,omitempty"`
+	// CustomerID is the iD of the customer linked to the authorization request
+	CustomerID string `json:"customer_id,omitempty"`
 	// Token is the token linked to the authorization request, once authorized
 	Token *Token `json:"token,omitempty"`
-	// URL is the uRL to which you may redirect your customer to proceed with the authorization
-	URL string `json:"url,omitempty"`
-	// Authorized is the whether or not the authorization request was authorized
-	Authorized bool `json:"authorized,omitempty"`
+	// TokenID is the iD of the token linked to the authorization request, once authorized
+	TokenID *string `json:"token_id,omitempty"`
 	// Name is the name of the authorization
 	Name string `json:"name,omitempty"`
 	// Currency is the currency of the authorization
 	Currency string `json:"currency,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon authorization
-	ReturnURL string `json:"return_url,omitempty"`
+	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the authorization was canceled
-	CancelURL string `json:"cancel_url,omitempty"`
+	CancelURL *string `json:"cancel_url,omitempty"`
+	// Authorized is the whether or not the authorization request was authorized
+	Authorized bool `json:"authorized,omitempty"`
 	// Sandbox is the define whether or not the authorization is in sandbox environment
 	Sandbox bool `json:"sandbox,omitempty"`
+	// URL is the uRL to which you may redirect your customer to proceed with the authorization
+	URL string `json:"url,omitempty"`
 	// CreatedAt is the date at which the authorization was created
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+
+	client *ProcessOut
 }
 
 // SetClient sets the client for the AuthorizationRequest object and its
 // children
-func (s *AuthorizationRequest) SetClient(c *ProcessOut) {
+func (s *AuthorizationRequest) SetClient(c *ProcessOut) *AuthorizationRequest {
 	if s == nil {
-		return
+		return s
 	}
-	s.Client = c
+	s.client = c
 	if s.Project != nil {
 		s.Project.SetClient(c)
 	}
@@ -57,37 +64,75 @@ func (s *AuthorizationRequest) SetClient(c *ProcessOut) {
 	if s.Token != nil {
 		s.Token.SetClient(c)
 	}
+
+	return s
+}
+
+// Prefil prefills the object with data provided in the parameter
+func (s *AuthorizationRequest) Prefill(c *AuthorizationRequest) *AuthorizationRequest {
+	if c == nil {
+		return s
+	}
+
+	s.ID = c.ID
+	s.Project = c.Project
+	s.ProjectID = c.ProjectID
+	s.Customer = c.Customer
+	s.CustomerID = c.CustomerID
+	s.Token = c.Token
+	s.TokenID = c.TokenID
+	s.Name = c.Name
+	s.Currency = c.Currency
+	s.ReturnURL = c.ReturnURL
+	s.CancelURL = c.CancelURL
+	s.Authorized = c.Authorized
+	s.Sandbox = c.Sandbox
+	s.URL = c.URL
+	s.CreatedAt = c.CreatedAt
+
+	return s
+}
+
+// AuthorizationRequestFetchCustomerParameters is the structure representing the
+// additional parameters used to call AuthorizationRequest.FetchCustomer
+type AuthorizationRequestFetchCustomerParameters struct {
+	*Options
+	*AuthorizationRequest
 }
 
 // FetchCustomer allows you to get the customer linked to the authorization request.
-func (s AuthorizationRequest) FetchCustomer(options ...Options) (*Customer, error) {
-	if s.Client == nil {
+func (s AuthorizationRequest) FetchCustomer(options ...AuthorizationRequestFetchCustomerParameters) (*Customer, error) {
+	if s.client == nil {
 		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := AuthorizationRequestFetchCustomerParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.AuthorizationRequest)
+
 	type Response struct {
 		Customer *Customer `json:"customer"`
+		HasMore  bool      `json:"has_more"`
 		Success  bool      `json:"success"`
 		Message  string    `json:"message"`
 		Code     string    `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -102,16 +147,7 @@ func (s AuthorizationRequest) FetchCustomer(options ...Options) (*Customer, erro
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -131,44 +167,60 @@ func (s AuthorizationRequest) FetchCustomer(options ...Options) (*Customer, erro
 		return nil, erri
 	}
 
-	payload.Customer.SetClient(s.Client)
+	payload.Customer.SetClient(s.client)
 	return payload.Customer, nil
 }
 
-// Create allows you to create a new authorization request for the given customer ID.
-func (s AuthorizationRequest) Create(customerID string, options ...Options) (*AuthorizationRequest, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
-	}
+// AuthorizationRequestCreateParameters is the structure representing the
+// additional parameters used to call AuthorizationRequest.Create
+type AuthorizationRequestCreateParameters struct {
+	*Options
+	*AuthorizationRequest
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// Create allows you to create a new authorization request for the given customer ID.
+func (s AuthorizationRequest) Create(customerID string, options ...AuthorizationRequestCreateParameters) (*AuthorizationRequest, error) {
+	if s.client == nil {
+		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := AuthorizationRequestCreateParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.AuthorizationRequest)
+
 	type Response struct {
 		AuthorizationRequest *AuthorizationRequest `json:"authorization_request"`
+		HasMore              bool                  `json:"has_more"`
 		Success              bool                  `json:"success"`
 		Message              string                `json:"message"`
 		Code                 string                `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"name":        s.Name,
-		"currency":    s.Currency,
-		"return_url":  s.ReturnURL,
-		"cancel_url":  s.CancelURL,
-		"customer_id": customerID,
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+		Name       interface{} `json:"name"`
+		Currency   interface{} `json:"currency"`
+		ReturnURL  interface{} `json:"return_url"`
+		CancelURL  interface{} `json:"cancel_url"`
+		CustomerID interface{} `json:"customer_id"`
+	}{
+		Options:    opt.Options,
+		Name:       s.Name,
+		Currency:   s.Currency,
+		ReturnURL:  s.ReturnURL,
+		CancelURL:  s.CancelURL,
+		CustomerID: customerID,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -183,16 +235,7 @@ func (s AuthorizationRequest) Create(customerID string, options ...Options) (*Au
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -212,39 +255,50 @@ func (s AuthorizationRequest) Create(customerID string, options ...Options) (*Au
 		return nil, erri
 	}
 
-	payload.AuthorizationRequest.SetClient(s.Client)
+	payload.AuthorizationRequest.SetClient(s.client)
 	return payload.AuthorizationRequest, nil
 }
 
-// Find allows you to find an authorization request by its ID.
-func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Options) (*AuthorizationRequest, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
-	}
+// AuthorizationRequestFindParameters is the structure representing the
+// additional parameters used to call AuthorizationRequest.Find
+type AuthorizationRequestFindParameters struct {
+	*Options
+	*AuthorizationRequest
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// Find allows you to find an authorization request by its ID.
+func (s AuthorizationRequest) Find(authorizationRequestID string, options ...AuthorizationRequestFindParameters) (*AuthorizationRequest, error) {
+	if s.client == nil {
+		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := AuthorizationRequestFindParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.AuthorizationRequest)
+
 	type Response struct {
 		AuthorizationRequest *AuthorizationRequest `json:"authorization_request"`
+		HasMore              bool                  `json:"has_more"`
 		Success              bool                  `json:"success"`
 		Message              string                `json:"message"`
 		Code                 string                `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -259,16 +313,7 @@ func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Opt
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -288,7 +333,7 @@ func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Opt
 		return nil, erri
 	}
 
-	payload.AuthorizationRequest.SetClient(s.Client)
+	payload.AuthorizationRequest.SetClient(s.client)
 	return payload.AuthorizationRequest, nil
 }
 
@@ -304,6 +349,7 @@ func dummyAuthorizationRequest() {
 		d strings.Reader
 		e time.Time
 		f url.URL
+		g io.Reader
 	}
 	errors.New(nil, "", "")
 }

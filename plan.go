@@ -3,6 +3,7 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,12 +14,12 @@ import (
 
 // Plan represents the Plan API object
 type Plan struct {
-	// Client is the ProcessOut client used to communicate with the API
-	Client *ProcessOut
-	// ID is the iD of the plan
-	ID string `json:"id,omitempty"`
+	Identifier
+
 	// Project is the project to which the plan belongs
 	Project *Project `json:"project,omitempty"`
+	// ProjectID is the iD of the project to which the plan belongs
+	ProjectID string `json:"project_id,omitempty"`
 	// URL is the uRL to which you may redirect your customer to activate the subscription plan
 	URL string `json:"url,omitempty"`
 	// Name is the name of the plan
@@ -33,58 +34,97 @@ type Plan struct {
 	Interval string `json:"interval,omitempty"`
 	// TrialPeriod is the the trial period. The customer will not be charged during this time span. Formatted in the format "1d2w3m4y" (day, week, month, year)
 	TrialPeriod string `json:"trial_period,omitempty"`
-	// ReturnURL is the uRL where the customer will be redirected when he activates the subscription created using this plan
-	ReturnURL string `json:"return_url,omitempty"`
-	// CancelURL is the uRL where the customer will be redirected when he cancelling the subscription created using this plan
-	CancelURL string `json:"cancel_url,omitempty"`
+	// ReturnURL is the uRL where the customer will be redirected when activating the subscription created using this plan
+	ReturnURL *string `json:"return_url,omitempty"`
+	// CancelURL is the uRL where the customer will be redirected when cancelling the subscription created using this plan
+	CancelURL *string `json:"cancel_url,omitempty"`
 	// Sandbox is the define whether or not the plan is in sandbox environment
 	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the plan was created
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+
+	client *ProcessOut
 }
 
 // SetClient sets the client for the Plan object and its
 // children
-func (s *Plan) SetClient(c *ProcessOut) {
+func (s *Plan) SetClient(c *ProcessOut) *Plan {
 	if s == nil {
-		return
+		return s
 	}
-	s.Client = c
+	s.client = c
 	if s.Project != nil {
 		s.Project.SetClient(c)
 	}
+
+	return s
+}
+
+// Prefil prefills the object with data provided in the parameter
+func (s *Plan) Prefill(c *Plan) *Plan {
+	if c == nil {
+		return s
+	}
+
+	s.ID = c.ID
+	s.Project = c.Project
+	s.ProjectID = c.ProjectID
+	s.URL = c.URL
+	s.Name = c.Name
+	s.Amount = c.Amount
+	s.Currency = c.Currency
+	s.Metadata = c.Metadata
+	s.Interval = c.Interval
+	s.TrialPeriod = c.TrialPeriod
+	s.ReturnURL = c.ReturnURL
+	s.CancelURL = c.CancelURL
+	s.Sandbox = c.Sandbox
+	s.CreatedAt = c.CreatedAt
+
+	return s
+}
+
+// PlanAllParameters is the structure representing the
+// additional parameters used to call Plan.All
+type PlanAllParameters struct {
+	*Options
+	*Plan
 }
 
 // All allows you to get all the plans.
-func (s Plan) All(options ...Options) ([]*Plan, error) {
-	if s.Client == nil {
+func (s Plan) All(options ...PlanAllParameters) (*Iterator, error) {
+	if s.client == nil {
 		panic("Please use the client.NewPlan() method to create a new Plan object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := PlanAllParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Plan)
+
 	type Response struct {
 		Plans []*Plan `json:"plans"`
 
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -99,16 +139,7 @@ func (s Plan) All(options ...Options) ([]*Plan, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -128,50 +159,93 @@ func (s Plan) All(options ...Options) ([]*Plan, error) {
 		return nil, erri
 	}
 
+	plansList := []Identifiable{}
 	for _, o := range payload.Plans {
-		o.SetClient(s.Client)
+		plansList = append(plansList, o.SetClient(s.client))
 	}
-	return payload.Plans, nil
+	plansIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    plansList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"plans"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return plansIterator, nil
+}
+
+// PlanCreateParameters is the structure representing the
+// additional parameters used to call Plan.Create
+type PlanCreateParameters struct {
+	*Options
+	*Plan
 }
 
 // Create allows you to create a new plan.
-func (s Plan) Create(options ...Options) (*Plan, error) {
-	if s.Client == nil {
+func (s Plan) Create(options ...PlanCreateParameters) (*Plan, error) {
+	if s.client == nil {
 		panic("Please use the client.NewPlan() method to create a new Plan object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := PlanCreateParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Plan)
+
 	type Response struct {
 		Plan    *Plan  `json:"plan"`
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"id":           s.ID,
-		"name":         s.Name,
-		"amount":       s.Amount,
-		"currency":     s.Currency,
-		"interval":     s.Interval,
-		"trial_period": s.TrialPeriod,
-		"metadata":     s.Metadata,
-		"return_url":   s.ReturnURL,
-		"cancel_url":   s.CancelURL,
-		"expand":       opt.Expand,
-		"filter":       opt.Filter,
-		"limit":        opt.Limit,
-		"page":         opt.Page,
-		"end_before":   opt.EndBefore,
-		"start_after":  opt.StartAfter,
-	})
+	data := struct {
+		*Options
+		ID          interface{} `json:"id"`
+		Name        interface{} `json:"name"`
+		Amount      interface{} `json:"amount"`
+		Currency    interface{} `json:"currency"`
+		Interval    interface{} `json:"interval"`
+		TrialPeriod interface{} `json:"trial_period"`
+		Metadata    interface{} `json:"metadata"`
+		ReturnURL   interface{} `json:"return_url"`
+		CancelURL   interface{} `json:"cancel_url"`
+	}{
+		Options:     opt.Options,
+		ID:          s.ID,
+		Name:        s.Name,
+		Amount:      s.Amount,
+		Currency:    s.Currency,
+		Interval:    s.Interval,
+		TrialPeriod: s.TrialPeriod,
+		Metadata:    s.Metadata,
+		ReturnURL:   s.ReturnURL,
+		CancelURL:   s.CancelURL,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -186,16 +260,7 @@ func (s Plan) Create(options ...Options) (*Plan, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -215,39 +280,50 @@ func (s Plan) Create(options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.SetClient(s.Client)
+	payload.Plan.SetClient(s.client)
 	return payload.Plan, nil
 }
 
-// Find allows you to find a plan by its ID.
-func (s Plan) Find(planID string, options ...Options) (*Plan, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewPlan() method to create a new Plan object")
-	}
+// PlanFindParameters is the structure representing the
+// additional parameters used to call Plan.Find
+type PlanFindParameters struct {
+	*Options
+	*Plan
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// Find allows you to find a plan by its ID.
+func (s Plan) Find(planID string, options ...PlanFindParameters) (*Plan, error) {
+	if s.client == nil {
+		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := PlanFindParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Plan)
+
 	type Response struct {
 		Plan    *Plan  `json:"plan"`
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -262,16 +338,7 @@ func (s Plan) Find(planID string, options ...Options) (*Plan, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -291,44 +358,60 @@ func (s Plan) Find(planID string, options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.SetClient(s.Client)
+	payload.Plan.SetClient(s.client)
 	return payload.Plan, nil
 }
 
-// Save allows you to save the updated plan attributes. This action won't affect subscriptions already linked to this plan.
-func (s Plan) Save(options ...Options) (*Plan, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewPlan() method to create a new Plan object")
-	}
+// PlanSaveParameters is the structure representing the
+// additional parameters used to call Plan.Save
+type PlanSaveParameters struct {
+	*Options
+	*Plan
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// Save allows you to save the updated plan attributes. This action won't affect subscriptions already linked to this plan.
+func (s Plan) Save(options ...PlanSaveParameters) (*Plan, error) {
+	if s.client == nil {
+		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := PlanSaveParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Plan)
+
 	type Response struct {
 		Plan    *Plan  `json:"plan"`
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"name":         s.Name,
-		"trial_period": s.TrialPeriod,
-		"metadata":     s.Metadata,
-		"return_url":   s.ReturnURL,
-		"cancel_url":   s.CancelURL,
-		"expand":       opt.Expand,
-		"filter":       opt.Filter,
-		"limit":        opt.Limit,
-		"page":         opt.Page,
-		"end_before":   opt.EndBefore,
-		"start_after":  opt.StartAfter,
-	})
+	data := struct {
+		*Options
+		Name        interface{} `json:"name"`
+		TrialPeriod interface{} `json:"trial_period"`
+		Metadata    interface{} `json:"metadata"`
+		ReturnURL   interface{} `json:"return_url"`
+		CancelURL   interface{} `json:"cancel_url"`
+	}{
+		Options:     opt.Options,
+		Name:        s.Name,
+		TrialPeriod: s.TrialPeriod,
+		Metadata:    s.Metadata,
+		ReturnURL:   s.ReturnURL,
+		CancelURL:   s.CancelURL,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -343,16 +426,7 @@ func (s Plan) Save(options ...Options) (*Plan, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -372,38 +446,49 @@ func (s Plan) Save(options ...Options) (*Plan, error) {
 		return nil, erri
 	}
 
-	payload.Plan.SetClient(s.Client)
+	payload.Plan.SetClient(s.client)
 	return payload.Plan, nil
 }
 
-// End allows you to delete a plan. Subscriptions linked to this plan won't be affected.
-func (s Plan) End(options ...Options) error {
-	if s.Client == nil {
-		panic("Please use the client.NewPlan() method to create a new Plan object")
-	}
+// PlanEndParameters is the structure representing the
+// additional parameters used to call Plan.End
+type PlanEndParameters struct {
+	*Options
+	*Plan
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// End allows you to delete a plan. Subscriptions linked to this plan won't be affected.
+func (s Plan) End(options ...PlanEndParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := PlanEndParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Plan)
+
 	type Response struct {
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return errors.New(err, "", "")
 	}
@@ -418,16 +503,7 @@ func (s Plan) End(options ...Options) error {
 	if err != nil {
 		return errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -462,6 +538,7 @@ func dummyPlan() {
 		d strings.Reader
 		e time.Time
 		f url.URL
+		g io.Reader
 	}
 	errors.New(nil, "", "")
 }

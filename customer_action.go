@@ -3,6 +3,7 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,21 +14,35 @@ import (
 
 // CustomerAction represents the CustomerAction API object
 type CustomerAction struct {
-	// Client is the ProcessOut client used to communicate with the API
-	Client *ProcessOut
 	// Type is the customer action type (such as url)
 	Type string `json:"type,omitempty"`
 	// Value is the value of the customer action. If type is an URL, URL to which you should redirect your customer
 	Value string `json:"value,omitempty"`
+
+	client *ProcessOut
 }
 
 // SetClient sets the client for the CustomerAction object and its
 // children
-func (s *CustomerAction) SetClient(c *ProcessOut) {
+func (s *CustomerAction) SetClient(c *ProcessOut) *CustomerAction {
 	if s == nil {
-		return
+		return s
 	}
-	s.Client = c
+	s.client = c
+
+	return s
+}
+
+// Prefil prefills the object with data provided in the parameter
+func (s *CustomerAction) Prefill(c *CustomerAction) *CustomerAction {
+	if c == nil {
+		return s
+	}
+
+	s.Type = c.Type
+	s.Value = c.Value
+
+	return s
 }
 
 // dummyCustomerAction is a dummy function that's only
@@ -42,6 +57,7 @@ func dummyCustomerAction() {
 		d strings.Reader
 		e time.Time
 		f url.URL
+		g io.Reader
 	}
 	errors.New(nil, "", "")
 }

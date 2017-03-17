@@ -3,6 +3,7 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,60 +14,89 @@ import (
 
 // CardInformation represents the CardInformation API object
 type CardInformation struct {
-	// Client is the ProcessOut client used to communicate with the API
-	Client *ProcessOut
 	// Iin is the first 6 digits of the card
 	Iin string `json:"iin,omitempty"`
 	// Scheme is the scheme of the card, such as visa or mastercard
 	Scheme string `json:"scheme,omitempty"`
 	// Type is the type of the card (Credit, Debit, ...)
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 	// BankName is the name of the bank of the card
-	BankName string `json:"bank_name,omitempty"`
+	BankName *string `json:"bank_name,omitempty"`
 	// Brand is the level of the card (Electron, Classic, Gold, ...)
-	Brand string `json:"brand,omitempty"`
+	Brand *string `json:"brand,omitempty"`
 	// Country is the country that issued the card
-	Country string `json:"country,omitempty"`
+	Country *string `json:"country,omitempty"`
+
+	client *ProcessOut
 }
 
 // SetClient sets the client for the CardInformation object and its
 // children
-func (s *CardInformation) SetClient(c *ProcessOut) {
+func (s *CardInformation) SetClient(c *ProcessOut) *CardInformation {
 	if s == nil {
-		return
+		return s
 	}
-	s.Client = c
+	s.client = c
+
+	return s
+}
+
+// Prefil prefills the object with data provided in the parameter
+func (s *CardInformation) Prefill(c *CardInformation) *CardInformation {
+	if c == nil {
+		return s
+	}
+
+	s.Iin = c.Iin
+	s.Scheme = c.Scheme
+	s.Type = c.Type
+	s.BankName = c.BankName
+	s.Brand = c.Brand
+	s.Country = c.Country
+
+	return s
+}
+
+// CardInformationFetchParameters is the structure representing the
+// additional parameters used to call CardInformation.Fetch
+type CardInformationFetchParameters struct {
+	*Options
+	*CardInformation
 }
 
 // Fetch allows you to fetch card information from the IIN.
-func (s CardInformation) Fetch(iin string, options ...Options) (*CardInformation, error) {
-	if s.Client == nil {
+func (s CardInformation) Fetch(iin string, options ...CardInformationFetchParameters) (*CardInformation, error) {
+	if s.client == nil {
 		panic("Please use the client.NewCardInformation() method to create a new CardInformation object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := CardInformationFetchParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.CardInformation)
+
 	type Response struct {
 		CardInformation *CardInformation `json:"card_information"`
+		HasMore         bool             `json:"has_more"`
 		Success         bool             `json:"success"`
 		Message         string           `json:"message"`
 		Code            string           `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -81,16 +111,7 @@ func (s CardInformation) Fetch(iin string, options ...Options) (*CardInformation
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -110,7 +131,7 @@ func (s CardInformation) Fetch(iin string, options ...Options) (*CardInformation
 		return nil, erri
 	}
 
-	payload.CardInformation.SetClient(s.Client)
+	payload.CardInformation.SetClient(s.client)
 	return payload.CardInformation, nil
 }
 
@@ -126,6 +147,7 @@ func dummyCardInformation() {
 		d strings.Reader
 		e time.Time
 		f url.URL
+		g io.Reader
 	}
 	errors.New(nil, "", "")
 }

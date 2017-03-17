@@ -3,6 +3,7 @@ package processout
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,12 +14,12 @@ import (
 
 // Product represents the Product API object
 type Product struct {
-	// Client is the ProcessOut client used to communicate with the API
-	Client *ProcessOut
-	// ID is the iD of the product
-	ID string `json:"id,omitempty"`
+	Identifier
+
 	// Project is the project to which the product belongs
 	Project *Project `json:"project,omitempty"`
+	// ProjectID is the iD of the project to which the product belongs
+	ProjectID string `json:"project_id,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the payment
 	URL string `json:"url,omitempty"`
 	// Name is the name of the product
@@ -34,56 +35,95 @@ type Product struct {
 	// RequestShipping is the choose whether or not to request the shipping address during the checkout process
 	RequestShipping bool `json:"request_shipping,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon payment
-	ReturnURL string `json:"return_url,omitempty"`
+	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the paymen was canceled
-	CancelURL string `json:"cancel_url,omitempty"`
+	CancelURL *string `json:"cancel_url,omitempty"`
 	// Sandbox is the define whether or not the product is in sandbox environment
 	Sandbox bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the product was created
-	CreatedAt *time.Time `json:"created_at,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+
+	client *ProcessOut
 }
 
 // SetClient sets the client for the Product object and its
 // children
-func (s *Product) SetClient(c *ProcessOut) {
+func (s *Product) SetClient(c *ProcessOut) *Product {
 	if s == nil {
-		return
+		return s
 	}
-	s.Client = c
+	s.client = c
 	if s.Project != nil {
 		s.Project.SetClient(c)
 	}
+
+	return s
+}
+
+// Prefil prefills the object with data provided in the parameter
+func (s *Product) Prefill(c *Product) *Product {
+	if c == nil {
+		return s
+	}
+
+	s.ID = c.ID
+	s.Project = c.Project
+	s.ProjectID = c.ProjectID
+	s.URL = c.URL
+	s.Name = c.Name
+	s.Amount = c.Amount
+	s.Currency = c.Currency
+	s.Metadata = c.Metadata
+	s.RequestEmail = c.RequestEmail
+	s.RequestShipping = c.RequestShipping
+	s.ReturnURL = c.ReturnURL
+	s.CancelURL = c.CancelURL
+	s.Sandbox = c.Sandbox
+	s.CreatedAt = c.CreatedAt
+
+	return s
+}
+
+// ProductCreateInvoiceParameters is the structure representing the
+// additional parameters used to call Product.CreateInvoice
+type ProductCreateInvoiceParameters struct {
+	*Options
+	*Product
 }
 
 // CreateInvoice allows you to create a new invoice from the product.
-func (s Product) CreateInvoice(options ...Options) (*Invoice, error) {
-	if s.Client == nil {
+func (s Product) CreateInvoice(options ...ProductCreateInvoiceParameters) (*Invoice, error) {
+	if s.client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := ProductCreateInvoiceParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Product)
+
 	type Response struct {
 		Invoice *Invoice `json:"invoice"`
+		HasMore bool     `json:"has_more"`
 		Success bool     `json:"success"`
 		Message string   `json:"message"`
 		Code    string   `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -98,16 +138,7 @@ func (s Product) CreateInvoice(options ...Options) (*Invoice, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -127,40 +158,51 @@ func (s Product) CreateInvoice(options ...Options) (*Invoice, error) {
 		return nil, erri
 	}
 
-	payload.Invoice.SetClient(s.Client)
+	payload.Invoice.SetClient(s.client)
 	return payload.Invoice, nil
 }
 
-// All allows you to get all the products.
-func (s Product) All(options ...Options) ([]*Product, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewProduct() method to create a new Product object")
-	}
+// ProductAllParameters is the structure representing the
+// additional parameters used to call Product.All
+type ProductAllParameters struct {
+	*Options
+	*Product
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// All allows you to get all the products.
+func (s Product) All(options ...ProductAllParameters) (*Iterator, error) {
+	if s.client == nil {
+		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := ProductAllParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Product)
+
 	type Response struct {
 		Products []*Product `json:"products"`
 
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -175,16 +217,7 @@ func (s Product) All(options ...Options) ([]*Product, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -204,49 +237,91 @@ func (s Product) All(options ...Options) ([]*Product, error) {
 		return nil, erri
 	}
 
+	productsList := []Identifiable{}
 	for _, o := range payload.Products {
-		o.SetClient(s.Client)
+		productsList = append(productsList, o.SetClient(s.client))
 	}
-	return payload.Products, nil
+	productsIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    productsList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"products"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return productsIterator, nil
+}
+
+// ProductCreateParameters is the structure representing the
+// additional parameters used to call Product.Create
+type ProductCreateParameters struct {
+	*Options
+	*Product
 }
 
 // Create allows you to create a new product.
-func (s Product) Create(options ...Options) (*Product, error) {
-	if s.Client == nil {
+func (s Product) Create(options ...ProductCreateParameters) (*Product, error) {
+	if s.client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
-	}
-
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := ProductCreateParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Product)
+
 	type Response struct {
 		Product *Product `json:"product"`
+		HasMore bool     `json:"has_more"`
 		Success bool     `json:"success"`
 		Message string   `json:"message"`
 		Code    string   `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"name":             s.Name,
-		"amount":           s.Amount,
-		"currency":         s.Currency,
-		"metadata":         s.Metadata,
-		"request_email":    s.RequestEmail,
-		"request_shipping": s.RequestShipping,
-		"return_url":       s.ReturnURL,
-		"cancel_url":       s.CancelURL,
-		"expand":           opt.Expand,
-		"filter":           opt.Filter,
-		"limit":            opt.Limit,
-		"page":             opt.Page,
-		"end_before":       opt.EndBefore,
-		"start_after":      opt.StartAfter,
-	})
+	data := struct {
+		*Options
+		Name            interface{} `json:"name"`
+		Amount          interface{} `json:"amount"`
+		Currency        interface{} `json:"currency"`
+		Metadata        interface{} `json:"metadata"`
+		RequestEmail    interface{} `json:"request_email"`
+		RequestShipping interface{} `json:"request_shipping"`
+		ReturnURL       interface{} `json:"return_url"`
+		CancelURL       interface{} `json:"cancel_url"`
+	}{
+		Options:         opt.Options,
+		Name:            s.Name,
+		Amount:          s.Amount,
+		Currency:        s.Currency,
+		Metadata:        s.Metadata,
+		RequestEmail:    s.RequestEmail,
+		RequestShipping: s.RequestShipping,
+		ReturnURL:       s.ReturnURL,
+		CancelURL:       s.CancelURL,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -261,16 +336,7 @@ func (s Product) Create(options ...Options) (*Product, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -290,39 +356,50 @@ func (s Product) Create(options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
-	payload.Product.SetClient(s.Client)
+	payload.Product.SetClient(s.client)
 	return payload.Product, nil
 }
 
-// Find allows you to find a product by its ID.
-func (s Product) Find(productID string, options ...Options) (*Product, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewProduct() method to create a new Product object")
-	}
+// ProductFindParameters is the structure representing the
+// additional parameters used to call Product.Find
+type ProductFindParameters struct {
+	*Options
+	*Product
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// Find allows you to find a product by its ID.
+func (s Product) Find(productID string, options ...ProductFindParameters) (*Product, error) {
+	if s.client == nil {
+		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := ProductFindParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Product)
+
 	type Response struct {
 		Product *Product `json:"product"`
+		HasMore bool     `json:"has_more"`
 		Success bool     `json:"success"`
 		Message string   `json:"message"`
 		Code    string   `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -337,16 +414,7 @@ func (s Product) Find(productID string, options ...Options) (*Product, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -366,47 +434,66 @@ func (s Product) Find(productID string, options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
-	payload.Product.SetClient(s.Client)
+	payload.Product.SetClient(s.client)
 	return payload.Product, nil
 }
 
-// Save allows you to save the updated product attributes.
-func (s Product) Save(options ...Options) (*Product, error) {
-	if s.Client == nil {
-		panic("Please use the client.NewProduct() method to create a new Product object")
-	}
+// ProductSaveParameters is the structure representing the
+// additional parameters used to call Product.Save
+type ProductSaveParameters struct {
+	*Options
+	*Product
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// Save allows you to save the updated product attributes.
+func (s Product) Save(options ...ProductSaveParameters) (*Product, error) {
+	if s.client == nil {
+		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := ProductSaveParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Product)
+
 	type Response struct {
 		Product *Product `json:"product"`
+		HasMore bool     `json:"has_more"`
 		Success bool     `json:"success"`
 		Message string   `json:"message"`
 		Code    string   `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"name":             s.Name,
-		"amount":           s.Amount,
-		"currency":         s.Currency,
-		"metadata":         s.Metadata,
-		"request_email":    s.RequestEmail,
-		"request_shipping": s.RequestShipping,
-		"return_url":       s.ReturnURL,
-		"cancel_url":       s.CancelURL,
-		"expand":           opt.Expand,
-		"filter":           opt.Filter,
-		"limit":            opt.Limit,
-		"page":             opt.Page,
-		"end_before":       opt.EndBefore,
-		"start_after":      opt.StartAfter,
-	})
+	data := struct {
+		*Options
+		Name            interface{} `json:"name"`
+		Amount          interface{} `json:"amount"`
+		Currency        interface{} `json:"currency"`
+		Metadata        interface{} `json:"metadata"`
+		RequestEmail    interface{} `json:"request_email"`
+		RequestShipping interface{} `json:"request_shipping"`
+		ReturnURL       interface{} `json:"return_url"`
+		CancelURL       interface{} `json:"cancel_url"`
+	}{
+		Options:         opt.Options,
+		Name:            s.Name,
+		Amount:          s.Amount,
+		Currency:        s.Currency,
+		Metadata:        s.Metadata,
+		RequestEmail:    s.RequestEmail,
+		RequestShipping: s.RequestShipping,
+		ReturnURL:       s.ReturnURL,
+		CancelURL:       s.CancelURL,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -421,16 +508,7 @@ func (s Product) Save(options ...Options) (*Product, error) {
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -450,38 +528,49 @@ func (s Product) Save(options ...Options) (*Product, error) {
 		return nil, erri
 	}
 
-	payload.Product.SetClient(s.Client)
+	payload.Product.SetClient(s.client)
 	return payload.Product, nil
 }
 
-// Delete allows you to delete the product.
-func (s Product) Delete(options ...Options) error {
-	if s.Client == nil {
-		panic("Please use the client.NewProduct() method to create a new Product object")
-	}
+// ProductDeleteParameters is the structure representing the
+// additional parameters used to call Product.Delete
+type ProductDeleteParameters struct {
+	*Options
+	*Product
+}
 
-	opt := Options{}
-	if len(options) == 1 {
-		opt = options[0]
+// Delete allows you to delete the product.
+func (s Product) Delete(options ...ProductDeleteParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
 	if len(options) > 1 {
 		panic("The options parameter should only be provided once.")
 	}
 
+	opt := ProductDeleteParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Product)
+
 	type Response struct {
+		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
 		Message string `json:"message"`
 		Code    string `json:"error_type"`
 	}
 
-	body, err := json.Marshal(map[string]interface{}{
-		"expand":      opt.Expand,
-		"filter":      opt.Filter,
-		"limit":       opt.Limit,
-		"page":        opt.Page,
-		"end_before":  opt.EndBefore,
-		"start_after": opt.StartAfter,
-	})
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
 	if err != nil {
 		return errors.New(err, "", "")
 	}
@@ -496,16 +585,7 @@ func (s Product) Delete(options ...Options) error {
 	if err != nil {
 		return errors.New(err, "", "")
 	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("API-Version", s.Client.APIVersion)
-	req.Header.Set("Accept", "application/json")
-	if opt.IdempotencyKey != "" {
-		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
-	}
-	if opt.DisableLogging {
-		req.Header.Set("Disable-Logging", "true")
-	}
-	req.SetBasicAuth(s.Client.projectID, s.Client.projectSecret)
+	setupRequest(s.client, opt.Options, req)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -540,6 +620,7 @@ func dummyProduct() {
 		d strings.Reader
 		e time.Time
 		f url.URL
+		g io.Reader
 	}
 	errors.New(nil, "", "")
 }
