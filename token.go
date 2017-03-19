@@ -14,12 +14,12 @@ import (
 
 // Token represents the Token API object
 type Token struct {
-	Identifier
-
+	// ID is the iD of the customer token
+	ID *string `json:"id,omitempty"`
 	// Customer is the customer owning the token
 	Customer *Customer `json:"customer,omitempty"`
 	// CustomerID is the iD of the customer linked to the token
-	CustomerID string `json:"customer_id,omitempty"`
+	CustomerID *string `json:"customer_id,omitempty"`
 	// GatewayConfiguration is the gateway configuration to which the token is linked, if any
 	GatewayConfiguration *GatewayConfiguration `json:"gateway_configuration,omitempty"`
 	// GatewayConfigurationID is the iD of the gateway configuration to which the token is linked, if any
@@ -29,17 +29,26 @@ type Token struct {
 	// CardID is the iD of the card used to create the token, if any
 	CardID *string `json:"card_id,omitempty"`
 	// Type is the type of the token. Can be card or gateway_token
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 	// Metadata is the metadata related to the token, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// IsSubscriptionOnly is the define whether or not the customer token is used on a recurring invoice
-	IsSubscriptionOnly bool `json:"is_subscription_only,omitempty"`
+	IsSubscriptionOnly *bool `json:"is_subscription_only,omitempty"`
 	// IsDefault is the true if the card it the default card of the customer, false otherwise
-	IsDefault bool `json:"is_default,omitempty"`
+	IsDefault *bool `json:"is_default,omitempty"`
 	// CreatedAt is the date at which the customer token was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Token) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Token object and its
@@ -82,6 +91,110 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.CreatedAt = c.CreatedAt
 
 	return s
+}
+
+// TokenFetchCustomerTokensParameters is the structure representing the
+// additional parameters used to call Token.FetchCustomerTokens
+type TokenFetchCustomerTokensParameters struct {
+	*Options
+	*Token
+}
+
+// FetchCustomerTokens allows you to get the customer's tokens.
+func (s Token) FetchCustomerTokens(customerID string, options ...TokenFetchCustomerTokensParameters) (*Iterator, error) {
+	if s.client == nil {
+		panic("Please use the client.NewToken() method to create a new Token object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := TokenFetchCustomerTokensParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Token)
+
+	type Response struct {
+		Tokens []*Token `json:"tokens"`
+
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/customers/" + url.QueryEscape(customerID) + "/tokens"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	tokensList := []Identifiable{}
+	for _, o := range payload.Tokens {
+		tokensList = append(tokensList, o.SetClient(s.client))
+	}
+	tokensIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    tokensList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"tokens"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return tokensIterator, nil
 }
 
 // TokenFindParameters is the structure representing the
@@ -167,12 +280,14 @@ func (s Token) Find(customerID, tokenID string, options ...TokenFindParameters) 
 type TokenCreateParameters struct {
 	*Options
 	*Token
-	Settings interface{} `json:"settings"`
-	Target   interface{} `json:"target"`
+	Source     interface{} `json:"source"`
+	Settings   interface{} `json:"settings"`
+	Target     interface{} `json:"target"`
+	SetDefault interface{} `json:"set_default"`
 }
 
 // Create allows you to create a new token for the given customer ID.
-func (s Token) Create(customerID, source string, options ...TokenCreateParameters) (*Token, error) {
+func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 	if s.client == nil {
 		panic("Please use the client.NewToken() method to create a new Token object")
 	}
@@ -199,16 +314,18 @@ func (s Token) Create(customerID, source string, options ...TokenCreateParameter
 
 	data := struct {
 		*Options
-		Metadata interface{} `json:"metadata"`
-		Settings interface{} `json:"settings"`
-		Target   interface{} `json:"target"`
-		Source   interface{} `json:"source"`
+		Metadata   interface{} `json:"metadata"`
+		Source     interface{} `json:"source"`
+		Settings   interface{} `json:"settings"`
+		Target     interface{} `json:"target"`
+		SetDefault interface{} `json:"set_default"`
 	}{
-		Options:  opt.Options,
-		Metadata: s.Metadata,
-		Settings: opt.Settings,
-		Target:   opt.Target,
-		Source:   source,
+		Options:    opt.Options,
+		Metadata:   s.Metadata,
+		Source:     opt.Source,
+		Settings:   opt.Settings,
+		Target:     opt.Target,
+		SetDefault: opt.SetDefault,
 	}
 
 	body, err := json.Marshal(data)
@@ -216,94 +333,7 @@ func (s Token) Create(customerID, source string, options ...TokenCreateParameter
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(customerID) + "/tokens"
-
-	req, err := http.NewRequest(
-		"POST",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-	setupRequest(s.client, opt.Options, req)
-
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
-			payload.Message)
-
-		return nil, erri
-	}
-
-	payload.Token.SetClient(s.client)
-	return payload.Token, nil
-}
-
-// TokenCreateFromRequestParameters is the structure representing the
-// additional parameters used to call Token.CreateFromRequest
-type TokenCreateFromRequestParameters struct {
-	*Options
-	*Token
-	Settings interface{} `json:"settings"`
-}
-
-// CreateFromRequest allows you to create a new token for the given customer ID from an authorization request
-func (s Token) CreateFromRequest(customerID, source, target string, options ...TokenCreateFromRequestParameters) (*Token, error) {
-	if s.client == nil {
-		panic("Please use the client.NewToken() method to create a new Token object")
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	opt := TokenCreateFromRequestParameters{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if opt.Options == nil {
-		opt.Options = &Options{}
-	}
-	s.Prefill(opt.Token)
-
-	type Response struct {
-		Token   *Token `json:"token"`
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
-	}
-
-	data := struct {
-		*Options
-		Metadata interface{} `json:"metadata"`
-		Settings interface{} `json:"settings"`
-		Source   interface{} `json:"source"`
-		Target   interface{} `json:"target"`
-	}{
-		Options:  opt.Options,
-		Metadata: s.Metadata,
-		Settings: opt.Settings,
-		Source:   source,
-		Target:   target,
-	}
-
-	body, err := json.Marshal(data)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	path := "/customers/" + url.QueryEscape(customerID) + "/tokens"
+	path := "/customers/" + url.QueryEscape(*s.CustomerID) + "/tokens"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -380,7 +410,7 @@ func (s Token) Delete(options ...TokenDeleteParameters) error {
 		return errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(s.CustomerID) + "/tokens/" + url.QueryEscape(s.ID) + ""
+	path := "/customers/" + url.QueryEscape(*s.CustomerID) + "/tokens/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

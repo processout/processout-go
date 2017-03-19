@@ -14,36 +14,45 @@ import (
 
 // Plan represents the Plan API object
 type Plan struct {
-	Identifier
-
+	// ID is the iD of the plan
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the plan belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the plan belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// URL is the uRL to which you may redirect your customer to activate the subscription plan
-	URL string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 	// Name is the name of the plan
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Amount is the amount of the plan
-	Amount string `json:"amount,omitempty"`
+	Amount *string `json:"amount,omitempty"`
 	// Currency is the currency of the plan
-	Currency string `json:"currency,omitempty"`
+	Currency *string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the plan, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Interval is the the plan interval, formatted in the format "1d2w3m4y" (day, week, month, year)
-	Interval string `json:"interval,omitempty"`
+	Interval *string `json:"interval,omitempty"`
 	// TrialPeriod is the the trial period. The customer will not be charged during this time span. Formatted in the format "1d2w3m4y" (day, week, month, year)
-	TrialPeriod string `json:"trial_period,omitempty"`
+	TrialPeriod *string `json:"trial_period,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected when activating the subscription created using this plan
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected when cancelling the subscription created using this plan
 	CancelURL *string `json:"cancel_url,omitempty"`
 	// Sandbox is the define whether or not the plan is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the plan was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Plan) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Plan object and its
@@ -416,7 +425,7 @@ func (s Plan) Save(options ...PlanSaveParameters) (*Plan, error) {
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/plans/" + url.QueryEscape(s.ID) + ""
+	path := "/plans/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -493,7 +502,7 @@ func (s Plan) End(options ...PlanEndParameters) error {
 		return errors.New(err, "", "")
 	}
 
-	path := "/plans/" + url.QueryEscape(s.ID) + ""
+	path := "/plans/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

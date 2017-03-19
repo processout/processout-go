@@ -14,36 +14,45 @@ import (
 
 // Addon represents the Addon API object
 type Addon struct {
-	Identifier
-
+	// ID is the iD of the addon
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the addon belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the addon belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Subscription is the subscription to which the addon belongs
 	Subscription *Subscription `json:"subscription,omitempty"`
 	// SubscriptionID is the iD of the subscription to which the addon belongs
-	SubscriptionID string `json:"subscription_id,omitempty"`
+	SubscriptionID *string `json:"subscription_id,omitempty"`
 	// Plan is the plan used to create the addon, if any
 	Plan *Plan `json:"plan,omitempty"`
 	// PlanID is the iD of the plan used to create the addon, if any
-	PlanID string `json:"plan_id,omitempty"`
+	PlanID *string `json:"plan_id,omitempty"`
 	// Type is the type of the addon. Can be either metered or recurring
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 	// Name is the name of the addon
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Amount is the amount of the addon
-	Amount string `json:"amount,omitempty"`
+	Amount *string `json:"amount,omitempty"`
 	// Quantity is the quantity of the addon
-	Quantity int `json:"quantity,omitempty"`
+	Quantity *int `json:"quantity,omitempty"`
 	// Metadata is the metadata related to the addon, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the addon is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the addon was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Addon) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Addon object and its
@@ -90,18 +99,15 @@ func (s *Addon) Prefill(c *Addon) *Addon {
 	return s
 }
 
-// AddonApplyParameters is the structure representing the
-// additional parameters used to call Addon.Apply
-type AddonApplyParameters struct {
+// AddonFetchSubscriptionAddonsParameters is the structure representing the
+// additional parameters used to call Addon.FetchSubscriptionAddons
+type AddonFetchSubscriptionAddonsParameters struct {
 	*Options
 	*Addon
-	Prorate       interface{} `json:"prorate"`
-	ProrationDate interface{} `json:"proration_date"`
-	Preview       interface{} `json:"preview"`
 }
 
-// Apply allows you to apply a new addon to the given subscription ID.
-func (s Addon) Apply(subscriptionID string, options ...AddonApplyParameters) (*Addon, error) {
+// FetchSubscriptionAddons allows you to get the addons applied to the subscription.
+func (s Addon) FetchSubscriptionAddons(subscriptionID string, options ...AddonFetchSubscriptionAddonsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewAddon() method to create a new Addon object")
 	}
@@ -109,7 +115,114 @@ func (s Addon) Apply(subscriptionID string, options ...AddonApplyParameters) (*A
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := AddonApplyParameters{}
+	opt := AddonFetchSubscriptionAddonsParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Addon)
+
+	type Response struct {
+		Addons []*Addon `json:"addons"`
+
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/addons"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	addonsList := []Identifiable{}
+	for _, o := range payload.Addons {
+		addonsList = append(addonsList, o.SetClient(s.client))
+	}
+	addonsIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    addonsList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"addons"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return addonsIterator, nil
+}
+
+// AddonCreateParameters is the structure representing the
+// additional parameters used to call Addon.Create
+type AddonCreateParameters struct {
+	*Options
+	*Addon
+	Prorate       interface{} `json:"prorate"`
+	ProrationDate interface{} `json:"proration_date"`
+	Preview       interface{} `json:"preview"`
+}
+
+// Create allows you to create a new addon to the given subscription ID.
+func (s Addon) Create(options ...AddonCreateParameters) (*Addon, error) {
+	if s.client == nil {
+		panic("Please use the client.NewAddon() method to create a new Addon object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := AddonCreateParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}
@@ -155,7 +268,7 @@ func (s Addon) Apply(subscriptionID string, options ...AddonApplyParameters) (*A
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/addons"
+	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/addons"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -335,7 +448,7 @@ func (s Addon) Save(options ...AddonSaveParameters) (*Addon, error) {
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.SubscriptionID) + "/addons/" + url.QueryEscape(s.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/addons/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -369,9 +482,9 @@ func (s Addon) Save(options ...AddonSaveParameters) (*Addon, error) {
 	return payload.Addon, nil
 }
 
-// AddonRemoveParameters is the structure representing the
-// additional parameters used to call Addon.Remove
-type AddonRemoveParameters struct {
+// AddonDeleteParameters is the structure representing the
+// additional parameters used to call Addon.Delete
+type AddonDeleteParameters struct {
 	*Options
 	*Addon
 	Prorate       interface{} `json:"prorate"`
@@ -379,8 +492,8 @@ type AddonRemoveParameters struct {
 	Preview       interface{} `json:"preview"`
 }
 
-// Remove allows you to remove an addon applied to a subscription.
-func (s Addon) Remove(subscriptionID, addonID string, options ...AddonRemoveParameters) error {
+// Delete allows you to delete an addon applied to a subscription.
+func (s Addon) Delete(options ...AddonDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewAddon() method to create a new Addon object")
 	}
@@ -388,7 +501,7 @@ func (s Addon) Remove(subscriptionID, addonID string, options ...AddonRemovePara
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := AddonRemoveParameters{}
+	opt := AddonDeleteParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}
@@ -421,7 +534,7 @@ func (s Addon) Remove(subscriptionID, addonID string, options ...AddonRemovePara
 		return errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/addons/" + url.QueryEscape(addonID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/addons/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

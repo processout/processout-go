@@ -14,12 +14,12 @@ import (
 
 // Transaction represents the Transaction API object
 type Transaction struct {
-	Identifier
-
+	// ID is the iD of the transaction
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the transaction belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the transaction belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Invoice is the invoice used to generate this transaction, if any
 	Invoice *Customer `json:"invoice,omitempty"`
 	// InvoiceID is the iD of the invoice used to generate this transaction, if any
@@ -41,37 +41,46 @@ type Transaction struct {
 	// CardID is the iD of the card that was used to capture the payment of the transaction, if any
 	CardID *string `json:"card_id,omitempty"`
 	// Operations is the operations linked to the transaction
-	Operations []*TransactionOperation `json:"operations,omitempty"`
+	Operations *[]*TransactionOperation `json:"operations,omitempty"`
 	// Refunds is the list of the transaction refunds
-	Refunds []*Refund `json:"refunds,omitempty"`
+	Refunds *[]*Refund `json:"refunds,omitempty"`
 	// Name is the name of the transaction
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// AuthorizedAmount is the amount that was successfully authorized on the transaction
-	AuthorizedAmount string `json:"authorized_amount,omitempty"`
+	AuthorizedAmount *string `json:"authorized_amount,omitempty"`
 	// CapturedAmount is the amount that was successfully captured on the transaction
-	CapturedAmount string `json:"captured_amount,omitempty"`
+	CapturedAmount *string `json:"captured_amount,omitempty"`
 	// Currency is the currency of the transaction
-	Currency string `json:"currency,omitempty"`
+	Currency *string `json:"currency,omitempty"`
 	// Status is the status of the transaction
-	Status string `json:"status,omitempty"`
+	Status *string `json:"status,omitempty"`
 	// Authorized is the whether the transaction was authorized or not
-	Authorized bool `json:"authorized,omitempty"`
+	Authorized *bool `json:"authorized,omitempty"`
 	// Captured is the whether the transaction was captured or not
-	Captured bool `json:"captured,omitempty"`
+	Captured *bool `json:"captured,omitempty"`
 	// ProcessoutFee is the processOut fee applied on the transaction
-	ProcessoutFee string `json:"processout_fee,omitempty"`
+	ProcessoutFee *string `json:"processout_fee,omitempty"`
 	// EstimatedFee is the gateway fee estimated before processing the payment
-	EstimatedFee string `json:"estimated_fee,omitempty"`
+	EstimatedFee *string `json:"estimated_fee,omitempty"`
 	// GatewayFee is the fee taken by the payment gateway to process the payment
-	GatewayFee string `json:"gateway_fee,omitempty"`
+	GatewayFee *string `json:"gateway_fee,omitempty"`
 	// Metadata is the metadata related to the transaction, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the transaction is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the transaction was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Transaction) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Transaction object and its
@@ -186,7 +195,7 @@ func (s Transaction) FetchRefunds(options ...TransactionFetchRefundsParameters) 
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/transactions/" + url.QueryEscape(s.ID) + "/refunds"
+	path := "/transactions/" + url.QueryEscape(*s.ID) + "/refunds"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -289,7 +298,7 @@ func (s Transaction) FindRefund(refundID string, options ...TransactionFindRefun
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/transactions/" + url.QueryEscape(s.ID) + "/refunds/" + url.QueryEscape(refundID) + ""
+	path := "/transactions/" + url.QueryEscape(*s.ID) + "/refunds/" + url.QueryEscape(refundID) + ""
 
 	req, err := http.NewRequest(
 		"GET",

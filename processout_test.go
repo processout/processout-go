@@ -26,22 +26,22 @@ func TestCreateFetchInvoice(t *testing.T) {
 	p := getClient()
 
 	iv, err := p.NewInvoice(&Invoice{
-		Name:     "test invoice",
-		Amount:   "9.99",
-		Currency: "EUR",
+		Name:     String("test invoice"),
+		Amount:   String("9.99"),
+		Currency: String("EUR"),
 	}).Create()
 	if err != nil {
 		t.Errorf("The invoice could not be created: %s", err.Error())
 	}
-	if iv.ID == "" {
+	if iv.ID == nil || *iv.ID == "" {
 		t.Errorf("The created invoice ID was empty")
 	}
 
-	iv2, err := p.NewInvoice().Find(iv.ID)
+	iv2, err := p.NewInvoice().Find(*iv.ID)
 	if err != nil {
 		t.Errorf("The invoice could not be fetched: %s", err.Error())
 	}
-	if iv.ID != iv2.ID {
+	if *iv.ID != *iv2.ID {
 		t.Errorf("The invoice IDs did not match")
 	}
 }
@@ -49,9 +49,9 @@ func TestCreateFetchInvoice(t *testing.T) {
 func TestCaptureInvoice(t *testing.T) {
 	p := getClient()
 	iv, err := p.NewInvoice(&Invoice{
-		Name:     "test invoice",
-		Amount:   "9.99",
-		Currency: "EUR",
+		Name:     String("test invoice"),
+		Amount:   String("9.99"),
+		Currency: String("EUR"),
 	}).Create()
 	if err != nil {
 		t.Errorf("The invoice could not be created: %s", err.Error())
@@ -64,7 +64,7 @@ func TestCaptureInvoice(t *testing.T) {
 	if err != nil {
 		t.Errorf("The invoice should have been captured, but got: %s", err.Error())
 	}
-	if tr.Status != "completed" {
+	if tr.Status == nil || *tr.Status != "completed" {
 		t.Errorf("The transaction should have been completed, but got: %s", tr.Status)
 	}
 }
@@ -85,20 +85,21 @@ func TestCreateCustomerSubscription(t *testing.T) {
 	if err != nil {
 		t.Errorf("The customer could not be created: %s", err.Error())
 	}
-	if cust.ID == "" {
+	if cust.ID == nil || *cust.ID == "" {
 		t.Errorf("The customer ID should not be empty")
 	}
 
 	sub, err := p.NewSubscription(&Subscription{
-		Name:     "great subscription",
-		Amount:   "9.99",
-		Currency: "USD",
-		Interval: "1d",
-	}).Create(cust.ID)
+		CustomerID: cust.ID,
+		Name:       String("great subscription"),
+		Amount:     String("9.99"),
+		Currency:   String("USD"),
+		Interval:   String("1d"),
+	}).Create()
 	if err != nil {
 		t.Errorf("The subscription could not be created: %s", err.Error())
 	}
-	if sub.ID == "" {
+	if sub.ID == nil || *sub.ID == "" {
 		t.Errorf("The subscription ID should not be empty")
 	}
 }
@@ -107,7 +108,7 @@ func TestCreateCustomerPrefill(t *testing.T) {
 	p := getClient()
 
 	tmpl := &Customer{
-		Email: NilString("john@smith.com"),
+		Email: String("john@smith.com"),
 	}
 
 	cust, err := p.NewCustomer(tmpl).Create(CustomerCreateParameters{
@@ -127,7 +128,7 @@ func TestCreateCustomerParameters(t *testing.T) {
 	p := getClient()
 
 	tmpl := &Customer{
-		Email: NilString("john@smith.com"),
+		Email: String("john@smith.com"),
 	}
 
 	cust, err := p.NewCustomer().Create(CustomerCreateParameters{

@@ -14,22 +14,31 @@ import (
 
 // Event represents the Event API object
 type Event struct {
-	Identifier
-
+	// ID is the iD of the event
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the event belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the event belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Name is the name of the event
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Data is the data object associated to the event
 	Data interface{} `json:"data,omitempty"`
 	// Sandbox is the define whether or not the event is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// FiredAt is the date at which the event was fired
-	FiredAt time.Time `json:"fired_at,omitempty"`
+	FiredAt *time.Time `json:"fired_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Event) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Event object and its
@@ -108,7 +117,7 @@ func (s Event) FetchWebhooks(options ...EventFetchWebhooksParameters) (*Iterator
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/events/" + url.QueryEscape(s.ID) + "/webhooks"
+	path := "/events/" + url.QueryEscape(*s.ID) + "/webhooks"
 
 	req, err := http.NewRequest(
 		"GET",

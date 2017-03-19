@@ -14,16 +14,16 @@ import (
 
 // Card represents the Card API object
 type Card struct {
-	Identifier
-
+	// ID is the iD of the card
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the card belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the card belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Token is the token linked to the card, which can be used to process payments
 	Token *Token `json:"token,omitempty"`
 	// Scheme is the scheme of the card, such as visa or mastercard
-	Scheme string `json:"scheme,omitempty"`
+	Scheme *string `json:"scheme,omitempty"`
 	// Type is the type of the card (Credit, Debit, ...)
 	Type *string `json:"type,omitempty"`
 	// BankName is the name of the bank of the card
@@ -31,13 +31,13 @@ type Card struct {
 	// Brand is the level of the card (Electron, Classic, Gold, ...)
 	Brand *string `json:"brand,omitempty"`
 	// Iin is the first 6 digits of the card
-	Iin string `json:"iin,omitempty"`
+	Iin *string `json:"iin,omitempty"`
 	// Last4Digits is the last 4 digits of the card
-	Last4Digits string `json:"last_4_digits,omitempty"`
+	Last4Digits *string `json:"last_4_digits,omitempty"`
 	// ExpMonth is the expiry month
-	ExpMonth int `json:"exp_month,omitempty"`
+	ExpMonth *int `json:"exp_month,omitempty"`
 	// ExpYear is the expiry year, in a 4 digits format
-	ExpYear int `json:"exp_year,omitempty"`
+	ExpYear *int `json:"exp_year,omitempty"`
 	// CvcCheck is the status of the CVC check initially made on the card when the CVC was provided
 	CvcCheck *string `json:"cvc_check,omitempty"`
 	// AvsCheck is the status of the AVS check initially made on the card when the AVS was provided
@@ -57,15 +57,24 @@ type Card struct {
 	// Zip is the zIP code of the card holder
 	Zip *string `json:"zip,omitempty"`
 	// Metadata is the metadata related to the card, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// ExpiresSoon is the contains true if the card will expire soon, false otherwise
-	ExpiresSoon bool `json:"expires_soon,omitempty"`
+	ExpiresSoon *bool `json:"expires_soon,omitempty"`
 	// Sandbox is the define whether or not the card is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the card was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Card) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Card object and its

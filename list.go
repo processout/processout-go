@@ -13,17 +13,6 @@ type Identifiable interface {
 	GetID() string
 }
 
-// Identifier is the struct handling the identifiers of resources.
-// Identifier implements Identifiable
-type Identifier struct {
-	ID string `json:"id"`
-}
-
-// GetID returns the ID
-func (i Identifier) GetID() string {
-	return i.ID
-}
-
 // Iterator is the structure used to iterate over resources sent by the API
 type Iterator struct {
 	pos     int

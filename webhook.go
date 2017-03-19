@@ -14,20 +14,20 @@ import (
 
 // Webhook represents the Webhook API object
 type Webhook struct {
-	Identifier
-
+	// ID is the iD of the webhook
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the webhook belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the webhook belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Event is the event the webhook is linked to
 	Event *Event `json:"event,omitempty"`
 	// EventID is the iD of the event the webhook is linked to
-	EventID string `json:"event_id,omitempty"`
+	EventID *string `json:"event_id,omitempty"`
 	// RequestURL is the uRL to which the webhook will be posted
-	RequestURL string `json:"request_url,omitempty"`
+	RequestURL *string `json:"request_url,omitempty"`
 	// RequestMethod is the method used to send the webhook (GET or POST)
-	RequestMethod string `json:"request_method,omitempty"`
+	RequestMethod *string `json:"request_method,omitempty"`
 	// ResponseBody is the the response body the webhook received when sending its payload
 	ResponseBody *string `json:"response_body,omitempty"`
 	// ResponseCode is the the response code the webhook received when sending its payload
@@ -37,13 +37,22 @@ type Webhook struct {
 	// ResponseTimeMs is the the time it took for the webhook to send its payload
 	ResponseTimeMs *int `json:"response_time_ms,omitempty"`
 	// Status is the the status of the webhook. 0: pending, 1: success, 2: error
-	Status int `json:"status,omitempty"`
+	Status *int `json:"status,omitempty"`
 	// CreatedAt is the date at which the webhook was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// ReleaseAt is the date at webhook will be/is released
-	ReleaseAt time.Time `json:"release_at,omitempty"`
+	ReleaseAt *time.Time `json:"release_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Webhook) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Webhook object and its

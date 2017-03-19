@@ -14,36 +14,45 @@ import (
 
 // Discount represents the Discount API object
 type Discount struct {
-	Identifier
-
+	// ID is the iD of the discount
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the discount belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the discount belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Subscription is the subscription to which the discount belongs
 	Subscription *Subscription `json:"subscription,omitempty"`
 	// SubscriptionID is the iD of the subscription to which the addon belongs
-	SubscriptionID string `json:"subscription_id,omitempty"`
+	SubscriptionID *string `json:"subscription_id,omitempty"`
 	// Coupon is the coupon used to create the discount, if any
 	Coupon *Coupon `json:"coupon,omitempty"`
 	// CouponID is the iD of the coupon used to create the discount, if any
 	CouponID *string `json:"coupon_id,omitempty"`
 	// Name is the name of the discount
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Amount is the amount discounted
-	Amount string `json:"amount,omitempty"`
+	Amount *string `json:"amount,omitempty"`
 	// Percent is the percentage discounted
-	Percent int `json:"percent,omitempty"`
+	Percent *int `json:"percent,omitempty"`
 	// ExpiresAt is the date at which the discount will expire
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Metadata is the metadata related to the discount, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the discount is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the discount was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Discount) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Discount object and its
@@ -90,15 +99,15 @@ func (s *Discount) Prefill(c *Discount) *Discount {
 	return s
 }
 
-// DiscountApplyParameters is the structure representing the
-// additional parameters used to call Discount.Apply
-type DiscountApplyParameters struct {
+// DiscountFetchSubscriptionDiscountsParameters is the structure representing the
+// additional parameters used to call Discount.FetchSubscriptionDiscounts
+type DiscountFetchSubscriptionDiscountsParameters struct {
 	*Options
 	*Discount
 }
 
-// Apply allows you to apply a new discount to the given subscription ID.
-func (s Discount) Apply(subscriptionID string, options ...DiscountApplyParameters) (*Discount, error) {
+// FetchSubscriptionDiscounts allows you to get the discounts applied to the subscription.
+func (s Discount) FetchSubscriptionDiscounts(subscriptionID string, options ...DiscountFetchSubscriptionDiscountsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewDiscount() method to create a new Discount object")
 	}
@@ -106,7 +115,111 @@ func (s Discount) Apply(subscriptionID string, options ...DiscountApplyParameter
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := DiscountApplyParameters{}
+	opt := DiscountFetchSubscriptionDiscountsParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Discount)
+
+	type Response struct {
+		Discounts []*Discount `json:"discounts"`
+
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/discounts"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	discountsList := []Identifiable{}
+	for _, o := range payload.Discounts {
+		discountsList = append(discountsList, o.SetClient(s.client))
+	}
+	discountsIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    discountsList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"discounts"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return discountsIterator, nil
+}
+
+// DiscountCreateParameters is the structure representing the
+// additional parameters used to call Discount.Create
+type DiscountCreateParameters struct {
+	*Options
+	*Discount
+}
+
+// Create allows you to create a new discount for the given subscription ID.
+func (s Discount) Create(options ...DiscountCreateParameters) (*Discount, error) {
+	if s.client == nil {
+		panic("Please use the client.NewDiscount() method to create a new Discount object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := DiscountCreateParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}
@@ -144,7 +257,7 @@ func (s Discount) Apply(subscriptionID string, options ...DiscountApplyParameter
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/discounts"
+	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/discounts"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -256,15 +369,15 @@ func (s Discount) Find(subscriptionID, discountID string, options ...DiscountFin
 	return payload.Discount, nil
 }
 
-// DiscountRemoveParameters is the structure representing the
-// additional parameters used to call Discount.Remove
-type DiscountRemoveParameters struct {
+// DiscountDeleteParameters is the structure representing the
+// additional parameters used to call Discount.Delete
+type DiscountDeleteParameters struct {
 	*Options
 	*Discount
 }
 
-// Remove allows you to remove a discount applied to a subscription.
-func (s Discount) Remove(subscriptionID, discountID string, options ...DiscountRemoveParameters) error {
+// Delete allows you to delete a discount applied to a subscription.
+func (s Discount) Delete(options ...DiscountDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewDiscount() method to create a new Discount object")
 	}
@@ -272,7 +385,7 @@ func (s Discount) Remove(subscriptionID, discountID string, options ...DiscountR
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := DiscountRemoveParameters{}
+	opt := DiscountDeleteParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}
@@ -299,7 +412,7 @@ func (s Discount) Remove(subscriptionID, discountID string, options ...DiscountR
 		return errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/discounts/" + url.QueryEscape(discountID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/discounts/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

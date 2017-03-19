@@ -14,34 +14,43 @@ import (
 
 // Coupon represents the Coupon API object
 type Coupon struct {
-	Identifier
-
+	// ID is the iD of the coupon
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the coupon belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the coupon belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// AmountOff is the amount to be removed from the subscription price
-	AmountOff string `json:"amount_off,omitempty"`
+	AmountOff *string `json:"amount_off,omitempty"`
 	// PercentOff is the percent of the subscription amount to be removed (integer between 0 and 100)
-	PercentOff int `json:"percent_off,omitempty"`
+	PercentOff *int `json:"percent_off,omitempty"`
 	// Currency is the currency of the coupon amount_off
 	Currency *string `json:"currency,omitempty"`
 	// IterationCount is the number billing cycles the coupon will last when applied to a subscription. If 0, will last forever
-	IterationCount int `json:"iteration_count,omitempty"`
+	IterationCount *int `json:"iteration_count,omitempty"`
 	// MaxRedemptions is the number of time the coupon can be redeemed. If 0, there's no limit
-	MaxRedemptions int `json:"max_redemptions,omitempty"`
+	MaxRedemptions *int `json:"max_redemptions,omitempty"`
 	// ExpiresAt is the date at which the coupon will expire
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Metadata is the metadata related to the coupon, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// RedeemedNumber is the number of times the coupon was already redeemed
-	RedeemedNumber int `json:"redeemed_number,omitempty"`
+	RedeemedNumber *int `json:"redeemed_number,omitempty"`
 	// Sandbox is the true if the coupon was created in the sandbox environment, false otherwise
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the coupon was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Coupon) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Coupon object and its
@@ -403,7 +412,7 @@ func (s Coupon) Save(options ...CouponSaveParameters) (*Coupon, error) {
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/coupons/" + url.QueryEscape(s.ID) + ""
+	path := "/coupons/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -480,7 +489,7 @@ func (s Coupon) Delete(options ...CouponDeleteParameters) error {
 		return errors.New(err, "", "")
 	}
 
-	path := "/coupons/" + url.QueryEscape(s.ID) + ""
+	path := "/coupons/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

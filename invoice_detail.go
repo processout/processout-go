@@ -15,15 +15,15 @@ import (
 // InvoiceDetail represents the InvoiceDetail API object
 type InvoiceDetail struct {
 	// Name is the name of the invoice detail
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Type is the type of the invoice detail. Can be a string containing anything, up to 30 characters
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 	// Amount is the amount represented by the invoice detail
-	Amount string `json:"amount,omitempty"`
+	Amount *string `json:"amount,omitempty"`
 	// Quantity is the quantity of items represented by the invoice detail
-	Quantity int `json:"quantity,omitempty"`
+	Quantity *int `json:"quantity,omitempty"`
 	// Metadata is the metadata related to the invoice detail, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 
 	client *ProcessOut
 }

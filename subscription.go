@@ -14,22 +14,22 @@ import (
 
 // Subscription represents the Subscription API object
 type Subscription struct {
-	Identifier
-
+	// ID is the iD of the subscription
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the subscription belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the subscription belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Plan is the plan linked to this subscription, if any
 	Plan *Plan `json:"plan,omitempty"`
 	// PlanID is the iD of the plan linked to this subscription, if any
 	PlanID *string `json:"plan_id,omitempty"`
 	// Discounts is the list of the subscription discounts
-	Discounts []*Discount `json:"discounts,omitempty"`
+	Discounts *[]*Discount `json:"discounts,omitempty"`
 	// Addons is the list of the subscription addons
-	Addons []*Addon `json:"addons,omitempty"`
+	Addons *[]*Addon `json:"addons,omitempty"`
 	// Transactions is the list of the subscription transactions
-	Transactions []*Transaction `json:"transactions,omitempty"`
+	Transactions *[]*Transaction `json:"transactions,omitempty"`
 	// Customer is the customer linked to the subscription
 	Customer *Customer `json:"customer,omitempty"`
 	// CustomerID is the iD of the customer linked to the subscription
@@ -39,37 +39,37 @@ type Subscription struct {
 	// TokenID is the iD of the token used to capture payments on this subscription
 	TokenID *string `json:"token_id,omitempty"`
 	// URL is the uRL to which you may redirect your customer to activate the subscription
-	URL string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 	// Name is the name of the subscription
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Amount is the base amount of the subscription
-	Amount string `json:"amount,omitempty"`
+	Amount *string `json:"amount,omitempty"`
 	// BillableAmount is the amount to be paid at each billing cycle of the subscription
-	BillableAmount string `json:"billable_amount,omitempty"`
+	BillableAmount *string `json:"billable_amount,omitempty"`
 	// DiscountedAmount is the amount discounted by discounts applied to the subscription
-	DiscountedAmount string `json:"discounted_amount,omitempty"`
+	DiscountedAmount *string `json:"discounted_amount,omitempty"`
 	// AddonsAmount is the amount applied on top of the subscription base price with addons
-	AddonsAmount string `json:"addons_amount,omitempty"`
+	AddonsAmount *string `json:"addons_amount,omitempty"`
 	// Currency is the currency of the subscription
-	Currency string `json:"currency,omitempty"`
+	Currency *string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the subscription, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Interval is the the subscription interval, formatted in the format "1d2w3m4y" (day, week, month, year)
-	Interval string `json:"interval,omitempty"`
+	Interval *string `json:"interval,omitempty"`
 	// TrialEndAt is the date at which the subscription trial should end. Can be null to set no trial
 	TrialEndAt *time.Time `json:"trial_end_at,omitempty"`
 	// Activated is the whether or not the subscription was activated. This field does not take into account whether or not the subscription was canceled. Use the active field to know if the subscription is currently active
-	Activated bool `json:"activated,omitempty"`
+	Activated *bool `json:"activated,omitempty"`
 	// Active is the whether or not the subscription is currently active (ie activated and not cancelled)
-	Active bool `json:"active,omitempty"`
+	Active *bool `json:"active,omitempty"`
 	// CancelAt is the date at which the subscription will automatically be canceled. Can be null
 	CancelAt *time.Time `json:"cancel_at,omitempty"`
 	// Canceled is the whether or not the subscription was canceled. The cancellation reason can be found in the cancellation_reason field
-	Canceled bool `json:"canceled,omitempty"`
+	Canceled *bool `json:"canceled,omitempty"`
 	// CancellationReason is the reason as to why the subscription was cancelled
 	CancellationReason *string `json:"cancellation_reason,omitempty"`
 	// PendingCancellation is the wheither or not the subscription is pending cancellation (meaning a cancel_at date was set)
-	PendingCancellation bool `json:"pending_cancellation,omitempty"`
+	PendingCancellation *bool `json:"pending_cancellation,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon activation of the subscription
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the subscription activation was canceled
@@ -77,15 +77,24 @@ type Subscription struct {
 	// UnpaidState is the when the subscription has unpaid invoices, defines the dunning logic of the subscription (as specified in the project setting)
 	UnpaidState *string `json:"unpaid_state,omitempty"`
 	// Sandbox is the define whether or not the subscription is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the subscription was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// ActivatedAt is the date at which the subscription was activated. Null if the subscription hasn't been activated yet
 	ActivatedAt *time.Time `json:"activated_at,omitempty"`
 	// IterateAt is the next iteration date, corresponding to the next billing cycle start date
 	IterateAt *time.Time `json:"iterate_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Subscription) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Subscription object and its
@@ -201,7 +210,7 @@ func (s Subscription) FetchAddons(options ...SubscriptionFetchAddonsParameters) 
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/addons"
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/addons"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -304,7 +313,7 @@ func (s Subscription) FindAddon(addonID string, options ...SubscriptionFindAddon
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/addons/" + url.QueryEscape(addonID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/addons/" + url.QueryEscape(addonID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -338,9 +347,9 @@ func (s Subscription) FindAddon(addonID string, options ...SubscriptionFindAddon
 	return payload.Addon, nil
 }
 
-// SubscriptionRemoveAddonParameters is the structure representing the
-// additional parameters used to call Subscription.RemoveAddon
-type SubscriptionRemoveAddonParameters struct {
+// SubscriptionDeleteAddonParameters is the structure representing the
+// additional parameters used to call Subscription.DeleteAddon
+type SubscriptionDeleteAddonParameters struct {
 	*Options
 	*Subscription
 	Prorate       interface{} `json:"prorate"`
@@ -348,8 +357,8 @@ type SubscriptionRemoveAddonParameters struct {
 	Preview       interface{} `json:"preview"`
 }
 
-// RemoveAddon allows you to remove an addon applied to a subscription.
-func (s Subscription) RemoveAddon(addonID string, options ...SubscriptionRemoveAddonParameters) error {
+// DeleteAddon allows you to delete an addon applied to a subscription.
+func (s Subscription) DeleteAddon(addonID string, options ...SubscriptionDeleteAddonParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -357,7 +366,7 @@ func (s Subscription) RemoveAddon(addonID string, options ...SubscriptionRemoveA
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := SubscriptionRemoveAddonParameters{}
+	opt := SubscriptionDeleteAddonParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}
@@ -390,7 +399,7 @@ func (s Subscription) RemoveAddon(addonID string, options ...SubscriptionRemoveA
 		return errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/addons/" + url.QueryEscape(addonID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/addons/" + url.QueryEscape(addonID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -467,7 +476,7 @@ func (s Subscription) FetchCustomer(options ...SubscriptionFetchCustomerParamete
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/customers"
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -546,7 +555,7 @@ func (s Subscription) FetchDiscounts(options ...SubscriptionFetchDiscountsParame
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/discounts"
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/discounts"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -649,7 +658,7 @@ func (s Subscription) FindDiscount(discountID string, options ...SubscriptionFin
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/discounts/" + url.QueryEscape(discountID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/discounts/" + url.QueryEscape(discountID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -683,15 +692,15 @@ func (s Subscription) FindDiscount(discountID string, options ...SubscriptionFin
 	return payload.Discount, nil
 }
 
-// SubscriptionRemoveDiscountParameters is the structure representing the
-// additional parameters used to call Subscription.RemoveDiscount
-type SubscriptionRemoveDiscountParameters struct {
+// SubscriptionDeleteDiscountParameters is the structure representing the
+// additional parameters used to call Subscription.DeleteDiscount
+type SubscriptionDeleteDiscountParameters struct {
 	*Options
 	*Subscription
 }
 
-// RemoveDiscount allows you to remove a discount applied to a subscription.
-func (s Subscription) RemoveDiscount(discountID string, options ...SubscriptionRemoveDiscountParameters) error {
+// DeleteDiscount allows you to delete a discount applied to a subscription.
+func (s Subscription) DeleteDiscount(discountID string, options ...SubscriptionDeleteDiscountParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -699,7 +708,7 @@ func (s Subscription) RemoveDiscount(discountID string, options ...SubscriptionR
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := SubscriptionRemoveDiscountParameters{}
+	opt := SubscriptionDeleteDiscountParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}
@@ -726,7 +735,7 @@ func (s Subscription) RemoveDiscount(discountID string, options ...SubscriptionR
 		return errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/discounts/" + url.QueryEscape(discountID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/discounts/" + url.QueryEscape(discountID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -804,7 +813,7 @@ func (s Subscription) FetchTransactions(options ...SubscriptionFetchTransactions
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + "/transactions"
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/transactions"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -977,7 +986,7 @@ type SubscriptionCreateParameters struct {
 }
 
 // Create allows you to create a new subscription for the given customer.
-func (s Subscription) Create(customerID string, options ...SubscriptionCreateParameters) (*Subscription, error) {
+func (s Subscription) Create(options ...SubscriptionCreateParameters) (*Subscription, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -1012,11 +1021,11 @@ func (s Subscription) Create(customerID string, options ...SubscriptionCreatePar
 		Metadata   interface{} `json:"metadata"`
 		Interval   interface{} `json:"interval"`
 		TrialEndAt interface{} `json:"trial_end_at"`
+		CustomerID interface{} `json:"customer_id"`
 		ReturnURL  interface{} `json:"return_url"`
 		CancelURL  interface{} `json:"cancel_url"`
 		Source     interface{} `json:"source"`
 		CouponID   interface{} `json:"coupon_id"`
-		CustomerID interface{} `json:"customer_id"`
 	}{
 		Options:    opt.Options,
 		PlanID:     s.PlanID,
@@ -1027,11 +1036,11 @@ func (s Subscription) Create(customerID string, options ...SubscriptionCreatePar
 		Metadata:   s.Metadata,
 		Interval:   s.Interval,
 		TrialEndAt: s.TrialEndAt,
+		CustomerID: s.CustomerID,
 		ReturnURL:  s.ReturnURL,
 		CancelURL:  s.CancelURL,
 		Source:     opt.Source,
 		CouponID:   opt.CouponID,
-		CustomerID: customerID,
 	}
 
 	body, err := json.Marshal(data)
@@ -1222,7 +1231,7 @@ func (s Subscription) Save(options ...SubscriptionSaveParameters) (*Subscription
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -1265,7 +1274,7 @@ type SubscriptionCancelParameters struct {
 }
 
 // Cancel allows you to cancel a subscription. The reason may be provided as well.
-func (s Subscription) Cancel(cancellationReason string, options ...SubscriptionCancelParameters) (*Subscription, error) {
+func (s Subscription) Cancel(options ...SubscriptionCancelParameters) (*Subscription, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -1293,13 +1302,13 @@ func (s Subscription) Cancel(cancellationReason string, options ...SubscriptionC
 	data := struct {
 		*Options
 		CancelAt           interface{} `json:"cancel_at"`
-		CancelAtEnd        interface{} `json:"cancel_at_end"`
 		CancellationReason interface{} `json:"cancellation_reason"`
+		CancelAtEnd        interface{} `json:"cancel_at_end"`
 	}{
 		Options:            opt.Options,
 		CancelAt:           s.CancelAt,
+		CancellationReason: s.CancellationReason,
 		CancelAtEnd:        opt.CancelAtEnd,
-		CancellationReason: cancellationReason,
 	}
 
 	body, err := json.Marshal(data)
@@ -1307,7 +1316,7 @@ func (s Subscription) Cancel(cancellationReason string, options ...SubscriptionC
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/subscriptions/" + url.QueryEscape(s.ID) + ""
+	path := "/subscriptions/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

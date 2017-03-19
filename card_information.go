@@ -15,9 +15,9 @@ import (
 // CardInformation represents the CardInformation API object
 type CardInformation struct {
 	// Iin is the first 6 digits of the card
-	Iin string `json:"iin,omitempty"`
+	Iin *string `json:"iin,omitempty"`
 	// Scheme is the scheme of the card, such as visa or mastercard
-	Scheme string `json:"scheme,omitempty"`
+	Scheme *string `json:"scheme,omitempty"`
 	// Type is the type of the card (Credit, Debit, ...)
 	Type *string `json:"type,omitempty"`
 	// BankName is the name of the bank of the card

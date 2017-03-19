@@ -14,8 +14,8 @@ import (
 
 // Project represents the Project API object
 type Project struct {
-	Identifier
-
+	// ID is the iD of the project
+	ID *string `json:"id,omitempty"`
 	// SupervisorProject is the project used to create this project
 	SupervisorProject *Project `json:"supervisor_project,omitempty"`
 	// SupervisorProjectID is the iD of the project used to create this project
@@ -23,21 +23,30 @@ type Project struct {
 	// APIVersion is the current API version of the project
 	APIVersion *APIVersion `json:"api_version,omitempty"`
 	// Name is the name of the project
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// LogoURL is the name of the project
-	LogoURL string `json:"logo_url,omitempty"`
+	LogoURL *string `json:"logo_url,omitempty"`
 	// Email is the email of the project
-	Email string `json:"email,omitempty"`
+	Email *string `json:"email,omitempty"`
 	// DefaultCurrency is the default currency of the project, used to compute analytics amounts
-	DefaultCurrency string `json:"default_currency,omitempty"`
+	DefaultCurrency *string `json:"default_currency,omitempty"`
 	// PrivateKey is the private key of the project. Only returned when creating a project
-	PrivateKey string `json:"private_key,omitempty"`
+	PrivateKey *string `json:"private_key,omitempty"`
 	// DunningConfiguration is the dunning configuration of the project
-	DunningConfiguration []*DunningAction `json:"dunning_configuration,omitempty"`
+	DunningConfiguration *[]*DunningAction `json:"dunning_configuration,omitempty"`
 	// CreatedAt is the date at which the project was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Project) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Project object and its
@@ -123,7 +132,7 @@ func (s Project) FetchGatewayConfigurations(options ...ProjectFetchGatewayConfig
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/projects/" + url.QueryEscape(s.ID) + "/gateway-configurations"
+	path := "/projects/" + url.QueryEscape(*s.ID) + "/gateway-configurations"
 
 	req, err := http.NewRequest(
 		"GET",

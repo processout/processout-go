@@ -15,11 +15,11 @@ import (
 // APIVersion represents the APIVersion API object
 type APIVersion struct {
 	// Name is the name used to identify the API version
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Description is the description of the API version. Can contain a changelog
-	Description string `json:"description,omitempty"`
+	Description *string `json:"description,omitempty"`
 	// CreatedAt is the date at which the API version was released
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
 }

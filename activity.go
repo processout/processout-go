@@ -14,22 +14,31 @@ import (
 
 // Activity represents the Activity API object
 type Activity struct {
-	Identifier
-
+	// ID is the iD of the activity
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the activity belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the activity belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Title is the title of the activity
-	Title string `json:"title,omitempty"`
+	Title *string `json:"title,omitempty"`
 	// Content is the content of the activity
-	Content string `json:"content,omitempty"`
+	Content *string `json:"content,omitempty"`
 	// Level is the level of the activity
-	Level int `json:"level,omitempty"`
+	Level *int `json:"level,omitempty"`
 	// CreatedAt is the date at which the transaction was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Activity) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Activity object and its

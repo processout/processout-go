@@ -14,28 +14,37 @@ import (
 
 // Refund represents the Refund API object
 type Refund struct {
-	Identifier
-
+	// ID is the iD of the refund
+	ID *string `json:"id,omitempty"`
 	// Transaction is the transaction to which the refund is applied
 	Transaction *Transaction `json:"transaction,omitempty"`
 	// TransactionID is the iD of the transaction to which the refund is applied
-	TransactionID string `json:"transaction_id,omitempty"`
+	TransactionID *string `json:"transaction_id,omitempty"`
 	// Amount is the amount to be refunded. Must not be greater than the amount still available on the transaction
-	Amount string `json:"amount,omitempty"`
+	Amount *string `json:"amount,omitempty"`
 	// Reason is the reason for the refund. Either customer_request, duplicate or fraud
-	Reason string `json:"reason,omitempty"`
+	Reason *string `json:"reason,omitempty"`
 	// Information is the custom details regarding the refund
-	Information string `json:"information,omitempty"`
+	Information *string `json:"information,omitempty"`
 	// HasFailed is the true if the refund was asynchronously failed, false otherwise
-	HasFailed bool `json:"has_failed,omitempty"`
+	HasFailed *bool `json:"has_failed,omitempty"`
 	// Metadata is the metadata related to the refund, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the refund is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the refund was done
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Refund) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Refund object and its
@@ -70,6 +79,110 @@ func (s *Refund) Prefill(c *Refund) *Refund {
 	s.CreatedAt = c.CreatedAt
 
 	return s
+}
+
+// RefundFetchTransactionRefundsParameters is the structure representing the
+// additional parameters used to call Refund.FetchTransactionRefunds
+type RefundFetchTransactionRefundsParameters struct {
+	*Options
+	*Refund
+}
+
+// FetchTransactionRefunds allows you to get the transaction's refunds.
+func (s Refund) FetchTransactionRefunds(transactionID string, options ...RefundFetchTransactionRefundsParameters) (*Iterator, error) {
+	if s.client == nil {
+		panic("Please use the client.NewRefund() method to create a new Refund object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := RefundFetchTransactionRefundsParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Refund)
+
+	type Response struct {
+		Refunds []*Refund `json:"refunds"`
+
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds"
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	refundsList := []Identifiable{}
+	for _, o := range payload.Refunds {
+		refundsList = append(refundsList, o.SetClient(s.client))
+	}
+	refundsIterator := &Iterator{
+		pos:     -1,
+		path:    path,
+		data:    refundsList,
+		options: opt.Options,
+		decoder: func(b io.Reader, i interface{}) (bool, error) {
+			r := struct {
+				Data    json.RawMessage `json:"refunds"`
+				HasMore bool            `json:"has_more"`
+			}{}
+			if err := json.NewDecoder(b).Decode(&r); err != nil {
+				return false, err
+			}
+			if err := json.Unmarshal(r.Data, i); err != nil {
+				return false, err
+			}
+			return r.HasMore, nil
+		},
+		client:      s.client,
+		hasMoreNext: payload.HasMore,
+		hasMorePrev: true,
+	}
+	return refundsIterator, nil
 }
 
 // RefundFindParameters is the structure representing the
@@ -150,15 +263,15 @@ func (s Refund) Find(transactionID, refundID string, options ...RefundFindParame
 	return payload.Refund, nil
 }
 
-// RefundApplyParameters is the structure representing the
-// additional parameters used to call Refund.Apply
-type RefundApplyParameters struct {
+// RefundCreateParameters is the structure representing the
+// additional parameters used to call Refund.Create
+type RefundCreateParameters struct {
 	*Options
 	*Refund
 }
 
-// Apply allows you to apply a refund to a transaction.
-func (s Refund) Apply(transactionID string, options ...RefundApplyParameters) error {
+// Create allows you to create a refund for a transaction.
+func (s Refund) Create(options ...RefundCreateParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewRefund() method to create a new Refund object")
 	}
@@ -166,7 +279,7 @@ func (s Refund) Apply(transactionID string, options ...RefundApplyParameters) er
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := RefundApplyParameters{}
+	opt := RefundCreateParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}
@@ -201,7 +314,7 @@ func (s Refund) Apply(transactionID string, options ...RefundApplyParameters) er
 		return errors.New(err, "", "")
 	}
 
-	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds"
+	path := "/transactions/" + url.QueryEscape(*s.TransactionID) + "/refunds"
 
 	req, err := http.NewRequest(
 		"POST",

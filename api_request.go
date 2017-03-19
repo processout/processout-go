@@ -14,8 +14,8 @@ import (
 
 // APIRequest represents the APIRequest API object
 type APIRequest struct {
-	Identifier
-
+	// ID is the iD of the API request
+	ID *string `json:"id,omitempty"`
 	// Project is the project used to send the API request
 	Project *Project `json:"project,omitempty"`
 	// APIVersion is the aPI version used to process the request
@@ -23,27 +23,36 @@ type APIRequest struct {
 	// IdempotencyKey is the idempotency key used to identify the request
 	IdempotencyKey *string `json:"idempotency_key,omitempty"`
 	// URL is the uRL called
-	URL string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 	// Method is the hTTP verb used in the request (GET, POST etc)
-	Method string `json:"method,omitempty"`
+	Method *string `json:"method,omitempty"`
 	// Headers is the headers sent with the request (client to server)
-	Headers map[string]string `json:"headers,omitempty"`
+	Headers *map[string]string `json:"headers,omitempty"`
 	// Body is the body of the request (client to server)
-	Body string `json:"body,omitempty"`
+	Body *string `json:"body,omitempty"`
 	// ResponseCode is the response code (such as 200 for a successful request)
-	ResponseCode int `json:"response_code,omitempty"`
+	ResponseCode *int `json:"response_code,omitempty"`
 	// ResponseHeaders is the headers sent in the response (server to client)
-	ResponseHeaders map[string]string `json:"response_headers,omitempty"`
+	ResponseHeaders *map[string]string `json:"response_headers,omitempty"`
 	// ResponseBody is the body of the response (client to server)
-	ResponseBody string `json:"response_body,omitempty"`
+	ResponseBody *string `json:"response_body,omitempty"`
 	// ResponseMs is the number of milliseconds needed to process the request
-	ResponseMs float64 `json:"response_ms,omitempty"`
+	ResponseMs *float64 `json:"response_ms,omitempty"`
 	// Sandbox is the define whether or not the API request was made in the sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the API request was made
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *APIRequest) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the APIRequest object and its

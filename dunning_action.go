@@ -15,9 +15,9 @@ import (
 // DunningAction represents the DunningAction API object
 type DunningAction struct {
 	// Action is the dunning action. Can be either retry, cancel, set_past_due or leave_unchanged
-	Action string `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
 	// DelayInDays is the delay in days that should be waited before executing the next dunning action
-	DelayInDays int `json:"delay_in_days,omitempty"`
+	DelayInDays *int `json:"delay_in_days,omitempty"`
 
 	client *ProcessOut
 }

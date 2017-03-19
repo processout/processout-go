@@ -14,22 +14,31 @@ import (
 
 // WebhookEndpoint represents the WebhookEndpoint API object
 type WebhookEndpoint struct {
-	Identifier
-
+	// ID is the iD of the webhook endpoint
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the webhook endpoint belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the webhook belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// URL is the uRL to which the webhook endpoint points to
-	URL string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 	// EventsWhitelist is the slice of string representing the whitelisted events posted to the endpoint
 	EventsWhitelist interface{} `json:"events_whitelist,omitempty"`
 	// Sandbox is the define whether or not the webhook endpoint is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the webhook endpoint was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *WebhookEndpoint) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the WebhookEndpoint object and its

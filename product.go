@@ -14,36 +14,45 @@ import (
 
 // Product represents the Product API object
 type Product struct {
-	Identifier
-
+	// ID is the iD of the product
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the product belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the product belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the payment
-	URL string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 	// Name is the name of the product
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Amount is the amount of the product
-	Amount string `json:"amount,omitempty"`
+	Amount *string `json:"amount,omitempty"`
 	// Currency is the currency of the product
-	Currency string `json:"currency,omitempty"`
+	Currency *string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the product, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// RequestEmail is the choose whether or not to request the email during the checkout process
-	RequestEmail bool `json:"request_email,omitempty"`
+	RequestEmail *bool `json:"request_email,omitempty"`
 	// RequestShipping is the choose whether or not to request the shipping address during the checkout process
-	RequestShipping bool `json:"request_shipping,omitempty"`
+	RequestShipping *bool `json:"request_shipping,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon payment
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the paymen was canceled
 	CancelURL *string `json:"cancel_url,omitempty"`
 	// Sandbox is the define whether or not the product is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the product was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Product) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Product object and its
@@ -128,7 +137,7 @@ func (s Product) CreateInvoice(options ...ProductCreateInvoiceParameters) (*Invo
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/products/" + url.QueryEscape(s.ID) + "/invoices"
+	path := "/products/" + url.QueryEscape(*s.ID) + "/invoices"
 
 	req, err := http.NewRequest(
 		"POST",
@@ -498,7 +507,7 @@ func (s Product) Save(options ...ProductSaveParameters) (*Product, error) {
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/products/" + url.QueryEscape(s.ID) + ""
+	path := "/products/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -575,7 +584,7 @@ func (s Product) Delete(options ...ProductDeleteParameters) error {
 		return errors.New(err, "", "")
 	}
 
-	path := "/products/" + url.QueryEscape(s.ID) + ""
+	path := "/products/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

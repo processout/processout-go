@@ -14,24 +14,24 @@ import (
 
 // Customer represents the Customer API object
 type Customer struct {
-	Identifier
-
+	// ID is the iD of the customer
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the customer belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the customer belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// DefaultToken is the default token of the customer
 	DefaultToken *Token `json:"default_token,omitempty"`
 	// DefaultTokenID is the iD of the default token of the customer
 	DefaultTokenID *string `json:"default_token_id,omitempty"`
 	// Tokens is the list of the customer tokens
-	Tokens []*Token `json:"tokens,omitempty"`
+	Tokens *[]*Token `json:"tokens,omitempty"`
 	// Subscriptions is the list of the customer subscriptions
-	Subscriptions []*Subscription `json:"subscriptions,omitempty"`
+	Subscriptions *[]*Subscription `json:"subscriptions,omitempty"`
 	// Transactions is the list of the customer transactions
-	Transactions []*Transaction `json:"transactions,omitempty"`
+	Transactions *[]*Transaction `json:"transactions,omitempty"`
 	// Balance is the customer balance. Can be positive or negative
-	Balance string `json:"balance,omitempty"`
+	Balance *string `json:"balance,omitempty"`
 	// Currency is the currency of the customer balance. Once the currency is set it cannot be modified
 	Currency *string `json:"currency,omitempty"`
 	// Email is the email of the customer
@@ -53,21 +53,30 @@ type Customer struct {
 	// Country is the country code of the customer (ISO-3166, 2 characters format)
 	Country *string `json:"country,omitempty"`
 	// TransactionsCount is the number of transactions processed by the customer
-	TransactionsCount int `json:"transactions_count,omitempty"`
+	TransactionsCount *int `json:"transactions_count,omitempty"`
 	// SubscriptionsCount is the number of active subscriptions linked to the customer
-	SubscriptionsCount int `json:"subscriptions_count,omitempty"`
+	SubscriptionsCount *int `json:"subscriptions_count,omitempty"`
 	// MrrLocal is the mRR provided by the customer, converted to the currency of the Project
-	MrrLocal float64 `json:"mrr_local,omitempty"`
+	MrrLocal *float64 `json:"mrr_local,omitempty"`
 	// TotalRevenueLocal is the total revenue provided by the customer, converted to the currency of the Project
-	TotalRevenueLocal float64 `json:"total_revenue_local,omitempty"`
+	TotalRevenueLocal *float64 `json:"total_revenue_local,omitempty"`
 	// Metadata is the metadata related to the customer, in the form of a dictionary (key-value pair)
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the customer is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the customer was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *Customer) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the Customer object and its
@@ -168,7 +177,7 @@ func (s Customer) FetchSubscriptions(options ...CustomerFetchSubscriptionsParame
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(s.ID) + "/subscriptions"
+	path := "/customers/" + url.QueryEscape(*s.ID) + "/subscriptions"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -272,7 +281,7 @@ func (s Customer) FetchTokens(options ...CustomerFetchTokensParameters) (*Iterat
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(s.ID) + "/tokens"
+	path := "/customers/" + url.QueryEscape(*s.ID) + "/tokens"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -375,7 +384,7 @@ func (s Customer) FindToken(tokenID string, options ...CustomerFindTokenParamete
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
+	path := "/customers/" + url.QueryEscape(*s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -452,7 +461,7 @@ func (s Customer) DeleteToken(tokenID string, options ...CustomerDeleteTokenPara
 		return errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
+	path := "/customers/" + url.QueryEscape(*s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",
@@ -530,7 +539,7 @@ func (s Customer) FetchTransactions(options ...CustomerFetchTransactionsParamete
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(s.ID) + "/transactions"
+	path := "/customers/" + url.QueryEscape(*s.ID) + "/transactions"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -941,7 +950,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(s.ID) + ""
+	path := "/customers/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"PUT",
@@ -1018,7 +1027,7 @@ func (s Customer) Delete(options ...CustomerDeleteParameters) error {
 		return errors.New(err, "", "")
 	}
 
-	path := "/customers/" + url.QueryEscape(s.ID) + ""
+	path := "/customers/" + url.QueryEscape(*s.ID) + ""
 
 	req, err := http.NewRequest(
 		"DELETE",

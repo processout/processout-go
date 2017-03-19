@@ -14,38 +14,47 @@ import (
 
 // AuthorizationRequest represents the AuthorizationRequest API object
 type AuthorizationRequest struct {
-	Identifier
-
+	// ID is the iD of the authorization
+	ID *string `json:"id,omitempty"`
 	// Project is the project to which the authorization request belongs
 	Project *Project `json:"project,omitempty"`
 	// ProjectID is the iD of the project to which the authorization request belongs
-	ProjectID string `json:"project_id,omitempty"`
+	ProjectID *string `json:"project_id,omitempty"`
 	// Customer is the customer linked to the authorization request
 	Customer *Customer `json:"customer,omitempty"`
 	// CustomerID is the iD of the customer linked to the authorization request
-	CustomerID string `json:"customer_id,omitempty"`
+	CustomerID *string `json:"customer_id,omitempty"`
 	// Token is the token linked to the authorization request, once authorized
 	Token *Token `json:"token,omitempty"`
 	// TokenID is the iD of the token linked to the authorization request, once authorized
 	TokenID *string `json:"token_id,omitempty"`
 	// Name is the name of the authorization
-	Name string `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
 	// Currency is the currency of the authorization
-	Currency string `json:"currency,omitempty"`
+	Currency *string `json:"currency,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon authorization
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the authorization was canceled
 	CancelURL *string `json:"cancel_url,omitempty"`
 	// Authorized is the whether or not the authorization request was authorized
-	Authorized bool `json:"authorized,omitempty"`
+	Authorized *bool `json:"authorized,omitempty"`
 	// Sandbox is the define whether or not the authorization is in sandbox environment
-	Sandbox bool `json:"sandbox,omitempty"`
+	Sandbox *bool `json:"sandbox,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the authorization
-	URL string `json:"url,omitempty"`
+	URL *string `json:"url,omitempty"`
 	// CreatedAt is the date at which the authorization was created
-	CreatedAt time.Time `json:"created_at,omitempty"`
+	CreatedAt *time.Time `json:"created_at,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *AuthorizationRequest) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the AuthorizationRequest object and its
@@ -137,7 +146,7 @@ func (s AuthorizationRequest) FetchCustomer(options ...AuthorizationRequestFetch
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/authorization-requests/" + url.QueryEscape(s.ID) + "/customers"
+	path := "/authorization-requests/" + url.QueryEscape(*s.ID) + "/customers"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -179,7 +188,7 @@ type AuthorizationRequestCreateParameters struct {
 }
 
 // Create allows you to create a new authorization request for the given customer ID.
-func (s AuthorizationRequest) Create(customerID string, options ...AuthorizationRequestCreateParameters) (*AuthorizationRequest, error) {
+func (s AuthorizationRequest) Create(options ...AuthorizationRequestCreateParameters) (*AuthorizationRequest, error) {
 	if s.client == nil {
 		panic("Please use the client.NewAuthorizationRequest() method to create a new AuthorizationRequest object")
 	}
@@ -206,18 +215,18 @@ func (s AuthorizationRequest) Create(customerID string, options ...Authorization
 
 	data := struct {
 		*Options
+		CustomerID interface{} `json:"customer_id"`
 		Name       interface{} `json:"name"`
 		Currency   interface{} `json:"currency"`
 		ReturnURL  interface{} `json:"return_url"`
 		CancelURL  interface{} `json:"cancel_url"`
-		CustomerID interface{} `json:"customer_id"`
 	}{
 		Options:    opt.Options,
+		CustomerID: s.CustomerID,
 		Name:       s.Name,
 		Currency:   s.Currency,
 		ReturnURL:  s.ReturnURL,
 		CancelURL:  s.CancelURL,
-		CustomerID: customerID,
 	}
 
 	body, err := json.Marshal(data)

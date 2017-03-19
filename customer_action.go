@@ -15,9 +15,9 @@ import (
 // CustomerAction represents the CustomerAction API object
 type CustomerAction struct {
 	// Type is the customer action type (such as url)
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 	// Value is the value of the customer action. If type is an URL, URL to which you should redirect your customer
-	Value string `json:"value,omitempty"`
+	Value *string `json:"value,omitempty"`
 
 	client *ProcessOut
 }
