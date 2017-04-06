@@ -10,3 +10,8 @@ type InternalError struct {
 func (e *InternalError) Error() string {
 	return e.message
 }
+
+// Code returns the error code returned by ProcessOut
+func (e *InternalError) Code() string {
+	return e.code
+}

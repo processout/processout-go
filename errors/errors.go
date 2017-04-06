@@ -1,5 +1,11 @@
 package errors
 
+// CodedError is the interface implemented by ProcessOut errors
+type CodedError interface {
+	Error() string
+	Code() string
+}
+
 // New creates a new ProcessOut error from an error
 func New(err error, code, message string) error {
 	if err != nil {

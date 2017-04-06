@@ -10,3 +10,8 @@ type ValidationError struct {
 func (e *ValidationError) Error() string {
 	return e.message
 }
+
+// Code returns the error code returned by ProcessOut
+func (e *ValidationError) Code() string {
+	return e.code
+}

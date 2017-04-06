@@ -10,3 +10,8 @@ type NotFoundError struct {
 func (e *NotFoundError) Error() string {
 	return e.message
 }
+
+// Code returns the error code returned by ProcessOut
+func (e *NotFoundError) Code() string {
+	return e.code
+}

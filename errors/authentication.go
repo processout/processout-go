@@ -10,3 +10,8 @@ type AuthenticationError struct {
 func (e *AuthenticationError) Error() string {
 	return e.message
 }
+
+// Code returns the error code returned by ProcessOut
+func (e *AuthenticationError) Code() string {
+	return e.code
+}
