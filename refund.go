@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/processout.v3/errors"
+	"gopkg.in/processout.v4/errors"
 )
 
 // Refund represents the Refund API object

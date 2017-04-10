@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/processout.v3/errors"
+	"gopkg.in/processout.v4/errors"
 )
 
 // WebhookEndpoint represents the WebhookEndpoint API object
