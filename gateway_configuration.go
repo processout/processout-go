@@ -23,7 +23,7 @@ type GatewayConfiguration struct {
 	// Gateway is the gateway that the configuration configures
 	Gateway *Gateway `json:"gateway,omitempty"`
 	// GatewayID is the iD of the gateway to which the gateway configuration belongs
-	GatewayID *string `json:"gateway_id,omitempty"`
+	GatewayID *int `json:"gateway_id,omitempty"`
 	// Name is the name of the gateway configuration
 	Name *string `json:"name,omitempty"`
 	// FeeFixed is the fixed fee of the gateway configuration, if specified
