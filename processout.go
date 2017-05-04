@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	// RequestAPIVersion is the version of the API used in requests made
-	// with this package
+	// RequestAPIVersion is the default version of the API used in requests
+	// made with this package
 	RequestAPIVersion = "1.4.0.0"
 	// Host is the URL where API requests are made
 	Host = "https://api.processout.com"
@@ -17,6 +17,8 @@ var (
 type ProcessOut struct {
 	// APIVersion is the version of the API to use
 	APIVersion string
+	// UserAgent is the UserAgent that will be used to send the request
+	UserAgent string
 	// ProcessOut project ID
 	projectID string
 	// ProcessOut project secret key
@@ -51,6 +53,9 @@ func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
 	req.Header.Set("Accept", "application/json")
+	if client.UserAgent != "" {
+		req.Header.Set("User-Agent", client.UserAgent)
+	}
 	if opt.IdempotencyKey != "" {
 		req.Header.Set("Idempotency-Key", opt.IdempotencyKey)
 	}
