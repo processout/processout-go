@@ -304,24 +304,20 @@ func (s Product) Create(options ...ProductCreateParameters) (*Product, error) {
 
 	data := struct {
 		*Options
-		Name            interface{} `json:"name"`
-		Amount          interface{} `json:"amount"`
-		Currency        interface{} `json:"currency"`
-		Metadata        interface{} `json:"metadata"`
-		RequestEmail    interface{} `json:"request_email"`
-		RequestShipping interface{} `json:"request_shipping"`
-		ReturnURL       interface{} `json:"return_url"`
-		CancelURL       interface{} `json:"cancel_url"`
+		Name      interface{} `json:"name"`
+		Amount    interface{} `json:"amount"`
+		Currency  interface{} `json:"currency"`
+		Metadata  interface{} `json:"metadata"`
+		ReturnURL interface{} `json:"return_url"`
+		CancelURL interface{} `json:"cancel_url"`
 	}{
-		Options:         opt.Options,
-		Name:            s.Name,
-		Amount:          s.Amount,
-		Currency:        s.Currency,
-		Metadata:        s.Metadata,
-		RequestEmail:    s.RequestEmail,
-		RequestShipping: s.RequestShipping,
-		ReturnURL:       s.ReturnURL,
-		CancelURL:       s.CancelURL,
+		Options:   opt.Options,
+		Name:      s.Name,
+		Amount:    s.Amount,
+		Currency:  s.Currency,
+		Metadata:  s.Metadata,
+		ReturnURL: s.ReturnURL,
+		CancelURL: s.CancelURL,
 	}
 
 	body, err := json.Marshal(data)
@@ -476,24 +472,20 @@ func (s Product) Save(options ...ProductSaveParameters) (*Product, error) {
 
 	data := struct {
 		*Options
-		Name            interface{} `json:"name"`
-		Amount          interface{} `json:"amount"`
-		Currency        interface{} `json:"currency"`
-		Metadata        interface{} `json:"metadata"`
-		RequestEmail    interface{} `json:"request_email"`
-		RequestShipping interface{} `json:"request_shipping"`
-		ReturnURL       interface{} `json:"return_url"`
-		CancelURL       interface{} `json:"cancel_url"`
+		Name      interface{} `json:"name"`
+		Amount    interface{} `json:"amount"`
+		Currency  interface{} `json:"currency"`
+		Metadata  interface{} `json:"metadata"`
+		ReturnURL interface{} `json:"return_url"`
+		CancelURL interface{} `json:"cancel_url"`
 	}{
-		Options:         opt.Options,
-		Name:            s.Name,
-		Amount:          s.Amount,
-		Currency:        s.Currency,
-		Metadata:        s.Metadata,
-		RequestEmail:    s.RequestEmail,
-		RequestShipping: s.RequestShipping,
-		ReturnURL:       s.ReturnURL,
-		CancelURL:       s.CancelURL,
+		Options:   opt.Options,
+		Name:      s.Name,
+		Amount:    s.Amount,
+		Currency:  s.Currency,
+		Metadata:  s.Metadata,
+		ReturnURL: s.ReturnURL,
+		CancelURL: s.CancelURL,
 	}
 
 	body, err := json.Marshal(data)
