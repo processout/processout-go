@@ -30,10 +30,6 @@ type Product struct {
 	Currency *string `json:"currency,omitempty"`
 	// Metadata is the metadata related to the product, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
-	// RequestEmail is the choose whether or not to request the email during the checkout process
-	RequestEmail *bool `json:"request_email,omitempty"`
-	// RequestShipping is the choose whether or not to request the shipping address during the checkout process
-	RequestShipping *bool `json:"request_shipping,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon payment
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the paymen was canceled
@@ -83,8 +79,6 @@ func (s *Product) Prefill(c *Product) *Product {
 	s.Amount = c.Amount
 	s.Currency = c.Currency
 	s.Metadata = c.Metadata
-	s.RequestEmail = c.RequestEmail
-	s.RequestShipping = c.RequestShipping
 	s.ReturnURL = c.ReturnURL
 	s.CancelURL = c.CancelURL
 	s.Sandbox = c.Sandbox
