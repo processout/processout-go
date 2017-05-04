@@ -56,7 +56,7 @@ func ToFloat64(f *float64) float64 {
 
 // ToBool returns the value of the bool pointer, or false
 func ToBool(b *bool) bool {
-	return b != nil && b
+	return b != nil && *b
 }
 
 // ToTime returns the value of the time pointer, or an empty time.Time struct
