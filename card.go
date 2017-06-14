@@ -52,8 +52,8 @@ type Card struct {
 	City *string `json:"city,omitempty"`
 	// State is the state of the card holder
 	State *string `json:"state,omitempty"`
-	// Country is the country code of the card holder (ISO-3166, 2 characters format)
-	Country *string `json:"country,omitempty"`
+	// CountryCode is the country code of the card holder (ISO-3166, 2 characters format)
+	CountryCode *string `json:"country_code,omitempty"`
 	// Zip is the zIP code of the card holder
 	Zip *string `json:"zip,omitempty"`
 	// Metadata is the metadata related to the card, in the form of a dictionary (key-value pair)
@@ -119,7 +119,7 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.Address2 = c.Address2
 	s.City = c.City
 	s.State = c.State
-	s.Country = c.Country
+	s.CountryCode = c.CountryCode
 	s.Zip = c.Zip
 	s.Metadata = c.Metadata
 	s.ExpiresSoon = c.ExpiresSoon

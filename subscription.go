@@ -68,13 +68,13 @@ type Subscription struct {
 	Canceled *bool `json:"canceled,omitempty"`
 	// CancellationReason is the reason as to why the subscription was cancelled
 	CancellationReason *string `json:"cancellation_reason,omitempty"`
-	// PendingCancellation is the wheither or not the subscription is pending cancellation (meaning a cancel_at date was set)
+	// PendingCancellation is the whether or not the subscription is pending cancellation (meaning a cancel_at date was set)
 	PendingCancellation *bool `json:"pending_cancellation,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon activation of the subscription
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the subscription activation was canceled
 	CancelURL *string `json:"cancel_url,omitempty"`
-	// UnpaidState is the when the subscription has unpaid invoices, defines the dunning logic of the subscription (as specified in the project setting)
+	// UnpaidState is the when the subscription has unpaid invoices, defines the dunning logic of the subscription (as specified in the project settings)
 	UnpaidState *string `json:"unpaid_state,omitempty"`
 	// Sandbox is the define whether or not the subscription is in sandbox environment
 	Sandbox *bool `json:"sandbox,omitempty"`

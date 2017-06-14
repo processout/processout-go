@@ -50,8 +50,8 @@ type Customer struct {
 	State *string `json:"state,omitempty"`
 	// Zip is the zIP code of the customer
 	Zip *string `json:"zip,omitempty"`
-	// Country is the country code of the customer (ISO-3166, 2 characters format)
-	Country *string `json:"country,omitempty"`
+	// CountryCode is the country code of the customer (ISO-3166, 2 characters format)
+	CountryCode *string `json:"country_code,omitempty"`
 	// TransactionsCount is the number of transactions processed by the customer
 	TransactionsCount *int `json:"transactions_count,omitempty"`
 	// SubscriptionsCount is the number of active subscriptions linked to the customer
@@ -120,7 +120,7 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.City = c.City
 	s.State = c.State
 	s.Zip = c.Zip
-	s.Country = c.Country
+	s.CountryCode = c.CountryCode
 	s.TransactionsCount = c.TransactionsCount
 	s.SubscriptionsCount = c.SubscriptionsCount
 	s.MrrLocal = c.MrrLocal
@@ -737,32 +737,32 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 
 	data := struct {
 		*Options
-		Balance   interface{} `json:"balance"`
-		Currency  interface{} `json:"currency"`
-		Email     interface{} `json:"email"`
-		FirstName interface{} `json:"first_name"`
-		LastName  interface{} `json:"last_name"`
-		Address1  interface{} `json:"address1"`
-		Address2  interface{} `json:"address2"`
-		City      interface{} `json:"city"`
-		State     interface{} `json:"state"`
-		Zip       interface{} `json:"zip"`
-		Country   interface{} `json:"country"`
-		Metadata  interface{} `json:"metadata"`
+		Balance     interface{} `json:"balance"`
+		Currency    interface{} `json:"currency"`
+		Email       interface{} `json:"email"`
+		FirstName   interface{} `json:"first_name"`
+		LastName    interface{} `json:"last_name"`
+		Address1    interface{} `json:"address1"`
+		Address2    interface{} `json:"address2"`
+		City        interface{} `json:"city"`
+		State       interface{} `json:"state"`
+		Zip         interface{} `json:"zip"`
+		CountryCode interface{} `json:"country_code"`
+		Metadata    interface{} `json:"metadata"`
 	}{
-		Options:   opt.Options,
-		Balance:   s.Balance,
-		Currency:  s.Currency,
-		Email:     s.Email,
-		FirstName: s.FirstName,
-		LastName:  s.LastName,
-		Address1:  s.Address1,
-		Address2:  s.Address2,
-		City:      s.City,
-		State:     s.State,
-		Zip:       s.Zip,
-		Country:   s.Country,
-		Metadata:  s.Metadata,
+		Options:     opt.Options,
+		Balance:     s.Balance,
+		Currency:    s.Currency,
+		Email:       s.Email,
+		FirstName:   s.FirstName,
+		LastName:    s.LastName,
+		Address1:    s.Address1,
+		Address2:    s.Address2,
+		City:        s.City,
+		State:       s.State,
+		Zip:         s.Zip,
+		CountryCode: s.CountryCode,
+		Metadata:    s.Metadata,
 	}
 
 	body, err := json.Marshal(data)
@@ -927,7 +927,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		City           interface{} `json:"city"`
 		State          interface{} `json:"state"`
 		Zip            interface{} `json:"zip"`
-		Country        interface{} `json:"country"`
+		CountryCode    interface{} `json:"country_code"`
 		Metadata       interface{} `json:"metadata"`
 	}{
 		Options:        opt.Options,
@@ -941,7 +941,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		City:           s.City,
 		State:          s.State,
 		Zip:            s.Zip,
-		Country:        s.Country,
+		CountryCode:    s.CountryCode,
 		Metadata:       s.Metadata,
 	}
 
