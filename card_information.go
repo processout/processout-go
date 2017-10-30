@@ -24,6 +24,8 @@ type CardInformation struct {
 	BankName *string `json:"bank_name,omitempty"`
 	// Brand is the level of the card (Electron, Classic, Gold, ...)
 	Brand *string `json:"brand,omitempty"`
+	// Category is the category of the card (consumer, commercial, ...)
+	Category *string `json:"category,omitempty"`
 	// Country is the country that issued the card
 	Country *string `json:"country,omitempty"`
 
@@ -52,6 +54,7 @@ func (s *CardInformation) Prefill(c *CardInformation) *CardInformation {
 	s.Type = c.Type
 	s.BankName = c.BankName
 	s.Brand = c.Brand
+	s.Category = c.Category
 	s.Country = c.Country
 
 	return s
