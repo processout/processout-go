@@ -468,6 +468,86 @@ func (s Invoice) AssignCustomer(customerID string, options ...InvoiceAssignCusto
 	return payload.Customer, nil
 }
 
+// InvoiceInitiateThreeDSParameters is the structure representing the
+// additional parameters used to call Invoice.InitiateThreeDS
+type InvoiceInitiateThreeDSParameters struct {
+	*Options
+	*Invoice
+}
+
+// InitiateThreeDS allows you to initiate a 3-D Secure authentication
+func (s Invoice) InitiateThreeDS(source string, options ...InvoiceInitiateThreeDSParameters) (*CustomerAction, error) {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoiceInitiateThreeDSParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		CustomerAction *CustomerAction `json:"customer_action"`
+		HasMore        bool            `json:"has_more"`
+		Success        bool            `json:"success"`
+		Message        string          `json:"message"`
+		Code           string          `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+		Source interface{} `json:"source"`
+	}{
+		Options: opt.Options,
+		Source:  source,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(*s.ID) + "/three-d-s"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.CustomerAction.SetClient(s.client)
+	return payload.CustomerAction, nil
+}
+
 // InvoiceFetchTransactionParameters is the structure representing the
 // additional parameters used to call Invoice.FetchTransaction
 type InvoiceFetchTransactionParameters struct {
