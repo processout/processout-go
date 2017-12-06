@@ -56,6 +56,8 @@ type Transaction struct {
 	Currency *string `json:"currency,omitempty"`
 	// ErrorCode is the error code of the transaction, when the payment has failed
 	ErrorCode *string `json:"error_code,omitempty"`
+	// ThreeDSStatus is the status of the potential 3-D Secure authentication
+	ThreeDSStatus *string `json:"three_d_s_status,omitempty"`
 	// Status is the status of the transaction
 	Status *string `json:"status,omitempty"`
 	// Authorized is the whether the transaction was authorized or not
@@ -143,6 +145,7 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.CapturedAmount = c.CapturedAmount
 	s.Currency = c.Currency
 	s.ErrorCode = c.ErrorCode
+	s.ThreeDSStatus = c.ThreeDSStatus
 	s.Status = c.Status
 	s.Authorized = c.Authorized
 	s.Captured = c.Captured
