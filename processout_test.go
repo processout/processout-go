@@ -145,7 +145,7 @@ func TestCreateCustomerParameters(t *testing.T) {
 	}
 }
 
-func TestExpandCustomerProjectFetchGateways(t *testing.T) {
+func TestExpandCustomerProject(t *testing.T) {
 	p := getClient()
 
 	cust, _ := p.NewCustomer().Create(CustomerCreateParameters{
@@ -155,8 +155,6 @@ func TestExpandCustomerProjectFetchGateways(t *testing.T) {
 	if cust.Project == nil {
 		t.Errorf("The customer project should be expanded")
 	}
-
-	cust.Project.FetchGatewayConfigurations()
 }
 
 func TestPaginateCustomersNext(t *testing.T) {
@@ -180,7 +178,7 @@ func TestPaginateCustomersNext(t *testing.T) {
 		t.Errorf("The iteration count should have been greater than 10")
 	}
 	if err := custs.Error(); err != nil {
-		t.Errorf("There shouldn't have been any error, but got %s", err.Error)
+		t.Errorf("There shouldn't have been any error, but got %s", err.Error())
 	}
 }
 
@@ -196,6 +194,22 @@ func TestPaginateCustomersPrev(t *testing.T) {
 		t.Errorf("There shouldnt have been any iteration")
 	}
 	if err := custs.Error(); err != nil {
-		t.Errorf("There shouldn't have been any error, but got %s", err.Error)
+		t.Errorf("There shouldn't have been any error, but got %s", err.Error())
+	}
+}
+
+func TestCreateSupervisedProject(t *testing.T) {
+	p := getClient()
+
+	project, err := p.NewProject(&Project{
+		Name:            String("test supervised project"),
+		DefaultCurrency: String("USD"),
+	}).CreateSupervised()
+	if err != nil {
+		t.Errorf("There shouldn't have been any error, but got %s", err.Error())
+	}
+
+	if project.PrivateKey == nil || *project.PrivateKey == "" {
+		t.Error("The project private key was empty")
 	}
 }

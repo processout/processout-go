@@ -87,15 +87,15 @@ func (s *Project) Prefill(c *Project) *Project {
 	return s
 }
 
-// ProjectFetchGatewayConfigurationsParameters is the structure representing the
-// additional parameters used to call Project.FetchGatewayConfigurations
-type ProjectFetchGatewayConfigurationsParameters struct {
+// ProjectRegeneratePrivateKeyParameters is the structure representing the
+// additional parameters used to call Project.RegeneratePrivateKey
+type ProjectRegeneratePrivateKeyParameters struct {
 	*Options
 	*Project
 }
 
-// FetchGatewayConfigurations allows you to get all the gateway configurations of the project
-func (s Project) FetchGatewayConfigurations(options ...ProjectFetchGatewayConfigurationsParameters) (*Iterator, error) {
+// RegeneratePrivateKey allows you to regenerate the project private key. Make sure to store the new private key and use it in any future request.
+func (s Project) RegeneratePrivateKey(options ...ProjectRegeneratePrivateKeyParameters) (*Project, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProject() method to create a new Project object")
 	}
@@ -103,7 +103,7 @@ func (s Project) FetchGatewayConfigurations(options ...ProjectFetchGatewayConfig
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := ProjectFetchGatewayConfigurationsParameters{}
+	opt := ProjectRegeneratePrivateKeyParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}
@@ -113,7 +113,85 @@ func (s Project) FetchGatewayConfigurations(options ...ProjectFetchGatewayConfig
 	s.Prefill(opt.Project)
 
 	type Response struct {
-		GatewayConfigurations []*GatewayConfiguration `json:"gateway_configurations"`
+		Project *Project `json:"project"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/projects/{project_id}/private-key"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Project.SetClient(s.client)
+	return payload.Project, nil
+}
+
+// ProjectAllSupervisedParameters is the structure representing the
+// additional parameters used to call Project.AllSupervised
+type ProjectAllSupervisedParameters struct {
+	*Options
+	*Project
+}
+
+// AllSupervised allows you to get all the supervised projects.
+func (s Project) AllSupervised(options ...ProjectAllSupervisedParameters) (*Iterator, error) {
+	if s.client == nil {
+		panic("Please use the client.NewProject() method to create a new Project object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := ProjectAllSupervisedParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Project)
+
+	type Response struct {
+		Projects []*Project `json:"projects"`
 
 		HasMore bool   `json:"has_more"`
 		Success bool   `json:"success"`
@@ -132,7 +210,7 @@ func (s Project) FetchGatewayConfigurations(options ...ProjectFetchGatewayConfig
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/projects/" + url.QueryEscape(*s.ID) + "/gateway-configurations"
+	path := "/supervised-projects"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -162,18 +240,18 @@ func (s Project) FetchGatewayConfigurations(options ...ProjectFetchGatewayConfig
 		return nil, erri
 	}
 
-	gatewayConfigurationsList := []Identifiable{}
-	for _, o := range payload.GatewayConfigurations {
-		gatewayConfigurationsList = append(gatewayConfigurationsList, o.SetClient(s.client))
+	projectsList := []Identifiable{}
+	for _, o := range payload.Projects {
+		projectsList = append(projectsList, o.SetClient(s.client))
 	}
-	gatewayConfigurationsIterator := &Iterator{
+	projectsIterator := &Iterator{
 		pos:     -1,
 		path:    path,
-		data:    gatewayConfigurationsList,
+		data:    projectsList,
 		options: opt.Options,
 		decoder: func(b io.Reader, i interface{}) (bool, error) {
 			r := struct {
-				Data    json.RawMessage `json:"gateway_configurations"`
+				Data    json.RawMessage `json:"projects"`
 				HasMore bool            `json:"has_more"`
 			}{}
 			if err := json.NewDecoder(b).Decode(&r); err != nil {
@@ -188,7 +266,96 @@ func (s Project) FetchGatewayConfigurations(options ...ProjectFetchGatewayConfig
 		hasMoreNext: payload.HasMore,
 		hasMorePrev: true,
 	}
-	return gatewayConfigurationsIterator, nil
+	return projectsIterator, nil
+}
+
+// ProjectCreateSupervisedParameters is the structure representing the
+// additional parameters used to call Project.CreateSupervised
+type ProjectCreateSupervisedParameters struct {
+	*Options
+	*Project
+	ApplepaySettings interface{} `json:"applepay_settings"`
+}
+
+// CreateSupervised allows you to create a new supervised project.
+func (s Project) CreateSupervised(options ...ProjectCreateSupervisedParameters) (*Project, error) {
+	if s.client == nil {
+		panic("Please use the client.NewProject() method to create a new Project object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := ProjectCreateSupervisedParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Project)
+
+	type Response struct {
+		Project *Project `json:"project"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+		ID                   interface{} `json:"id"`
+		Name                 interface{} `json:"name"`
+		DefaultCurrency      interface{} `json:"default_currency"`
+		DunningConfiguration interface{} `json:"dunning_configuration"`
+		ApplepaySettings     interface{} `json:"applepay_settings"`
+	}{
+		Options:              opt.Options,
+		ID:                   s.ID,
+		Name:                 s.Name,
+		DefaultCurrency:      s.DefaultCurrency,
+		DunningConfiguration: s.DunningConfiguration,
+		ApplepaySettings:     opt.ApplepaySettings,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/supervised-projects"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Project.SetClient(s.client)
+	return payload.Project, nil
 }
 
 // dummyProject is a dummy function that's only

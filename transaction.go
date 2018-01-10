@@ -40,6 +40,10 @@ type Transaction struct {
 	Card *Card `json:"card,omitempty"`
 	// CardID is the iD of the card that was used to capture the payment of the transaction, if any
 	CardID *string `json:"card_id,omitempty"`
+	// GatewayConfiguration is the gateway Configuration is the last gateway configuration that was used to process the payment, if any
+	GatewayConfiguration *GatewayConfiguration `json:"gateway_configuration,omitempty"`
+	// GatewayConfigurationID is the iD of the last gateway configuration that was used to process the payment, if any
+	GatewayConfigurationID *string `json:"gateway_configuration_id,omitempty"`
 	// Operations is the operations linked to the transaction
 	Operations *[]*TransactionOperation `json:"operations,omitempty"`
 	// Refunds is the list of the transaction refunds
@@ -114,6 +118,9 @@ func (s *Transaction) SetClient(c *ProcessOut) *Transaction {
 	if s.Card != nil {
 		s.Card.SetClient(c)
 	}
+	if s.GatewayConfiguration != nil {
+		s.GatewayConfiguration.SetClient(c)
+	}
 
 	return s
 }
@@ -137,6 +144,8 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.TokenID = c.TokenID
 	s.Card = c.Card
 	s.CardID = c.CardID
+	s.GatewayConfiguration = c.GatewayConfiguration
+	s.GatewayConfigurationID = c.GatewayConfigurationID
 	s.Operations = c.Operations
 	s.Refunds = c.Refunds
 	s.Name = c.Name
