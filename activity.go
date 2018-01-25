@@ -129,7 +129,7 @@ func (s Activity) All(options ...ActivityAllParameters) (*Iterator, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -171,7 +171,7 @@ func (s Activity) All(options ...ActivityAllParameters) (*Iterator, error) {
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return activitiesIterator, nil
 }
@@ -232,7 +232,7 @@ func (s Activity) Find(activityID string, options ...ActivityFindParameters) (*A
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

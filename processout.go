@@ -10,6 +10,9 @@ var (
 	RequestAPIVersion = "1.4.0.0"
 	// Host is the URL where API requests are made
 	Host = "https://api.processout.com"
+
+	// DefaultClient sets the HTTP default client used for ProcessOut clients
+	DefaultClient = http.DefaultClient
 )
 
 // ProcessOut wraps all the components of the package in a
@@ -23,6 +26,9 @@ type ProcessOut struct {
 	projectID string
 	// ProcessOut project secret key
 	projectSecret string
+
+	// HTTPClient used to make requests
+	HTTPClient *http.Client
 }
 
 // Options represents the options available when doing a request to the
@@ -42,6 +48,7 @@ type Options struct {
 func New(projectID, projectSecret string) *ProcessOut {
 	p := &ProcessOut{
 		APIVersion:    RequestAPIVersion,
+		HTTPClient:    DefaultClient,
 		projectID:     projectID,
 		projectSecret: projectSecret,
 	}

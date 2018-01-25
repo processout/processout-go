@@ -138,7 +138,7 @@ func (s Gateway) FetchGatewayConfigurations(options ...GatewayFetchGatewayConfig
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -180,7 +180,7 @@ func (s Gateway) FetchGatewayConfigurations(options ...GatewayFetchGatewayConfig
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return gatewayConfigurationsIterator, nil
 }

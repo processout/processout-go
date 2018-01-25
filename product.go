@@ -143,7 +143,7 @@ func (s Product) CreateInvoice(options ...ProductCreateInvoiceParameters) (*Invo
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -222,7 +222,7 @@ func (s Product) All(options ...ProductAllParameters) (*Iterator, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -264,7 +264,7 @@ func (s Product) All(options ...ProductAllParameters) (*Iterator, error) {
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return productsIterator, nil
 }
@@ -337,7 +337,7 @@ func (s Product) Create(options ...ProductCreateParameters) (*Product, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -415,7 +415,7 @@ func (s Product) Find(productID string, options ...ProductFindParameters) (*Prod
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -505,7 +505,7 @@ func (s Product) Save(options ...ProductSaveParameters) (*Product, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -582,7 +582,7 @@ func (s Product) Delete(options ...ProductDeleteParameters) error {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return errors.New(err, "", "")
 	}

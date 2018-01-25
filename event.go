@@ -129,7 +129,7 @@ func (s Event) FetchWebhooks(options ...EventFetchWebhooksParameters) (*Iterator
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -171,7 +171,7 @@ func (s Event) FetchWebhooks(options ...EventFetchWebhooksParameters) (*Iterator
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return webhooksIterator, nil
 }
@@ -233,7 +233,7 @@ func (s Event) All(options ...EventAllParameters) (*Iterator, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -275,7 +275,7 @@ func (s Event) All(options ...EventAllParameters) (*Iterator, error) {
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return eventsIterator, nil
 }
@@ -336,7 +336,7 @@ func (s Event) Find(eventID string, options ...EventFindParameters) (*Event, err
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

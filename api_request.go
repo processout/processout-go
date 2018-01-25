@@ -153,7 +153,7 @@ func (s APIRequest) All(options ...APIRequestAllParameters) (*Iterator, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -195,7 +195,7 @@ func (s APIRequest) All(options ...APIRequestAllParameters) (*Iterator, error) {
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return APIRequestsIterator, nil
 }
@@ -256,7 +256,7 @@ func (s APIRequest) Find(APIRequestID string, options ...APIRequestFindParameter
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

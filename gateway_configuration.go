@@ -150,7 +150,7 @@ func (s GatewayConfiguration) All(options ...GatewayConfigurationAllParameters) 
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -192,7 +192,7 @@ func (s GatewayConfiguration) All(options ...GatewayConfigurationAllParameters) 
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return gatewayConfigurationsIterator, nil
 }
@@ -253,7 +253,7 @@ func (s GatewayConfiguration) Find(configurationID string, options ...GatewayCon
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -346,7 +346,7 @@ func (s GatewayConfiguration) Save(options ...GatewayConfigurationSaveParameters
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -423,7 +423,7 @@ func (s GatewayConfiguration) Delete(options ...GatewayConfigurationDeleteParame
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return errors.New(err, "", "")
 	}
@@ -515,7 +515,7 @@ func (s GatewayConfiguration) Create(gatewayName string, options ...GatewayConfi
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

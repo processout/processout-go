@@ -186,7 +186,7 @@ func (s Card) All(options ...CardAllParameters) (*Iterator, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -228,7 +228,7 @@ func (s Card) All(options ...CardAllParameters) (*Iterator, error) {
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return cardsIterator, nil
 }
@@ -289,7 +289,7 @@ func (s Card) Find(cardID string, options ...CardFindParameters) (*Card, error) 
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

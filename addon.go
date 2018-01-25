@@ -156,7 +156,7 @@ func (s Addon) FetchSubscriptionAddons(subscriptionID string, options ...AddonFe
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -198,7 +198,7 @@ func (s Addon) FetchSubscriptionAddons(subscriptionID string, options ...AddonFe
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return addonsIterator, nil
 }
@@ -280,7 +280,7 @@ func (s Addon) Create(options ...AddonCreateParameters) (*Addon, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -358,7 +358,7 @@ func (s Addon) Find(subscriptionID, addonID string, options ...AddonFindParamete
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -460,7 +460,7 @@ func (s Addon) Save(options ...AddonSaveParameters) (*Addon, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -546,7 +546,7 @@ func (s Addon) Delete(options ...AddonDeleteParameters) error {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return errors.New(err, "", "")
 	}

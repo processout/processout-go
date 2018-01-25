@@ -116,7 +116,7 @@ func (s CardInformation) Fetch(iin string, options ...CardInformationFetchParame
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

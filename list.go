@@ -126,7 +126,7 @@ func (i *Iterator) fetchPage() (bool, error) {
 	}
 	setupRequest(i.client, i.options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := i.client.HTTPClient.Do(req)
 	if err != nil {
 		return false, err
 	}

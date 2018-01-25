@@ -222,7 +222,7 @@ func (s Subscription) FetchAddons(options ...SubscriptionFetchAddonsParameters) 
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -264,7 +264,7 @@ func (s Subscription) FetchAddons(options ...SubscriptionFetchAddonsParameters) 
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return addonsIterator, nil
 }
@@ -325,7 +325,7 @@ func (s Subscription) FindAddon(addonID string, options ...SubscriptionFindAddon
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -411,7 +411,7 @@ func (s Subscription) DeleteAddon(addonID string, options ...SubscriptionDeleteA
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return errors.New(err, "", "")
 	}
@@ -488,7 +488,7 @@ func (s Subscription) FetchCustomer(options ...SubscriptionFetchCustomerParamete
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -567,7 +567,7 @@ func (s Subscription) FetchDiscounts(options ...SubscriptionFetchDiscountsParame
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -609,7 +609,7 @@ func (s Subscription) FetchDiscounts(options ...SubscriptionFetchDiscountsParame
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return discountsIterator, nil
 }
@@ -670,7 +670,7 @@ func (s Subscription) FindDiscount(discountID string, options ...SubscriptionFin
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -747,7 +747,7 @@ func (s Subscription) DeleteDiscount(discountID string, options ...SubscriptionD
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return errors.New(err, "", "")
 	}
@@ -825,7 +825,7 @@ func (s Subscription) FetchTransactions(options ...SubscriptionFetchTransactions
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -867,7 +867,7 @@ func (s Subscription) FetchTransactions(options ...SubscriptionFetchTransactions
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return transactionsIterator, nil
 }
@@ -929,7 +929,7 @@ func (s Subscription) All(options ...SubscriptionAllParameters) (*Iterator, erro
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -971,7 +971,7 @@ func (s Subscription) All(options ...SubscriptionAllParameters) (*Iterator, erro
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return subscriptionsIterator, nil
 }
@@ -1060,7 +1060,7 @@ func (s Subscription) Create(options ...SubscriptionCreateParameters) (*Subscrip
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -1138,7 +1138,7 @@ func (s Subscription) Find(subscriptionID string, options ...SubscriptionFindPar
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -1243,7 +1243,7 @@ func (s Subscription) Save(options ...SubscriptionSaveParameters) (*Subscription
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -1328,7 +1328,7 @@ func (s Subscription) Cancel(options ...SubscriptionCancelParameters) (*Subscrip
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

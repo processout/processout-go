@@ -150,7 +150,7 @@ func (s Token) FetchCustomerTokens(customerID string, options ...TokenFetchCusto
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -192,7 +192,7 @@ func (s Token) FetchCustomerTokens(customerID string, options ...TokenFetchCusto
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return tokensIterator, nil
 }
@@ -253,7 +253,7 @@ func (s Token) Find(customerID, tokenID string, options ...TokenFindParameters) 
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -345,7 +345,7 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -422,7 +422,7 @@ func (s Token) Delete(options ...TokenDeleteParameters) error {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return errors.New(err, "", "")
 	}

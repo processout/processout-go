@@ -158,7 +158,7 @@ func (s AuthorizationRequest) FetchCustomer(options ...AuthorizationRequestFetch
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -246,7 +246,7 @@ func (s AuthorizationRequest) Create(options ...AuthorizationRequestCreateParame
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -324,7 +324,7 @@ func (s AuthorizationRequest) Find(authorizationRequestID string, options ...Aut
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

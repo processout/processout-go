@@ -156,7 +156,7 @@ func (s Discount) FetchSubscriptionDiscounts(subscriptionID string, options ...D
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -198,7 +198,7 @@ func (s Discount) FetchSubscriptionDiscounts(subscriptionID string, options ...D
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return discountsIterator, nil
 }
@@ -269,7 +269,7 @@ func (s Discount) Create(options ...DiscountCreateParameters) (*Discount, error)
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -347,7 +347,7 @@ func (s Discount) Find(subscriptionID, discountID string, options ...DiscountFin
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -424,7 +424,7 @@ func (s Discount) Delete(options ...DiscountDeleteParameters) error {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return errors.New(err, "", "")
 	}

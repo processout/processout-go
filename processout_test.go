@@ -67,6 +67,19 @@ func TestCaptureInvoice(t *testing.T) {
 	if tr.Status == nil || *tr.Status != "completed" {
 		t.Errorf("The transaction should have been completed, but got: %s", tr.Status)
 	}
+
+	// Check the expand
+	tr, err = tr.Find(*tr.ID, TransactionFindParameters{
+		Options: &Options{
+			Expand: []string{"gateway_configuration"},
+		},
+	})
+	if err != nil {
+		t.Errorf("The invoice should have been captured, but got: %s", err.Error())
+	}
+	if tr.GatewayConfiguration == nil || tr.GatewayConfiguration.ID == nil || *tr.GatewayConfiguration.ID == "" {
+		t.Errorf("The transaction gateway configuration was expanded even though we expanded it")
+	}
 }
 
 func TestGetCustomers(t *testing.T) {

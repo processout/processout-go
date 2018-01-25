@@ -225,7 +225,7 @@ func (s Transaction) FetchRefunds(options ...TransactionFetchRefundsParameters) 
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -267,7 +267,7 @@ func (s Transaction) FetchRefunds(options ...TransactionFetchRefundsParameters) 
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return refundsIterator, nil
 }
@@ -328,7 +328,7 @@ func (s Transaction) FindRefund(refundID string, options ...TransactionFindRefun
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -407,7 +407,7 @@ func (s Transaction) All(options ...TransactionAllParameters) (*Iterator, error)
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -449,7 +449,7 @@ func (s Transaction) All(options ...TransactionAllParameters) (*Iterator, error)
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return transactionsIterator, nil
 }
@@ -510,7 +510,7 @@ func (s Transaction) Find(transactionID string, options ...TransactionFindParame
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}

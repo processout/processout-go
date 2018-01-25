@@ -205,7 +205,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -294,7 +294,7 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -372,7 +372,7 @@ func (s Invoice) FetchCustomer(options ...InvoiceFetchCustomerParameters) (*Cust
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -452,7 +452,7 @@ func (s Invoice) AssignCustomer(customerID string, options ...InvoiceAssignCusto
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -532,7 +532,7 @@ func (s Invoice) InitiateThreeDS(source string, options ...InvoiceInitiateThreeD
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -610,7 +610,7 @@ func (s Invoice) FetchTransaction(options ...InvoiceFetchTransactionParameters) 
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -688,7 +688,7 @@ func (s Invoice) Void(options ...InvoiceVoidParameters) (*Transaction, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -767,7 +767,7 @@ func (s Invoice) All(options ...InvoiceAllParameters) (*Iterator, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -809,7 +809,7 @@ func (s Invoice) All(options ...InvoiceAllParameters) (*Iterator, error) {
 		},
 		client:      s.client,
 		hasMoreNext: payload.HasMore,
-		hasMorePrev: true,
+		hasMorePrev: false,
 	}
 	return invoicesIterator, nil
 }
@@ -896,7 +896,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
@@ -974,7 +974,7 @@ func (s Invoice) Find(invoiceID string, options ...InvoiceFindParameters) (*Invo
 	}
 	setupRequest(s.client, opt.Options, req)
 
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
 		return nil, errors.New(err, "", "")
 	}
