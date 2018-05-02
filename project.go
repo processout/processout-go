@@ -87,6 +87,238 @@ func (s *Project) Prefill(c *Project) *Project {
 	return s
 }
 
+// ProjectFetchParameters is the structure representing the
+// additional parameters used to call Project.Fetch
+type ProjectFetchParameters struct {
+	*Options
+	*Project
+}
+
+// Fetch allows you to fetch the current project information.
+func (s Project) Fetch(options ...ProjectFetchParameters) (*Project, error) {
+	if s.client == nil {
+		panic("Please use the client.NewProject() method to create a new Project object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := ProjectFetchParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Project)
+
+	type Response struct {
+		Project *Project `json:"project"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/projects/" + url.QueryEscape(*s.ID) + ""
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Project.SetClient(s.client)
+	return payload.Project, nil
+}
+
+// ProjectSaveParameters is the structure representing the
+// additional parameters used to call Project.Save
+type ProjectSaveParameters struct {
+	*Options
+	*Project
+}
+
+// Save allows you to save the updated project's attributes.
+func (s Project) Save(options ...ProjectSaveParameters) (*Project, error) {
+	if s.client == nil {
+		panic("Please use the client.NewProject() method to create a new Project object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := ProjectSaveParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Project)
+
+	type Response struct {
+		Project *Project `json:"project"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/projects/" + url.QueryEscape(*s.ID) + ""
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Project.SetClient(s.client)
+	return payload.Project, nil
+}
+
+// ProjectDeleteParameters is the structure representing the
+// additional parameters used to call Project.Delete
+type ProjectDeleteParameters struct {
+	*Options
+	*Project
+}
+
+// Delete allows you to delete the project. Be careful! Executing this request will prevent any further interaction with the API that uses this project.
+func (s Project) Delete(options ...ProjectDeleteParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewProject() method to create a new Project object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := ProjectDeleteParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Project)
+
+	type Response struct {
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "/projects/{project_id}"
+
+	req, err := http.NewRequest(
+		"DELETE",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
+}
+
 // ProjectRegeneratePrivateKeyParameters is the structure representing the
 // additional parameters used to call Project.RegeneratePrivateKey
 type ProjectRegeneratePrivateKeyParameters struct {
@@ -165,15 +397,15 @@ func (s Project) RegeneratePrivateKey(options ...ProjectRegeneratePrivateKeyPara
 	return payload.Project, nil
 }
 
-// ProjectAllSupervisedParameters is the structure representing the
-// additional parameters used to call Project.AllSupervised
-type ProjectAllSupervisedParameters struct {
+// ProjectFetchSupervisedParameters is the structure representing the
+// additional parameters used to call Project.FetchSupervised
+type ProjectFetchSupervisedParameters struct {
 	*Options
 	*Project
 }
 
-// AllSupervised allows you to get all the supervised projects.
-func (s Project) AllSupervised(options ...ProjectAllSupervisedParameters) (*Iterator, error) {
+// FetchSupervised allows you to get all the supervised projects.
+func (s Project) FetchSupervised(options ...ProjectFetchSupervisedParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProject() method to create a new Project object")
 	}
@@ -181,7 +413,7 @@ func (s Project) AllSupervised(options ...ProjectAllSupervisedParameters) (*Iter
 		panic("The options parameter should only be provided once.")
 	}
 
-	opt := ProjectAllSupervisedParameters{}
+	opt := ProjectFetchSupervisedParameters{}
 	if len(options) == 1 {
 		opt = options[0]
 	}

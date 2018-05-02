@@ -342,6 +342,36 @@ func (c *ProcessOut) NewDunningAction(prefill ...*DunningAction) *DunningAction 
 	return prefill[0]
 }
 
+// NewPayout creates a new Payout object
+func (c *ProcessOut) NewPayout(prefill ...*Payout) *Payout {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the Payout, or none.")
+	}
+	if len(prefill) == 0 {
+		return &Payout{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewPayoutItem creates a new PayoutItem object
+func (c *ProcessOut) NewPayoutItem(prefill ...*PayoutItem) *PayoutItem {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the PayoutItem, or none.")
+	}
+	if len(prefill) == 0 {
+		return &PayoutItem{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
 // NewPlan creates a new Plan object
 func (c *ProcessOut) NewPlan(prefill ...*Plan) *Plan {
 	if len(prefill) > 1 {
@@ -424,6 +454,51 @@ func (c *ProcessOut) NewTransaction(prefill ...*Transaction) *Transaction {
 	}
 	if len(prefill) == 0 {
 		return &Transaction{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewPaymentDataThreeDSRequest creates a new PaymentDataThreeDSRequest object
+func (c *ProcessOut) NewPaymentDataThreeDSRequest(prefill ...*PaymentDataThreeDSRequest) *PaymentDataThreeDSRequest {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the PaymentDataThreeDSRequest, or none.")
+	}
+	if len(prefill) == 0 {
+		return &PaymentDataThreeDSRequest{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewPaymentDataNetworkAuthentication creates a new PaymentDataNetworkAuthentication object
+func (c *ProcessOut) NewPaymentDataNetworkAuthentication(prefill ...*PaymentDataNetworkAuthentication) *PaymentDataNetworkAuthentication {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the PaymentDataNetworkAuthentication, or none.")
+	}
+	if len(prefill) == 0 {
+		return &PaymentDataNetworkAuthentication{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewPaymentDataThreeDSAuthentication creates a new PaymentDataThreeDSAuthentication object
+func (c *ProcessOut) NewPaymentDataThreeDSAuthentication(prefill ...*PaymentDataThreeDSAuthentication) *PaymentDataThreeDSAuthentication {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the PaymentDataThreeDSAuthentication, or none.")
+	}
+	if len(prefill) == 0 {
+		return &PaymentDataThreeDSAuthentication{
 			client: c,
 		}
 	}
