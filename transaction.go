@@ -56,6 +56,10 @@ type Transaction struct {
 	AuthorizedAmount *string `json:"authorized_amount,omitempty"`
 	// CapturedAmount is the amount that was successfully captured on the transaction
 	CapturedAmount *string `json:"captured_amount,omitempty"`
+	// RefundedAmount is the amount that was successfully refunded on the transaction
+	RefundedAmount *string `json:"refunded_amount,omitempty"`
+	// AvailableAmount is the amount available on the transaction (captured - refunded)
+	AvailableAmount *string `json:"available_amount,omitempty"`
 	// Currency is the currency of the transaction
 	Currency *string `json:"currency,omitempty"`
 	// ErrorCode is the error code of the transaction, when the payment has failed
@@ -152,6 +156,8 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.Amount = c.Amount
 	s.AuthorizedAmount = c.AuthorizedAmount
 	s.CapturedAmount = c.CapturedAmount
+	s.RefundedAmount = c.RefundedAmount
+	s.AvailableAmount = c.AvailableAmount
 	s.Currency = c.Currency
 	s.ErrorCode = c.ErrorCode
 	s.ThreeDSStatus = c.ThreeDSStatus

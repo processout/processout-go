@@ -52,10 +52,12 @@ type Card struct {
 	City *string `json:"city,omitempty"`
 	// State is the state of the card holder
 	State *string `json:"state,omitempty"`
-	// CountryCode is the country code of the card holder (ISO-3166, 2 characters format)
-	CountryCode *string `json:"country_code,omitempty"`
 	// Zip is the zIP code of the card holder
 	Zip *string `json:"zip,omitempty"`
+	// CountryCode is the country code of the card holder (ISO-3166, 2 characters format)
+	CountryCode *string `json:"country_code,omitempty"`
+	// IpAddress is the iP address of the card (IPv4 or IPv6)
+	IpAddress *string `json:"ip_address,omitempty"`
 	// Metadata is the metadata related to the card, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// ExpiresSoon is the contains true if the card will expire soon, false otherwise
@@ -119,8 +121,9 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.Address2 = c.Address2
 	s.City = c.City
 	s.State = c.State
-	s.CountryCode = c.CountryCode
 	s.Zip = c.Zip
+	s.CountryCode = c.CountryCode
+	s.IpAddress = c.IpAddress
 	s.Metadata = c.Metadata
 	s.ExpiresSoon = c.ExpiresSoon
 	s.Sandbox = c.Sandbox

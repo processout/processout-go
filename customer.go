@@ -52,6 +52,8 @@ type Customer struct {
 	Zip *string `json:"zip,omitempty"`
 	// CountryCode is the country code of the customer (ISO-3166, 2 characters format)
 	CountryCode *string `json:"country_code,omitempty"`
+	// IpAddress is the iP address of the customer (IPv4 or IPv6)
+	IpAddress *string `json:"ip_address,omitempty"`
 	// TransactionsCount is the number of transactions processed by the customer
 	TransactionsCount *int `json:"transactions_count,omitempty"`
 	// SubscriptionsCount is the number of active subscriptions linked to the customer
@@ -121,6 +123,7 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.State = c.State
 	s.Zip = c.Zip
 	s.CountryCode = c.CountryCode
+	s.IpAddress = c.IpAddress
 	s.TransactionsCount = c.TransactionsCount
 	s.SubscriptionsCount = c.SubscriptionsCount
 	s.MrrLocal = c.MrrLocal
@@ -748,6 +751,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		State       interface{} `json:"state"`
 		Zip         interface{} `json:"zip"`
 		CountryCode interface{} `json:"country_code"`
+		IpAddress   interface{} `json:"ip_address"`
 		Metadata    interface{} `json:"metadata"`
 	}{
 		Options:     opt.Options,
@@ -762,6 +766,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		State:       s.State,
 		Zip:         s.Zip,
 		CountryCode: s.CountryCode,
+		IpAddress:   s.IpAddress,
 		Metadata:    s.Metadata,
 	}
 
@@ -928,6 +933,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		State          interface{} `json:"state"`
 		Zip            interface{} `json:"zip"`
 		CountryCode    interface{} `json:"country_code"`
+		IpAddress      interface{} `json:"ip_address"`
 		Metadata       interface{} `json:"metadata"`
 	}{
 		Options:        opt.Options,
@@ -942,6 +948,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		State:          s.State,
 		Zip:            s.Zip,
 		CountryCode:    s.CountryCode,
+		IpAddress:      s.IpAddress,
 		Metadata:       s.Metadata,
 	}
 
