@@ -146,8 +146,8 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 type InvoiceAuthorizeParameters struct {
 	*Options
 	*Invoice
-	Synchronous                       interface{} `json:"synchronous"`
-	PrioritizedGatewayConfigurationID interface{} `json:"prioritized_gateway_configuration_id"`
+	Synchronous             interface{} `json:"synchronous"`
+	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
@@ -178,14 +178,14 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 
 	data := struct {
 		*Options
-		Synchronous                       interface{} `json:"synchronous"`
-		PrioritizedGatewayConfigurationID interface{} `json:"prioritized_gateway_configuration_id"`
-		Source                            interface{} `json:"source"`
+		Synchronous             interface{} `json:"synchronous"`
+		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
+		Source                  interface{} `json:"source"`
 	}{
-		Options:                           opt.Options,
-		Synchronous:                       opt.Synchronous,
-		PrioritizedGatewayConfigurationID: opt.PrioritizedGatewayConfigurationID,
-		Source: source,
+		Options:                 opt.Options,
+		Synchronous:             opt.Synchronous,
+		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
+		Source:                  source,
 	}
 
 	body, err := json.Marshal(data)
@@ -232,8 +232,9 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 type InvoiceCaptureParameters struct {
 	*Options
 	*Invoice
-	AuthorizeOnly interface{} `json:"authorize_only"`
-	Synchronous   interface{} `json:"synchronous"`
+	AuthorizeOnly           interface{} `json:"authorize_only"`
+	Synchronous             interface{} `json:"synchronous"`
+	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
@@ -264,14 +265,16 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 
 	data := struct {
 		*Options
-		AuthorizeOnly interface{} `json:"authorize_only"`
-		Synchronous   interface{} `json:"synchronous"`
-		Source        interface{} `json:"source"`
+		AuthorizeOnly           interface{} `json:"authorize_only"`
+		Synchronous             interface{} `json:"synchronous"`
+		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
+		Source                  interface{} `json:"source"`
 	}{
-		Options:       opt.Options,
-		AuthorizeOnly: opt.AuthorizeOnly,
-		Synchronous:   opt.Synchronous,
-		Source:        source,
+		Options:                 opt.Options,
+		AuthorizeOnly:           opt.AuthorizeOnly,
+		Synchronous:             opt.Synchronous,
+		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
+		Source:                  source,
 	}
 
 	body, err := json.Marshal(data)

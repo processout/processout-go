@@ -57,7 +57,7 @@ func TestCaptureInvoice(t *testing.T) {
 		t.Errorf("The invoice could not be created: %s", err.Error())
 	}
 
-	req, _ := http.NewRequest("POST", "https://processout.com", bytes.NewReader([]byte(`{"token":"test-valid"}`)))
+	req, _ := http.NewRequest("POST", "https://processout.com?token=test-valid", bytes.NewReader([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
 	gr := NewGatewayRequest("sandbox", req)
 	tr, err := iv.Capture(gr.String())
@@ -65,7 +65,7 @@ func TestCaptureInvoice(t *testing.T) {
 		t.Errorf("The invoice should have been captured, but got: %s", err.Error())
 	}
 	if tr.Status == nil || *tr.Status != "completed" {
-		t.Errorf("The transaction should have been completed, but got: %s", tr.Status)
+		t.Errorf("The transaction should have been completed, but got: %s", *tr.Status)
 	}
 
 	// Check the expand
