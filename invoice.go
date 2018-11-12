@@ -148,6 +148,7 @@ type InvoiceAuthorizeParameters struct {
 	*Invoice
 	Synchronous             interface{} `json:"synchronous"`
 	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
+	CaptureAmount           interface{} `json:"capture_amount"`
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
@@ -180,11 +181,13 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		*Options
 		Synchronous             interface{} `json:"synchronous"`
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
+		CaptureAmount           interface{} `json:"capture_amount"`
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
 		Synchronous:             opt.Synchronous,
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
+		CaptureAmount:           opt.CaptureAmount,
 		Source:                  source,
 	}
 
@@ -235,6 +238,7 @@ type InvoiceCaptureParameters struct {
 	AuthorizeOnly           interface{} `json:"authorize_only"`
 	Synchronous             interface{} `json:"synchronous"`
 	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
+	CaptureAmount           interface{} `json:"capture_amount"`
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
@@ -268,12 +272,14 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		AuthorizeOnly           interface{} `json:"authorize_only"`
 		Synchronous             interface{} `json:"synchronous"`
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
+		CaptureAmount           interface{} `json:"capture_amount"`
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
 		AuthorizeOnly:           opt.AuthorizeOnly,
 		Synchronous:             opt.Synchronous,
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
+		CaptureAmount:           opt.CaptureAmount,
 		Source:                  source,
 	}
 
