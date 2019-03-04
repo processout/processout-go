@@ -6,7 +6,7 @@ import "bytes"
 
 func getClient() *ProcessOut {
 	return New("test-proj_gAO1Uu0ysZJvDuUpOGPkUBeE3pGalk3x",
-		"key_jqSPvwq3AG5MlYAgqxlwwgOcAC3Zy7d8")
+		"key_sandbox_mah31RDFqcDxmaS7MvhDbJfDJvjtsFTB")
 }
 
 func TestNew(t *testing.T) {

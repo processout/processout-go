@@ -39,10 +39,10 @@ func NewGatewayRequest(gatewayConfigurationID string,
 
 	return &GatewayRequest{
 		GatewayConfigurationUID: gatewayConfigurationID,
-		URL:     req.URL.String(),
-		Method:  req.Method,
-		Headers: h,
-		Body:    string(body),
+		URL:                     req.URL.String(),
+		Method:                  req.Method,
+		Headers:                 h,
+		Body:                    string(body),
 	}
 }
 

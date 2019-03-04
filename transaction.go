@@ -52,14 +52,24 @@ type Transaction struct {
 	Name *string `json:"name,omitempty"`
 	// Amount is the amount requested when creating the transaction
 	Amount *string `json:"amount,omitempty"`
+	// AmountLocal is the amount requested when creating the transaction, in the currency of the project
+	AmountLocal *string `json:"amount_local,omitempty"`
 	// AuthorizedAmount is the amount that was successfully authorized on the transaction
 	AuthorizedAmount *string `json:"authorized_amount,omitempty"`
+	// AuthorizedAmountLocal is the amount that was successfully authorized on the transaction, in the currency of the project
+	AuthorizedAmountLocal *string `json:"authorized_amount_local,omitempty"`
 	// CapturedAmount is the amount that was successfully captured on the transaction
 	CapturedAmount *string `json:"captured_amount,omitempty"`
+	// CapturedAmountLocal is the amount that was successfully captured on the transaction, in the currency of the project
+	CapturedAmountLocal *string `json:"captured_amount_local,omitempty"`
 	// RefundedAmount is the amount that was successfully refunded on the transaction
 	RefundedAmount *string `json:"refunded_amount,omitempty"`
+	// RefundedAmountLocal is the amount that was successfully refunded on the transaction, in the currency of the project
+	RefundedAmountLocal *string `json:"refunded_amount_local,omitempty"`
 	// AvailableAmount is the amount available on the transaction (captured - refunded)
 	AvailableAmount *string `json:"available_amount,omitempty"`
+	// AvailableAmountLocal is the amount available on the transaction (captured - refunded), in the currency of the project
+	AvailableAmountLocal *string `json:"available_amount_local,omitempty"`
 	// Currency is the currency of the transaction
 	Currency *string `json:"currency,omitempty"`
 	// ErrorCode is the error code of the transaction, when the payment has failed
@@ -78,6 +88,10 @@ type Transaction struct {
 	EstimatedFee *string `json:"estimated_fee,omitempty"`
 	// GatewayFee is the fee taken by the payment gateway to process the payment
 	GatewayFee *string `json:"gateway_fee,omitempty"`
+	// GatewayFeeLocal is the fee taken by the payment gateway to process the payment, in the currency of the project
+	GatewayFeeLocal *string `json:"gateway_fee_local,omitempty"`
+	// CurrencyFee is the currency of the fee taken on the transaction (field `gateway_fee`)
+	CurrencyFee *string `json:"currency_fee,omitempty"`
 	// Metadata is the metadata related to the transaction, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the transaction is in sandbox environment
@@ -154,10 +168,15 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.Refunds = c.Refunds
 	s.Name = c.Name
 	s.Amount = c.Amount
+	s.AmountLocal = c.AmountLocal
 	s.AuthorizedAmount = c.AuthorizedAmount
+	s.AuthorizedAmountLocal = c.AuthorizedAmountLocal
 	s.CapturedAmount = c.CapturedAmount
+	s.CapturedAmountLocal = c.CapturedAmountLocal
 	s.RefundedAmount = c.RefundedAmount
+	s.RefundedAmountLocal = c.RefundedAmountLocal
 	s.AvailableAmount = c.AvailableAmount
+	s.AvailableAmountLocal = c.AvailableAmountLocal
 	s.Currency = c.Currency
 	s.ErrorCode = c.ErrorCode
 	s.ThreeDSStatus = c.ThreeDSStatus
@@ -167,6 +186,8 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.ProcessoutFee = c.ProcessoutFee
 	s.EstimatedFee = c.EstimatedFee
 	s.GatewayFee = c.GatewayFee
+	s.GatewayFeeLocal = c.GatewayFeeLocal
+	s.CurrencyFee = c.CurrencyFee
 	s.Metadata = c.Metadata
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt

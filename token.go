@@ -93,6 +93,82 @@ func (s *Token) Prefill(c *Token) *Token {
 	return s
 }
 
+// TokenVerifyParameters is the structure representing the
+// additional parameters used to call Token.Verify
+type TokenVerifyParameters struct {
+	*Options
+	*Token
+}
+
+// Verify allows you to verify a customer token's card is valid.
+func (s Token) Verify(options ...TokenVerifyParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewToken() method to create a new Token object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := TokenVerifyParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Token)
+
+	type Response struct {
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "/customers/" + url.QueryEscape(*s.CustomerID) + "/tokens/" + url.QueryEscape(*s.ID) + "/verify"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
+}
+
 // TokenFetchCustomerTokensParameters is the structure representing the
 // additional parameters used to call Token.FetchCustomerTokens
 type TokenFetchCustomerTokensParameters struct {
@@ -280,10 +356,12 @@ func (s Token) Find(customerID, tokenID string, options ...TokenFindParameters) 
 type TokenCreateParameters struct {
 	*Options
 	*Token
-	Source     interface{} `json:"source"`
-	Settings   interface{} `json:"settings"`
-	Target     interface{} `json:"target"`
-	SetDefault interface{} `json:"set_default"`
+	Source         interface{} `json:"source"`
+	Settings       interface{} `json:"settings"`
+	Target         interface{} `json:"target"`
+	Verify         interface{} `json:"verify"`
+	VerifyMetadata interface{} `json:"verify_metadata"`
+	SetDefault     interface{} `json:"set_default"`
 }
 
 // Create allows you to create a new token for the given customer ID.
@@ -314,18 +392,22 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 
 	data := struct {
 		*Options
-		Metadata   interface{} `json:"metadata"`
-		Source     interface{} `json:"source"`
-		Settings   interface{} `json:"settings"`
-		Target     interface{} `json:"target"`
-		SetDefault interface{} `json:"set_default"`
+		Metadata       interface{} `json:"metadata"`
+		Source         interface{} `json:"source"`
+		Settings       interface{} `json:"settings"`
+		Target         interface{} `json:"target"`
+		Verify         interface{} `json:"verify"`
+		VerifyMetadata interface{} `json:"verify_metadata"`
+		SetDefault     interface{} `json:"set_default"`
 	}{
-		Options:    opt.Options,
-		Metadata:   s.Metadata,
-		Source:     opt.Source,
-		Settings:   opt.Settings,
-		Target:     opt.Target,
-		SetDefault: opt.SetDefault,
+		Options:        opt.Options,
+		Metadata:       s.Metadata,
+		Source:         opt.Source,
+		Settings:       opt.Settings,
+		Target:         opt.Target,
+		Verify:         opt.Verify,
+		VerifyMetadata: opt.VerifyMetadata,
+		SetDefault:     opt.SetDefault,
 	}
 
 	body, err := json.Marshal(data)

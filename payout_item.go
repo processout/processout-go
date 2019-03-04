@@ -30,10 +30,12 @@ type PayoutItem struct {
 	TransactionID *string `json:"transaction_id,omitempty"`
 	// Type is the type of the payout item
 	Type *string `json:"type,omitempty"`
-	// GatewayID is the iD of the payout item from the payment gateway
-	GatewayID *string `json:"gateway_id,omitempty"`
-	// Fee is the fee linked to this specific payout item. Can be null or 0.
-	Fee *string `json:"fee,omitempty"`
+	// GatewayResourceID is the iD of the payout item from the payment gateway
+	GatewayResourceID *string `json:"gateway_resource_id,omitempty"`
+	// Amount is the amount related to this specific payout item. Can be null or 0.
+	Amount *string `json:"amount,omitempty"`
+	// Fees is the fee linked to this specific payout item. Can be null or 0.
+	Fees *string `json:"fees,omitempty"`
 	// Metadata is the metadata related to the payout item, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// CreatedAt is the date at which the payout item was created
@@ -85,8 +87,9 @@ func (s *PayoutItem) Prefill(c *PayoutItem) *PayoutItem {
 	s.Transaction = c.Transaction
 	s.TransactionID = c.TransactionID
 	s.Type = c.Type
-	s.GatewayID = c.GatewayID
-	s.Fee = c.Fee
+	s.GatewayResourceID = c.GatewayResourceID
+	s.Amount = c.Amount
+	s.Fees = c.Fees
 	s.Metadata = c.Metadata
 	s.CreatedAt = c.CreatedAt
 

@@ -63,7 +63,7 @@ func (i *Iterator) Next() bool {
 	}
 
 	i.hasMoreNext = hasMore
-	i.pos = 0
+	i.pos = -1
 	return i.Next()
 }
 

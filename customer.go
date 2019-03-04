@@ -58,14 +58,6 @@ type Customer struct {
 	PhoneNumber *string `json:"phone_number,omitempty"`
 	// LegalDocument is the legal document number
 	LegalDocument *string `json:"legal_document,omitempty"`
-	// TransactionsCount is the number of transactions processed by the customer
-	TransactionsCount *int `json:"transactions_count,omitempty"`
-	// SubscriptionsCount is the number of active subscriptions linked to the customer
-	SubscriptionsCount *int `json:"subscriptions_count,omitempty"`
-	// MrrLocal is the mRR provided by the customer, converted to the currency of the Project
-	MrrLocal *float64 `json:"mrr_local,omitempty"`
-	// TotalRevenueLocal is the total revenue provided by the customer, converted to the currency of the Project
-	TotalRevenueLocal *float64 `json:"total_revenue_local,omitempty"`
 	// Metadata is the metadata related to the customer, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the customer is in sandbox environment
@@ -130,10 +122,6 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.IpAddress = c.IpAddress
 	s.PhoneNumber = c.PhoneNumber
 	s.LegalDocument = c.LegalDocument
-	s.TransactionsCount = c.TransactionsCount
-	s.SubscriptionsCount = c.SubscriptionsCount
-	s.MrrLocal = c.MrrLocal
-	s.TotalRevenueLocal = c.TotalRevenueLocal
 	s.Metadata = c.Metadata
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
@@ -243,6 +231,82 @@ func (s Customer) FetchSubscriptions(options ...CustomerFetchSubscriptionsParame
 		hasMorePrev: false,
 	}
 	return subscriptionsIterator, nil
+}
+
+// CustomerVerifyTokenParameters is the structure representing the
+// additional parameters used to call Customer.VerifyToken
+type CustomerVerifyTokenParameters struct {
+	*Options
+	*Customer
+}
+
+// VerifyToken allows you to verify a customer token's card is valid.
+func (s Customer) VerifyToken(tokenID string, options ...CustomerVerifyTokenParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewCustomer() method to create a new Customer object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := CustomerVerifyTokenParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Customer)
+
+	type Response struct {
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "/customers/" + url.QueryEscape(*s.ID) + "/tokens/" + url.QueryEscape(tokenID) + "/verify"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
 }
 
 // CustomerFetchTokensParameters is the structure representing the
