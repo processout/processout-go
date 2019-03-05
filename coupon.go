@@ -153,6 +153,9 @@ func (s Coupon) All(options ...CouponAllParameters) (*Iterator, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -272,6 +275,9 @@ func (s Coupon) Create(options ...CouponCreateParameters) (*Coupon, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -350,6 +356,9 @@ func (s Coupon) Find(couponID string, options ...CouponFindParameters) (*Coupon,
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -430,6 +439,9 @@ func (s Coupon) Save(options ...CouponSaveParameters) (*Coupon, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -507,6 +519,9 @@ func (s Coupon) Delete(options ...CouponDeleteParameters) error {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return errors.New(err, "", "")

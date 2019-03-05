@@ -1,6 +1,7 @@
 package processout
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -59,7 +60,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.14.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.15.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -71,6 +72,16 @@ func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 		req.Header.Set("Disable-Logging", "true")
 	}
 	req.SetBasicAuth(client.projectID, client.projectSecret)
+
+	v := req.URL.Query()
+	v.Set("filter", opt.Filter)
+	v.Set("limit", fmt.Sprint(opt.Limit))
+	v.Set("end_before", opt.EndBefore)
+	v.Set("start_after", opt.StartAfter)
+	for _, e := range opt.Expand {
+		v.Add("expand[]", e)
+	}
+	req.URL.RawQuery = v.Encode()
 }
 
 // NewActivity creates a new Activity object

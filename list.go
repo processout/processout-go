@@ -1,8 +1,6 @@
 package processout
 
 import (
-	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 )
@@ -111,15 +109,10 @@ func (i *Iterator) PrevPage() (bool, error) {
 }
 
 func (i *Iterator) fetchPage() (bool, error) {
-	body, err := json.Marshal(i.options)
-	if err != nil {
-		return false, err
-	}
-
 	req, err := http.NewRequest(
 		"GET",
 		Host+i.path,
-		bytes.NewReader(body),
+		nil,
 	)
 	if err != nil {
 		return false, err

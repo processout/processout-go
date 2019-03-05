@@ -149,6 +149,9 @@ func (s Project) RegeneratePrivateKey(options ...ProjectRegeneratePrivateKeyPara
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -227,6 +230,9 @@ func (s Project) Fetch(options ...ProjectFetchParameters) (*Project, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -305,6 +311,9 @@ func (s Project) Save(options ...ProjectSaveParameters) (*Project, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -382,6 +391,9 @@ func (s Project) Delete(options ...ProjectDeleteParameters) error {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return errors.New(err, "", "")
@@ -460,6 +472,9 @@ func (s Project) FetchSupervised(options ...ProjectFetchSupervisedParameters) (*
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -574,6 +589,9 @@ func (s Project) CreateSupervised(options ...ProjectCreateSupervisedParameters) 
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")

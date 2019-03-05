@@ -214,6 +214,9 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -306,6 +309,9 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -384,6 +390,9 @@ func (s Invoice) FetchCustomer(options ...InvoiceFetchCustomerParameters) (*Cust
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -464,6 +473,9 @@ func (s Invoice) AssignCustomer(customerID string, options ...InvoiceAssignCusto
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -544,6 +556,9 @@ func (s Invoice) InitiateThreeDS(source string, options ...InvoiceInitiateThreeD
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -622,6 +637,9 @@ func (s Invoice) FetchTransaction(options ...InvoiceFetchTransactionParameters) 
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -700,6 +718,9 @@ func (s Invoice) Void(options ...InvoiceVoidParameters) (*Transaction, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -779,6 +800,9 @@ func (s Invoice) All(options ...InvoiceAllParameters) (*Iterator, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -908,6 +932,9 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -986,6 +1013,9 @@ func (s Invoice) Find(invoiceID string, options ...InvoiceFindParameters) (*Invo
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")

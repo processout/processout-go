@@ -198,6 +198,9 @@ func (s Card) All(options ...CardAllParameters) (*Iterator, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -301,6 +304,9 @@ func (s Card) Find(cardID string, options ...CardFindParameters) (*Card, error) 
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")

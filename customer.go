@@ -192,6 +192,9 @@ func (s Customer) FetchSubscriptions(options ...CustomerFetchSubscriptionsParame
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -294,6 +297,9 @@ func (s Customer) VerifyToken(tokenID string, options ...CustomerVerifyTokenPara
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return errors.New(err, "", "")
@@ -372,6 +378,9 @@ func (s Customer) FetchTokens(options ...CustomerFetchTokensParameters) (*Iterat
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -475,6 +484,9 @@ func (s Customer) FindToken(tokenID string, options ...CustomerFindTokenParamete
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -552,6 +564,9 @@ func (s Customer) DeleteToken(tokenID string, options ...CustomerDeleteTokenPara
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return errors.New(err, "", "")
@@ -630,6 +645,9 @@ func (s Customer) FetchTransactions(options ...CustomerFetchTransactionsParamete
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -734,6 +752,9 @@ func (s Customer) All(options ...CustomerAllParameters) (*Iterator, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -867,6 +888,9 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -945,6 +969,9 @@ func (s Customer) Find(customerID string, options ...CustomerFindParameters) (*C
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -1053,6 +1080,9 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return nil, errors.New(err, "", "")
@@ -1130,6 +1160,9 @@ func (s Customer) Delete(options ...CustomerDeleteParameters) error {
 	}
 	payload := &Response{}
 	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
 		return errors.New(err, "", "")

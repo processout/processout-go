@@ -178,9 +178,19 @@ func TestPaginateCustomersNext(t *testing.T) {
 			Limit: 10,
 		},
 	})
+
+	seenIDs := []string{}
 	i := 0
 	for custs.Next() {
 		i++
+
+		cust := custs.Get().(*Customer)
+		for _, s := range seenIDs {
+			if s == *cust.ID {
+				t.Fatalf("the customer with ID %s was already found in last iteration", s)
+			}
+		}
+		seenIDs = append(seenIDs, *cust.ID)
 
 		if i > 11 {
 			break
@@ -188,10 +198,10 @@ func TestPaginateCustomersNext(t *testing.T) {
 	}
 
 	if i < 11 {
-		t.Errorf("The iteration count should have been greater than 10")
+		t.Errorf("the iteration count should have been greater than 10")
 	}
 	if err := custs.Error(); err != nil {
-		t.Errorf("There shouldn't have been any error, but got %s", err.Error())
+		t.Errorf("there shouldn't have been any error, but got %s", err.Error())
 	}
 }
 
