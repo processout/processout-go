@@ -36,8 +36,8 @@ type Webhook struct {
 	ResponseHeaders *string `json:"response_headers,omitempty"`
 	// ResponseTimeMs is the the time it took for the webhook to send its payload
 	ResponseTimeMs *int `json:"response_time_ms,omitempty"`
-	// Status is the the status of the webhook. 0: pending, 1: success, 2: error
-	Status *int `json:"status,omitempty"`
+	// Status is the the status of the webhook. Either delivered or failed
+	Status *string `json:"status,omitempty"`
 	// CreatedAt is the date at which the webhook was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// ReleaseAt is the date at webhook will be/is released

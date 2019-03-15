@@ -846,6 +846,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		PhoneNumber   interface{} `json:"phone_number"`
 		LegalDocument interface{} `json:"legal_document"`
 		Metadata      interface{} `json:"metadata"`
+		ID            interface{} `json:"id"`
 	}{
 		Options:       opt.Options,
 		Balance:       s.Balance,
@@ -863,6 +864,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		PhoneNumber:   s.PhoneNumber,
 		LegalDocument: s.LegalDocument,
 		Metadata:      s.Metadata,
+		ID:            s.ID,
 	}
 
 	body, err := json.Marshal(data)

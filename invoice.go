@@ -62,6 +62,8 @@ type Invoice struct {
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the payment was canceled
 	CancelURL *string `json:"cancel_url,omitempty"`
+	// WebhookURL is the custom webhook URL where updates about this specific payment will be sent, on top of your project-wide URLs
+	WebhookURL *string `json:"webhook_url,omitempty"`
 	// Sandbox is the define whether or not the invoice is in sandbox environment
 	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the invoice was created
@@ -135,6 +137,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Metadata = c.Metadata
 	s.ReturnURL = c.ReturnURL
 	s.CancelURL = c.CancelURL
+	s.WebhookURL = c.WebhookURL
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
 
@@ -892,6 +895,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		StatementDescriptorURL     interface{} `json:"statement_descriptor_url"`
 		ReturnURL                  interface{} `json:"return_url"`
 		CancelURL                  interface{} `json:"cancel_url"`
+		WebhookURL                 interface{} `json:"webhook_url"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
@@ -907,6 +911,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		StatementDescriptorURL:     s.StatementDescriptorURL,
 		ReturnURL:                  s.ReturnURL,
 		CancelURL:                  s.CancelURL,
+		WebhookURL:                 s.WebhookURL,
 	}
 
 	body, err := json.Marshal(data)
