@@ -24,6 +24,10 @@ type Card struct {
 	Token *Token `json:"token,omitempty"`
 	// Scheme is the scheme of the card, such as visa or mastercard
 	Scheme *string `json:"scheme,omitempty"`
+	// CoScheme is the co-scheme of the card, such as carte bancaire
+	CoScheme *string `json:"co_scheme,omitempty"`
+	// PreferredScheme is the customer preferred scheme, such as carte bancaire vs visa
+	PreferredScheme *string `json:"preferred_scheme,omitempty"`
 	// Type is the type of the card (Credit, Debit, ...)
 	Type *string `json:"type,omitempty"`
 	// BankName is the name of the bank of the card
@@ -109,6 +113,8 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.ProjectID = c.ProjectID
 	s.Token = c.Token
 	s.Scheme = c.Scheme
+	s.CoScheme = c.CoScheme
+	s.PreferredScheme = c.PreferredScheme
 	s.Type = c.Type
 	s.BankName = c.BankName
 	s.Brand = c.Brand

@@ -26,10 +26,6 @@ type GatewayConfiguration struct {
 	GatewayID *int `json:"gateway_id,omitempty"`
 	// Name is the name of the gateway configuration
 	Name *string `json:"name,omitempty"`
-	// FeeFixed is the fixed fee of the gateway configuration, if specified
-	FeeFixed *float64 `json:"fee_fixed,omitempty"`
-	// FeePercentage is the percentage fee of the gateway configuration, if specified
-	FeePercentage *float64 `json:"fee_percentage,omitempty"`
 	// DefaultCurrency is the default currency of the gateway configuration
 	DefaultCurrency *string `json:"default_currency,omitempty"`
 	// Enabled is the define whether or not the gateway configuration is enabled
@@ -82,8 +78,6 @@ func (s *GatewayConfiguration) Prefill(c *GatewayConfiguration) *GatewayConfigur
 	s.Gateway = c.Gateway
 	s.GatewayID = c.GatewayID
 	s.Name = c.Name
-	s.FeeFixed = c.FeeFixed
-	s.FeePercentage = c.FeePercentage
 	s.DefaultCurrency = c.DefaultCurrency
 	s.Enabled = c.Enabled
 	s.PublicKeys = c.PublicKeys
@@ -286,7 +280,8 @@ func (s GatewayConfiguration) Find(configurationID string, options ...GatewayCon
 type GatewayConfigurationSaveParameters struct {
 	*Options
 	*GatewayConfiguration
-	Settings interface{} `json:"settings"`
+	Settings           interface{} `json:"settings"`
+	SubAccountsEnabled interface{} `json:"sub_accounts_enabled"`
 }
 
 // Save allows you to save the updated gateway configuration attributes and settings.
@@ -317,22 +312,20 @@ func (s GatewayConfiguration) Save(options ...GatewayConfigurationSaveParameters
 
 	data := struct {
 		*Options
-		ID              interface{} `json:"id"`
-		Name            interface{} `json:"name"`
-		Enabled         interface{} `json:"enabled"`
-		FeeFixed        interface{} `json:"fee_fixed"`
-		FeePercentage   interface{} `json:"fee_percentage"`
-		DefaultCurrency interface{} `json:"default_currency"`
-		Settings        interface{} `json:"settings"`
+		ID                 interface{} `json:"id"`
+		Name               interface{} `json:"name"`
+		Enabled            interface{} `json:"enabled"`
+		DefaultCurrency    interface{} `json:"default_currency"`
+		Settings           interface{} `json:"settings"`
+		SubAccountsEnabled interface{} `json:"sub_accounts_enabled"`
 	}{
-		Options:         opt.Options,
-		ID:              s.ID,
-		Name:            s.Name,
-		Enabled:         s.Enabled,
-		FeeFixed:        s.FeeFixed,
-		FeePercentage:   s.FeePercentage,
-		DefaultCurrency: s.DefaultCurrency,
-		Settings:        opt.Settings,
+		Options:            opt.Options,
+		ID:                 s.ID,
+		Name:               s.Name,
+		Enabled:            s.Enabled,
+		DefaultCurrency:    s.DefaultCurrency,
+		Settings:           opt.Settings,
+		SubAccountsEnabled: opt.SubAccountsEnabled,
 	}
 
 	body, err := json.Marshal(data)
@@ -461,7 +454,8 @@ func (s GatewayConfiguration) Delete(options ...GatewayConfigurationDeleteParame
 type GatewayConfigurationCreateParameters struct {
 	*Options
 	*GatewayConfiguration
-	Settings interface{} `json:"settings"`
+	Settings           interface{} `json:"settings"`
+	SubAccountsEnabled interface{} `json:"sub_accounts_enabled"`
 }
 
 // Create allows you to create a new gateway configuration.
@@ -492,22 +486,20 @@ func (s GatewayConfiguration) Create(gatewayName string, options ...GatewayConfi
 
 	data := struct {
 		*Options
-		ID              interface{} `json:"id"`
-		Name            interface{} `json:"name"`
-		Enabled         interface{} `json:"enabled"`
-		FeeFixed        interface{} `json:"fee_fixed"`
-		FeePercentage   interface{} `json:"fee_percentage"`
-		DefaultCurrency interface{} `json:"default_currency"`
-		Settings        interface{} `json:"settings"`
+		ID                 interface{} `json:"id"`
+		Name               interface{} `json:"name"`
+		Enabled            interface{} `json:"enabled"`
+		DefaultCurrency    interface{} `json:"default_currency"`
+		Settings           interface{} `json:"settings"`
+		SubAccountsEnabled interface{} `json:"sub_accounts_enabled"`
 	}{
-		Options:         opt.Options,
-		ID:              s.ID,
-		Name:            s.Name,
-		Enabled:         s.Enabled,
-		FeeFixed:        s.FeeFixed,
-		FeePercentage:   s.FeePercentage,
-		DefaultCurrency: s.DefaultCurrency,
-		Settings:        opt.Settings,
+		Options:            opt.Options,
+		ID:                 s.ID,
+		Name:               s.Name,
+		Enabled:            s.Enabled,
+		DefaultCurrency:    s.DefaultCurrency,
+		Settings:           opt.Settings,
+		SubAccountsEnabled: opt.SubAccountsEnabled,
 	}
 
 	body, err := json.Marshal(data)

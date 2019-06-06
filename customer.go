@@ -58,6 +58,10 @@ type Customer struct {
 	PhoneNumber *string `json:"phone_number,omitempty"`
 	// LegalDocument is the legal document number
 	LegalDocument *string `json:"legal_document,omitempty"`
+	// Sex is the sex of the customer
+	Sex *string `json:"sex,omitempty"`
+	// IsBusiness is the define whether or not the customer is a business
+	IsBusiness *bool `json:"is_business,omitempty"`
 	// Metadata is the metadata related to the customer, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the customer is in sandbox environment
@@ -122,6 +126,8 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.IpAddress = c.IpAddress
 	s.PhoneNumber = c.PhoneNumber
 	s.LegalDocument = c.LegalDocument
+	s.Sex = c.Sex
+	s.IsBusiness = c.IsBusiness
 	s.Metadata = c.Metadata
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
@@ -845,6 +851,8 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		IpAddress     interface{} `json:"ip_address"`
 		PhoneNumber   interface{} `json:"phone_number"`
 		LegalDocument interface{} `json:"legal_document"`
+		IsBusiness    interface{} `json:"is_business"`
+		Sex           interface{} `json:"sex"`
 		Metadata      interface{} `json:"metadata"`
 		ID            interface{} `json:"id"`
 	}{
@@ -863,6 +871,8 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		IpAddress:     s.IpAddress,
 		PhoneNumber:   s.PhoneNumber,
 		LegalDocument: s.LegalDocument,
+		IsBusiness:    s.IsBusiness,
+		Sex:           s.Sex,
 		Metadata:      s.Metadata,
 		ID:            s.ID,
 	}
@@ -1039,6 +1049,8 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		IpAddress      interface{} `json:"ip_address"`
 		PhoneNumber    interface{} `json:"phone_number"`
 		LegalDocument  interface{} `json:"legal_document"`
+		IsBusiness     interface{} `json:"is_business"`
+		Sex            interface{} `json:"sex"`
 		Metadata       interface{} `json:"metadata"`
 	}{
 		Options:        opt.Options,
@@ -1056,6 +1068,8 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		IpAddress:      s.IpAddress,
 		PhoneNumber:    s.PhoneNumber,
 		LegalDocument:  s.LegalDocument,
+		IsBusiness:     s.IsBusiness,
+		Sex:            s.Sex,
 		Metadata:       s.Metadata,
 	}
 

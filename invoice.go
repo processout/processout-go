@@ -68,6 +68,12 @@ type Invoice struct {
 	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the invoice was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// Risk is the risk information
+	Risk *InvoiceRisk `json:"risk,omitempty"`
+	// Shipping is the shipping information
+	Shipping *InvoiceShipping `json:"shipping,omitempty"`
+	// Device is the device information
+	Device *InvoiceDevice `json:"device,omitempty"`
 
 	client *ProcessOut
 }
@@ -102,6 +108,15 @@ func (s *Invoice) SetClient(c *ProcessOut) *Invoice {
 	}
 	if s.Token != nil {
 		s.Token.SetClient(c)
+	}
+	if s.Risk != nil {
+		s.Risk.SetClient(c)
+	}
+	if s.Shipping != nil {
+		s.Shipping.SetClient(c)
+	}
+	if s.Device != nil {
+		s.Device.SetClient(c)
 	}
 
 	return s
@@ -140,6 +155,9 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.WebhookURL = c.WebhookURL
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
+	s.Risk = c.Risk
+	s.Shipping = c.Shipping
+	s.Device = c.Device
 
 	return s
 }
@@ -152,6 +170,8 @@ type InvoiceAuthorizeParameters struct {
 	Synchronous             interface{} `json:"synchronous"`
 	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 	CaptureAmount           interface{} `json:"capture_amount"`
+	EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
+	AutoCaptureAt           interface{} `json:"auto_capture_at"`
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
@@ -185,12 +205,16 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		Synchronous             interface{} `json:"synchronous"`
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 		CaptureAmount           interface{} `json:"capture_amount"`
+		EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
+		AutoCaptureAt           interface{} `json:"auto_capture_at"`
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
 		Synchronous:             opt.Synchronous,
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
 		CaptureAmount:           opt.CaptureAmount,
+		EnableThreeDS2:          opt.EnableThreeDS2,
+		AutoCaptureAt:           opt.AutoCaptureAt,
 		Source:                  source,
 	}
 
@@ -245,6 +269,8 @@ type InvoiceCaptureParameters struct {
 	Synchronous             interface{} `json:"synchronous"`
 	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 	CaptureAmount           interface{} `json:"capture_amount"`
+	AutoCaptureAt           interface{} `json:"auto_capture_at"`
+	EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
@@ -279,6 +305,8 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		Synchronous             interface{} `json:"synchronous"`
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 		CaptureAmount           interface{} `json:"capture_amount"`
+		AutoCaptureAt           interface{} `json:"auto_capture_at"`
+		EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
@@ -286,6 +314,8 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		Synchronous:             opt.Synchronous,
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
 		CaptureAmount:           opt.CaptureAmount,
+		AutoCaptureAt:           opt.AutoCaptureAt,
+		EnableThreeDS2:          opt.EnableThreeDS2,
 		Source:                  source,
 	}
 
@@ -500,6 +530,7 @@ func (s Invoice) AssignCustomer(customerID string, options ...InvoiceAssignCusto
 type InvoiceInitiateThreeDSParameters struct {
 	*Options
 	*Invoice
+	EnableThreeDS2 interface{} `json:"enable_three_d_s_2"`
 }
 
 // InitiateThreeDS allows you to initiate a 3-D Secure authentication
@@ -530,10 +561,12 @@ func (s Invoice) InitiateThreeDS(source string, options ...InvoiceInitiateThreeD
 
 	data := struct {
 		*Options
-		Source interface{} `json:"source"`
+		EnableThreeDS2 interface{} `json:"enable_three_d_s_2"`
+		Source         interface{} `json:"source"`
 	}{
-		Options: opt.Options,
-		Source:  source,
+		Options:        opt.Options,
+		EnableThreeDS2: opt.EnableThreeDS2,
+		Source:         source,
 	}
 
 	body, err := json.Marshal(data)
@@ -896,6 +929,9 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		ReturnURL                  interface{} `json:"return_url"`
 		CancelURL                  interface{} `json:"cancel_url"`
 		WebhookURL                 interface{} `json:"webhook_url"`
+		Risk                       interface{} `json:"risk"`
+		Shipping                   interface{} `json:"shipping"`
+		Device                     interface{} `json:"device"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
@@ -912,6 +948,9 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		ReturnURL:                  s.ReturnURL,
 		CancelURL:                  s.CancelURL,
 		WebhookURL:                 s.WebhookURL,
+		Risk:                       s.Risk,
+		Shipping:                   s.Shipping,
+		Device:                     s.Device,
 	}
 
 	body, err := json.Marshal(data)

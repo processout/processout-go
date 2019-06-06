@@ -3,6 +3,7 @@ package processout
 import (
 	"fmt"
 	"net/http"
+	"time"
 )
 
 var (
@@ -13,7 +14,9 @@ var (
 	Host = "https://api.processout.com"
 
 	// DefaultClient sets the HTTP default client used for ProcessOut clients
-	DefaultClient = http.DefaultClient
+	DefaultClient = &http.Client{
+		Timeout: time.Second * 95,
+	}
 )
 
 // ProcessOut wraps all the components of the package in a
@@ -60,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.16.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.17.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -301,6 +304,51 @@ func (c *ProcessOut) NewInvoice(prefill ...*Invoice) *Invoice {
 	}
 	if len(prefill) == 0 {
 		return &Invoice{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewInvoiceRisk creates a new InvoiceRisk object
+func (c *ProcessOut) NewInvoiceRisk(prefill ...*InvoiceRisk) *InvoiceRisk {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the InvoiceRisk, or none.")
+	}
+	if len(prefill) == 0 {
+		return &InvoiceRisk{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewInvoiceDevice creates a new InvoiceDevice object
+func (c *ProcessOut) NewInvoiceDevice(prefill ...*InvoiceDevice) *InvoiceDevice {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the InvoiceDevice, or none.")
+	}
+	if len(prefill) == 0 {
+		return &InvoiceDevice{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewInvoiceShipping creates a new InvoiceShipping object
+func (c *ProcessOut) NewInvoiceShipping(prefill ...*InvoiceShipping) *InvoiceShipping {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the InvoiceShipping, or none.")
+	}
+	if len(prefill) == 0 {
+		return &InvoiceShipping{
 			client: c,
 		}
 	}

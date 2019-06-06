@@ -21,7 +21,7 @@ type Transaction struct {
 	// ProjectID is the iD of the project to which the transaction belongs
 	ProjectID *string `json:"project_id,omitempty"`
 	// Invoice is the invoice used to generate this transaction, if any
-	Invoice *Customer `json:"invoice,omitempty"`
+	Invoice *Invoice `json:"invoice,omitempty"`
 	// InvoiceID is the iD of the invoice used to generate this transaction, if any
 	InvoiceID *string `json:"invoice_id,omitempty"`
 	// Customer is the customer that was linked to this transaction, if any
@@ -74,6 +74,8 @@ type Transaction struct {
 	Currency *string `json:"currency,omitempty"`
 	// ErrorCode is the error code of the transaction, when the payment has failed
 	ErrorCode *string `json:"error_code,omitempty"`
+	// GatewayName is the name of the last gateway the transaction was attempted on (successfully or not). Use the operations list to get the full transaction's history
+	GatewayName *string `json:"gateway_name,omitempty"`
 	// ThreeDSStatus is the status of the potential 3-D Secure authentication
 	ThreeDSStatus *string `json:"three_d_s_status,omitempty"`
 	// Status is the status of the transaction
@@ -82,6 +84,16 @@ type Transaction struct {
 	Authorized *bool `json:"authorized,omitempty"`
 	// Captured is the whether the transaction was captured or not
 	Captured *bool `json:"captured,omitempty"`
+	// Voided is the whether the transaction was voided or not
+	Voided *bool `json:"voided,omitempty"`
+	// Refunded is the whether the transaction was refunded or not
+	Refunded *bool `json:"refunded,omitempty"`
+	// Chargedback is the whether the transaction was charged back or not
+	Chargedback *bool `json:"chargedback,omitempty"`
+	// ReceivedFraudNotification is the whether the transaction received a fraud notification event or not
+	ReceivedFraudNotification *bool `json:"received_fraud_notification,omitempty"`
+	// ReceivedRetrievalRequest is the whether the transaction received a retrieval request event or not
+	ReceivedRetrievalRequest *bool `json:"received_retrieval_request,omitempty"`
 	// ProcessoutFee is the processOut fee applied on the transaction
 	ProcessoutFee *string `json:"processout_fee,omitempty"`
 	// EstimatedFee is the gateway fee estimated before processing the payment
@@ -98,6 +110,10 @@ type Transaction struct {
 	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the transaction was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// ChargedbackAt is the date at which the transaction was charged back
+	ChargedbackAt *time.Time `json:"chargedback_at,omitempty"`
+	// RefundedAt is the date at which the transaction was refunded
+	RefundedAt *time.Time `json:"refunded_at,omitempty"`
 
 	client *ProcessOut
 }
@@ -179,10 +195,16 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.AvailableAmountLocal = c.AvailableAmountLocal
 	s.Currency = c.Currency
 	s.ErrorCode = c.ErrorCode
+	s.GatewayName = c.GatewayName
 	s.ThreeDSStatus = c.ThreeDSStatus
 	s.Status = c.Status
 	s.Authorized = c.Authorized
 	s.Captured = c.Captured
+	s.Voided = c.Voided
+	s.Refunded = c.Refunded
+	s.Chargedback = c.Chargedback
+	s.ReceivedFraudNotification = c.ReceivedFraudNotification
+	s.ReceivedRetrievalRequest = c.ReceivedRetrievalRequest
 	s.ProcessoutFee = c.ProcessoutFee
 	s.EstimatedFee = c.EstimatedFee
 	s.GatewayFee = c.GatewayFee
@@ -191,6 +213,8 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.Metadata = c.Metadata
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
+	s.ChargedbackAt = c.ChargedbackAt
+	s.RefundedAt = c.RefundedAt
 
 	return s
 }

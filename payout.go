@@ -50,6 +50,8 @@ type Payout struct {
 	Adjustments *string `json:"adjustments,omitempty"`
 	// Reserve is the reserve kept on the payout, if available
 	Reserve *string `json:"reserve,omitempty"`
+	// SettledAt is the date at which the payout was settled
+	SettledAt *time.Time `json:"settled_at,omitempty"`
 	// CreatedAt is the date at which the payout was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 
@@ -103,6 +105,7 @@ func (s *Payout) Prefill(c *Payout) *Payout {
 	s.Fees = c.Fees
 	s.Adjustments = c.Adjustments
 	s.Reserve = c.Reserve
+	s.SettledAt = c.SettledAt
 	s.CreatedAt = c.CreatedAt
 
 	return s
