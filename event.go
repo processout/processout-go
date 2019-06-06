@@ -117,7 +117,7 @@ func (s Event) FetchWebhooks(options ...EventFetchWebhooksParameters) (*Iterator
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/events/ev_" + url.QueryEscape(*s.ID) + "/webhooks"
+	path := "/events/" + url.QueryEscape(*s.ID) + "/webhooks"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -330,7 +330,7 @@ func (s Event) Find(eventID string, options ...EventFindParameters) (*Event, err
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/events/ev_" + url.QueryEscape(eventID) + ""
+	path := "/events/" + url.QueryEscape(eventID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
