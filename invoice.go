@@ -46,6 +46,8 @@ type Invoice struct {
 	Amount *string `json:"amount,omitempty"`
 	// Currency is the currency of the invoice
 	Currency *string `json:"currency,omitempty"`
+	// MerchantInitiatorType is the type of the transaction initiated by the merchant (off-session). Can be either one-off or recurring, depending on the nature of the merchant initiated transaction.
+	MerchantInitiatorType *string `json:"merchant_initiator_type,omitempty"`
 	// StatementDescriptor is the statement to be shown on the bank statement of your customer
 	StatementDescriptor *string `json:"statement_descriptor,omitempty"`
 	// StatementDescriptorPhone is the support phone number shown on the customer's bank statement
@@ -144,6 +146,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Name = c.Name
 	s.Amount = c.Amount
 	s.Currency = c.Currency
+	s.MerchantInitiatorType = c.MerchantInitiatorType
 	s.StatementDescriptor = c.StatementDescriptor
 	s.StatementDescriptorPhone = c.StatementDescriptorPhone
 	s.StatementDescriptorCity = c.StatementDescriptorCity
@@ -921,6 +924,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Currency                   interface{} `json:"currency"`
 		Metadata                   interface{} `json:"metadata"`
 		Details                    interface{} `json:"details"`
+		MerchantInitiatorType      interface{} `json:"merchant_initiator_type"`
 		StatementDescriptor        interface{} `json:"statement_descriptor"`
 		StatementDescriptorPhone   interface{} `json:"statement_descriptor_phone"`
 		StatementDescriptorCity    interface{} `json:"statement_descriptor_city"`
@@ -940,6 +944,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Currency:                   s.Currency,
 		Metadata:                   s.Metadata,
 		Details:                    s.Details,
+		MerchantInitiatorType:      s.MerchantInitiatorType,
 		StatementDescriptor:        s.StatementDescriptor,
 		StatementDescriptorPhone:   s.StatementDescriptorPhone,
 		StatementDescriptorCity:    s.StatementDescriptorCity,
