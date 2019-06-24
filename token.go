@@ -34,8 +34,10 @@ type Token struct {
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// IsSubscriptionOnly is the define whether or not the customer token is used on a recurring invoice
 	IsSubscriptionOnly *bool `json:"is_subscription_only,omitempty"`
-	// IsDefault is the true if the card it the default card of the customer, false otherwise
+	// IsDefault is the true if the token it the default token of the customer, false otherwise
 	IsDefault *bool `json:"is_default,omitempty"`
+	// IsChargeable is the true if the token is chargeable, false otherwise
+	IsChargeable *bool `json:"is_chargeable,omitempty"`
 	// CreatedAt is the date at which the customer token was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 
@@ -88,6 +90,7 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.Metadata = c.Metadata
 	s.IsSubscriptionOnly = c.IsSubscriptionOnly
 	s.IsDefault = c.IsDefault
+	s.IsChargeable = c.IsChargeable
 	s.CreatedAt = c.CreatedAt
 
 	return s
@@ -459,6 +462,85 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 
 	payload.Token.SetClient(s.client)
 	return payload.Token, nil
+}
+
+// TokenSaveParameters is the structure representing the
+// additional parameters used to call Token.Save
+type TokenSaveParameters struct {
+	*Options
+	*Token
+}
+
+// Save allows you to save the updated customer attributes.
+func (s Token) Save(options ...TokenSaveParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewToken() method to create a new Token object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := TokenSaveParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Token)
+
+	type Response struct {
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "/customers/" + url.QueryEscape(*s.CustomerID) + "/tokens/" + url.QueryEscape(*s.ID) + ""
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
 }
 
 // TokenDeleteParameters is the structure representing the

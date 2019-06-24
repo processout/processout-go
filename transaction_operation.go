@@ -42,6 +42,8 @@ type TransactionOperation struct {
 	GatewayOperationID *string `json:"gateway_operation_id,omitempty"`
 	// ErrorCode is the error code returned when attempting the operation, if any
 	ErrorCode *string `json:"error_code,omitempty"`
+	// GatewayData is the additionnal context saved when processing the transaction on the specific PSP
+	GatewayData *map[string]string `json:"gateway_data,omitempty"`
 	// PaymentDataThreeDSRequest is the threeDS request payment data (read-only)
 	PaymentDataThreeDSRequest *PaymentDataThreeDSRequest `json:"payment_data_three_d_s_request,omitempty"`
 	// PaymentDataThreeDSAuthentication is the 3-D Secure authentication payment data (read-only)
@@ -116,6 +118,7 @@ func (s *TransactionOperation) Prefill(c *TransactionOperation) *TransactionOper
 	s.Type = c.Type
 	s.GatewayOperationID = c.GatewayOperationID
 	s.ErrorCode = c.ErrorCode
+	s.GatewayData = c.GatewayData
 	s.PaymentDataThreeDSRequest = c.PaymentDataThreeDSRequest
 	s.PaymentDataThreeDSAuthentication = c.PaymentDataThreeDSAuthentication
 	s.PaymentDataNetworkAuthentication = c.PaymentDataNetworkAuthentication

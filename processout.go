@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.17.2")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.18.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -139,21 +139,6 @@ func (c *ProcessOut) NewAPIVersion(prefill ...*APIVersion) *APIVersion {
 	}
 	if len(prefill) == 0 {
 		return &APIVersion{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewAuthorizationRequest creates a new AuthorizationRequest object
-func (c *ProcessOut) NewAuthorizationRequest(prefill ...*AuthorizationRequest) *AuthorizationRequest {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the AuthorizationRequest, or none.")
-	}
-	if len(prefill) == 0 {
-		return &AuthorizationRequest{
 			client: c,
 		}
 	}
