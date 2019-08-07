@@ -231,8 +231,4 @@ func TestCreateSupervisedProject(t *testing.T) {
 	if err != nil {
 		t.Errorf("There shouldn't have been any error, but got %s", err.Error())
 	}
-
-	if project.PrivateKey == nil || *project.PrivateKey == "" {
-		t.Error("The project private key was empty")
-	}
 }

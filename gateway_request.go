@@ -19,7 +19,7 @@ type GatewayRequest struct {
 	Body                    string            `json:"body"`
 }
 
-const headerWhitelist = map[string]interface{}{
+var headerWhitelist = map[string]interface{}{
 	"accept":          struct{}{},
 	"accept-language": struct{}{},
 	"content-type":    struct{}{},
