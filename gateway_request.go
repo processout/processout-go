@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // GatewayRequest is the struture representing an abstracted payment
@@ -18,6 +19,14 @@ type GatewayRequest struct {
 	Body                    string            `json:"body"`
 }
 
+const headerWhitelist = map[string]interface{}{
+	"accept":          struct{}{},
+	"accept-language": struct{}{},
+	"content-type":    struct{}{},
+	"referer":         struct{}{},
+	"user-agent":      struct{}{},
+}
+
 // NewGatewayRequest creates a new GatewayRequest from the given gateway
 // configuration ID and request
 func NewGatewayRequest(gatewayConfigurationID string,
@@ -25,6 +34,9 @@ func NewGatewayRequest(gatewayConfigurationID string,
 
 	h := map[string]string{}
 	for n, v := range req.Header {
+		if _, ok := headerWhitelist[strings.ToLower(n)]; !ok {
+			continue
+		}
 		h[n] = v[0]
 	}
 
