@@ -1,8 +1,10 @@
 package processout
 
-import "testing"
-import "net/http"
-import "bytes"
+import (
+	"bytes"
+	"net/http"
+	"testing"
+)
 
 func getClient() *ProcessOut {
 	return New("test-proj_gAO1Uu0ysZJvDuUpOGPkUBeE3pGalk3x",
@@ -224,7 +226,7 @@ func TestPaginateCustomersPrev(t *testing.T) {
 func TestCreateSupervisedProject(t *testing.T) {
 	p := getClient()
 
-	project, err := p.NewProject(&Project{
+	_, err := p.NewProject(&Project{
 		Name:            String("test supervised project"),
 		DefaultCurrency: String("USD"),
 	}).CreateSupervised()
