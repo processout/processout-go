@@ -147,13 +147,13 @@ func (s Token) Verify(options ...TokenVerifyParameters) error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -228,13 +228,13 @@ func (s Token) FetchCustomerTokens(customerID string, options ...TokenFetchCusto
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -334,13 +334,13 @@ func (s Token) Find(customerID, tokenID string, options ...TokenFindParameters) 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -435,13 +435,13 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -515,13 +515,13 @@ func (s Token) Save(options ...TokenSaveParameters) error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -594,13 +594,13 @@ func (s Token) Delete(options ...TokenDeleteParameters) error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()

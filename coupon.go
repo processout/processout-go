@@ -143,13 +143,13 @@ func (s Coupon) All(options ...CouponAllParameters) (*Iterator, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -265,13 +265,13 @@ func (s Coupon) Create(options ...CouponCreateParameters) (*Coupon, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -346,13 +346,13 @@ func (s Coupon) Find(couponID string, options ...CouponFindParameters) (*Coupon,
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -429,13 +429,13 @@ func (s Coupon) Save(options ...CouponSaveParameters) (*Coupon, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -509,13 +509,13 @@ func (s Coupon) Delete(options ...CouponDeleteParameters) error {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()

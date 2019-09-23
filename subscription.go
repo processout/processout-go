@@ -218,13 +218,13 @@ func (s Subscription) FetchAddons(options ...SubscriptionFetchAddonsParameters) 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -324,13 +324,13 @@ func (s Subscription) FindAddon(addonID string, options ...SubscriptionFindAddon
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -413,13 +413,13 @@ func (s Subscription) DeleteAddon(addonID string, options ...SubscriptionDeleteA
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -493,13 +493,13 @@ func (s Subscription) FetchCustomer(options ...SubscriptionFetchCustomerParamete
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -575,13 +575,13 @@ func (s Subscription) FetchDiscounts(options ...SubscriptionFetchDiscountsParame
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -681,13 +681,13 @@ func (s Subscription) FindDiscount(discountID string, options ...SubscriptionFin
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -761,13 +761,13 @@ func (s Subscription) DeleteDiscount(discountID string, options ...SubscriptionD
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return errors.New(err, "", "")
+		return errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -842,13 +842,13 @@ func (s Subscription) FetchTransactions(options ...SubscriptionFetchTransactions
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -949,13 +949,13 @@ func (s Subscription) All(options ...SubscriptionAllParameters) (*Iterator, erro
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -1083,13 +1083,13 @@ func (s Subscription) Create(options ...SubscriptionCreateParameters) (*Subscrip
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -1164,13 +1164,13 @@ func (s Subscription) Find(subscriptionID string, options ...SubscriptionFindPar
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -1272,13 +1272,13 @@ func (s Subscription) Save(options ...SubscriptionSaveParameters) (*Subscription
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -1360,13 +1360,13 @@ func (s Subscription) Cancel(options ...SubscriptionCancelParameters) (*Subscrip
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()

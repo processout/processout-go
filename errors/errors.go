@@ -18,6 +18,19 @@ func New(err error, code, message string) error {
 	}
 }
 
+// NewNetworkError creates a new ProcessOut network error from an error
+func NewNetworkError(err error) error {
+	message := "network error"
+	if err != nil {
+		message = err.Error()
+	}
+	return &NetworkError{
+		err:     err,
+		message: message,
+		code:    "processout.network-error",
+	}
+}
+
 // NewFromResponse creates an error from a response data
 func NewFromResponse(status int, code, message string) error {
 	if status == 404 {
@@ -32,7 +45,7 @@ func NewFromResponse(status int, code, message string) error {
 			code:    code,
 		}
 	}
-	if status == 400 {
+	if status >= 400 && status < 500 {
 		return &ValidationError{
 			message: message,
 			code:    code,

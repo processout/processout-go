@@ -60,12 +60,16 @@ type Invoice struct {
 	StatementDescriptorURL *string `json:"statement_descriptor_url,omitempty"`
 	// Metadata is the metadata related to the invoice, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
+	// GatewayData is the additionnal context saved when processing the transaction on the specific PSP
+	GatewayData *map[string]string `json:"gateway_data,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon payment
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the payment was canceled
 	CancelURL *string `json:"cancel_url,omitempty"`
 	// WebhookURL is the custom webhook URL where updates about this specific payment will be sent, on top of your project-wide URLs
 	WebhookURL *string `json:"webhook_url,omitempty"`
+	// RequireBackendCapture is the define whether the invoice can be captured from the front-end or not
+	RequireBackendCapture *bool `json:"require_backend_capture,omitempty"`
 	// Sandbox is the define whether or not the invoice is in sandbox environment
 	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the invoice was created
@@ -153,9 +157,11 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.StatementDescriptorCompany = c.StatementDescriptorCompany
 	s.StatementDescriptorURL = c.StatementDescriptorURL
 	s.Metadata = c.Metadata
+	s.GatewayData = c.GatewayData
 	s.ReturnURL = c.ReturnURL
 	s.CancelURL = c.CancelURL
 	s.WebhookURL = c.WebhookURL
+	s.RequireBackendCapture = c.RequireBackendCapture
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
 	s.Risk = c.Risk
@@ -234,13 +240,13 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -335,13 +341,13 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -416,13 +422,13 @@ func (s Invoice) FetchCustomer(options ...InvoiceFetchCustomerParameters) (*Cust
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -499,13 +505,13 @@ func (s Invoice) AssignCustomer(customerID string, options ...InvoiceAssignCusto
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -585,13 +591,13 @@ func (s Invoice) InitiateThreeDS(source string, options ...InvoiceInitiateThreeD
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -666,13 +672,13 @@ func (s Invoice) FetchTransaction(options ...InvoiceFetchTransactionParameters) 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -747,13 +753,13 @@ func (s Invoice) Void(options ...InvoiceVoidParameters) (*Transaction, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -829,13 +835,13 @@ func (s Invoice) All(options ...InvoiceAllParameters) (*Iterator, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -922,6 +928,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Name                       interface{} `json:"name"`
 		Amount                     interface{} `json:"amount"`
 		Currency                   interface{} `json:"currency"`
+		GatewayData                interface{} `json:"gateway_data"`
 		Metadata                   interface{} `json:"metadata"`
 		Details                    interface{} `json:"details"`
 		MerchantInitiatorType      interface{} `json:"merchant_initiator_type"`
@@ -936,12 +943,14 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Risk                       interface{} `json:"risk"`
 		Shipping                   interface{} `json:"shipping"`
 		Device                     interface{} `json:"device"`
+		RequireBackendCapture      interface{} `json:"require_backend_capture"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
 		Name:                       s.Name,
 		Amount:                     s.Amount,
 		Currency:                   s.Currency,
+		GatewayData:                s.GatewayData,
 		Metadata:                   s.Metadata,
 		Details:                    s.Details,
 		MerchantInitiatorType:      s.MerchantInitiatorType,
@@ -956,6 +965,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Risk:                       s.Risk,
 		Shipping:                   s.Shipping,
 		Device:                     s.Device,
+		RequireBackendCapture:      s.RequireBackendCapture,
 	}
 
 	body, err := json.Marshal(data)
@@ -971,13 +981,13 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
@@ -1052,13 +1062,13 @@ func (s Invoice) Find(invoiceID string, options ...InvoiceFindParameters) (*Invo
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
