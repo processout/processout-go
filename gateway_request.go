@@ -30,7 +30,7 @@ var headerWhitelist = map[string]interface{}{
 // NewGatewayRequest creates a new GatewayRequest from the given gateway
 // configuration ID and request
 func NewGatewayRequest(gatewayConfigurationID string,
-	req *http.Request) *GatewayRequest {
+	req *http.Request, trimBodyLength ...int64) *GatewayRequest {
 
 	h := map[string]string{}
 	for n, v := range req.Header {
@@ -45,9 +45,11 @@ func NewGatewayRequest(gatewayConfigurationID string,
 		body = []byte("")
 	}
 
-	// Keep request unaltered
-	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 	req.ContentLength = int64(len(body))
+	if len(trimBodyLength) > 0 && req.ContentLength > trimBodyLength[0] {
+		body = body[:trimBodyLength[0]]
+	}
+	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
 	return &GatewayRequest{
 		GatewayConfigurationUID: gatewayConfigurationID,
