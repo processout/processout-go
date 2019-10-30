@@ -28,6 +28,10 @@ type TransactionOperation struct {
 	Card *Card `json:"card,omitempty"`
 	// CardID is the iD of the card that was used by the operation, if any
 	CardID *string `json:"card_id,omitempty"`
+	// GatewayConfiguration is the gateway configuration that was used to process the operation
+	GatewayConfiguration *GatewayConfiguration `json:"gateway_configuration,omitempty"`
+	// GatewayConfigurationID is the iD of the gateway configuration that was used to process the operation
+	GatewayConfigurationID *string `json:"gateway_configuration_id,omitempty"`
 	// Amount is the amount of the operation
 	Amount *string `json:"amount,omitempty"`
 	// IsAttempt is the true if the operation is an attempt, false otherwise
@@ -85,6 +89,9 @@ func (s *TransactionOperation) SetClient(c *ProcessOut) *TransactionOperation {
 	if s.Card != nil {
 		s.Card.SetClient(c)
 	}
+	if s.GatewayConfiguration != nil {
+		s.GatewayConfiguration.SetClient(c)
+	}
 	if s.PaymentDataThreeDSRequest != nil {
 		s.PaymentDataThreeDSRequest.SetClient(c)
 	}
@@ -111,6 +118,8 @@ func (s *TransactionOperation) Prefill(c *TransactionOperation) *TransactionOper
 	s.TokenID = c.TokenID
 	s.Card = c.Card
 	s.CardID = c.CardID
+	s.GatewayConfiguration = c.GatewayConfiguration
+	s.GatewayConfigurationID = c.GatewayConfigurationID
 	s.Amount = c.Amount
 	s.IsAttempt = c.IsAttempt
 	s.HasFailed = c.HasFailed

@@ -92,6 +92,7 @@ func (s *GatewayConfiguration) Prefill(c *GatewayConfiguration) *GatewayConfigur
 type GatewayConfigurationAllParameters struct {
 	*Options
 	*GatewayConfiguration
+	ExpandMerchantAccounts interface{} `json:"expand_merchant_accounts"`
 }
 
 // All allows you to get all the gateway configurations.
@@ -123,8 +124,10 @@ func (s GatewayConfiguration) All(options ...GatewayConfigurationAllParameters) 
 
 	data := struct {
 		*Options
+		ExpandMerchantAccounts interface{} `json:"expand_merchant_accounts"`
 	}{
-		Options: opt.Options,
+		Options:                opt.Options,
+		ExpandMerchantAccounts: opt.ExpandMerchantAccounts,
 	}
 
 	body, err := json.Marshal(data)

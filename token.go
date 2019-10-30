@@ -34,6 +34,10 @@ type Token struct {
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// IsSubscriptionOnly is the define whether or not the customer token is used on a recurring invoice
 	IsSubscriptionOnly *bool `json:"is_subscription_only,omitempty"`
+	// ReturnURL is the uRL where the customer will be redirected upon payment authentication (if required by tokenization method)
+	ReturnURL *string `json:"return_url,omitempty"`
+	// CancelURL is the uRL where the customer will be redirected if the tokenization was canceled (if required by tokenization method)
+	CancelURL *string `json:"cancel_url,omitempty"`
 	// IsDefault is the true if the token it the default token of the customer, false otherwise
 	IsDefault *bool `json:"is_default,omitempty"`
 	// IsChargeable is the true if the token is chargeable, false otherwise
@@ -89,6 +93,8 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.Type = c.Type
 	s.Metadata = c.Metadata
 	s.IsSubscriptionOnly = c.IsSubscriptionOnly
+	s.ReturnURL = c.ReturnURL
+	s.CancelURL = c.CancelURL
 	s.IsDefault = c.IsDefault
 	s.IsChargeable = c.IsChargeable
 	s.CreatedAt = c.CreatedAt
@@ -405,6 +411,8 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 	data := struct {
 		*Options
 		Metadata       interface{} `json:"metadata"`
+		ReturnURL      interface{} `json:"return_url"`
+		CancelURL      interface{} `json:"cancel_url"`
 		Source         interface{} `json:"source"`
 		Settings       interface{} `json:"settings"`
 		Target         interface{} `json:"target"`
@@ -414,6 +422,8 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 	}{
 		Options:        opt.Options,
 		Metadata:       s.Metadata,
+		ReturnURL:      s.ReturnURL,
+		CancelURL:      s.CancelURL,
 		Source:         opt.Source,
 		Settings:       opt.Settings,
 		Target:         opt.Target,
