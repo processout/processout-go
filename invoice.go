@@ -60,7 +60,7 @@ type Invoice struct {
 	StatementDescriptorURL *string `json:"statement_descriptor_url,omitempty"`
 	// Metadata is the metadata related to the invoice, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
-	// GatewayData is the additionnal context saved when processing the transaction on the specific PSP
+	// GatewayData is the dictionary that transmit specific informations to gateways (key-value pair)
 	GatewayData *map[string]string `json:"gateway_data,omitempty"`
 	// ReturnURL is the uRL where the customer will be redirected upon payment
 	ReturnURL *string `json:"return_url,omitempty"`
@@ -211,6 +211,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 
 	data := struct {
 		*Options
+		Device                  interface{} `json:"device"`
 		Synchronous             interface{} `json:"synchronous"`
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 		CaptureAmount           interface{} `json:"capture_amount"`
@@ -219,6 +220,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
+		Device:                  s.Device,
 		Synchronous:             opt.Synchronous,
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
 		CaptureAmount:           opt.CaptureAmount,
@@ -310,6 +312,7 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 
 	data := struct {
 		*Options
+		Device                  interface{} `json:"device"`
 		AuthorizeOnly           interface{} `json:"authorize_only"`
 		Synchronous             interface{} `json:"synchronous"`
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
@@ -319,6 +322,7 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
+		Device:                  s.Device,
 		AuthorizeOnly:           opt.AuthorizeOnly,
 		Synchronous:             opt.Synchronous,
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
@@ -928,9 +932,9 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Name                       interface{} `json:"name"`
 		Amount                     interface{} `json:"amount"`
 		Currency                   interface{} `json:"currency"`
-		GatewayData                interface{} `json:"gateway_data"`
 		Metadata                   interface{} `json:"metadata"`
 		Details                    interface{} `json:"details"`
+		GatewayData                interface{} `json:"gateway_data"`
 		MerchantInitiatorType      interface{} `json:"merchant_initiator_type"`
 		StatementDescriptor        interface{} `json:"statement_descriptor"`
 		StatementDescriptorPhone   interface{} `json:"statement_descriptor_phone"`
@@ -950,9 +954,9 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Name:                       s.Name,
 		Amount:                     s.Amount,
 		Currency:                   s.Currency,
-		GatewayData:                s.GatewayData,
 		Metadata:                   s.Metadata,
 		Details:                    s.Details,
+		GatewayData:                s.GatewayData,
 		MerchantInitiatorType:      s.MerchantInitiatorType,
 		StatementDescriptor:        s.StatementDescriptor,
 		StatementDescriptorPhone:   s.StatementDescriptorPhone,

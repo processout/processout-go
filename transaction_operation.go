@@ -34,6 +34,8 @@ type TransactionOperation struct {
 	GatewayConfigurationID *string `json:"gateway_configuration_id,omitempty"`
 	// Amount is the amount of the operation
 	Amount *string `json:"amount,omitempty"`
+	// Currency is the currency of the operation
+	Currency *string `json:"currency,omitempty"`
 	// IsAttempt is the true if the operation is an attempt, false otherwise
 	IsAttempt *bool `json:"is_attempt,omitempty"`
 	// HasFailed is the true if the operation has failed, false otherwise
@@ -44,6 +46,8 @@ type TransactionOperation struct {
 	Type *string `json:"type,omitempty"`
 	// GatewayOperationID is the iD of the operation done through the PSP
 	GatewayOperationID *string `json:"gateway_operation_id,omitempty"`
+	// Arn is the acquirer Routing Number, can be used to track a payment or refund at the issuer
+	Arn *string `json:"arn,omitempty"`
 	// ErrorCode is the error code returned when attempting the operation, if any
 	ErrorCode *string `json:"error_code,omitempty"`
 	// GatewayData is the additionnal context saved when processing the transaction on the specific PSP
@@ -121,11 +125,13 @@ func (s *TransactionOperation) Prefill(c *TransactionOperation) *TransactionOper
 	s.GatewayConfiguration = c.GatewayConfiguration
 	s.GatewayConfigurationID = c.GatewayConfigurationID
 	s.Amount = c.Amount
+	s.Currency = c.Currency
 	s.IsAttempt = c.IsAttempt
 	s.HasFailed = c.HasFailed
 	s.IsAccountable = c.IsAccountable
 	s.Type = c.Type
 	s.GatewayOperationID = c.GatewayOperationID
+	s.Arn = c.Arn
 	s.ErrorCode = c.ErrorCode
 	s.GatewayData = c.GatewayData
 	s.PaymentDataThreeDSRequest = c.PaymentDataThreeDSRequest
