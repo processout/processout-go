@@ -18,8 +18,19 @@ type InvoiceDevice struct {
 	Channel *string `json:"channel,omitempty"`
 	// IpAddress is the iP address of the device
 	IpAddress *string `json:"ip_address,omitempty"`
+	// ID is the iD of the device
+	ID *string `json:"id,omitempty"`
 
 	client *ProcessOut
+}
+
+// GetID implements the  Identiable interface
+func (s *InvoiceDevice) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
 }
 
 // SetClient sets the client for the InvoiceDevice object and its
@@ -41,6 +52,7 @@ func (s *InvoiceDevice) Prefill(c *InvoiceDevice) *InvoiceDevice {
 
 	s.Channel = c.Channel
 	s.IpAddress = c.IpAddress
+	s.ID = c.ID
 
 	return s
 }

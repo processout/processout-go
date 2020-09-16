@@ -66,8 +66,10 @@ type Customer struct {
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// Sandbox is the define whether or not the customer is in sandbox environment
 	Sandbox *bool `json:"sandbox,omitempty"`
-	// CreatedAt is the date at which the customer was created
+	// CreatedAt is the date at which the customer was created at ProcessOut
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// RegisteredAt is the date at which the customer was registered on your platform
+	RegisteredAt *time.Time `json:"registered_at,omitempty"`
 
 	client *ProcessOut
 }
@@ -131,6 +133,7 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.Metadata = c.Metadata
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
+	s.RegisteredAt = c.RegisteredAt
 
 	return s
 }
@@ -776,6 +779,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		Sex           interface{} `json:"sex"`
 		Metadata      interface{} `json:"metadata"`
 		ID            interface{} `json:"id"`
+		RegisteredAt  interface{} `json:"registered_at"`
 	}{
 		Options:       opt.Options,
 		Balance:       s.Balance,
@@ -796,6 +800,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		Sex:           s.Sex,
 		Metadata:      s.Metadata,
 		ID:            s.ID,
+		RegisteredAt:  s.RegisteredAt,
 	}
 
 	body, err := json.Marshal(data)
@@ -973,6 +978,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		IsBusiness     interface{} `json:"is_business"`
 		Sex            interface{} `json:"sex"`
 		Metadata       interface{} `json:"metadata"`
+		RegisteredAt   interface{} `json:"registered_at"`
 	}{
 		Options:        opt.Options,
 		Balance:        s.Balance,
@@ -992,6 +998,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		IsBusiness:     s.IsBusiness,
 		Sex:            s.Sex,
 		Metadata:       s.Metadata,
+		RegisteredAt:   s.RegisteredAt,
 	}
 
 	body, err := json.Marshal(data)

@@ -80,6 +80,8 @@ type Invoice struct {
 	Shipping *InvoiceShipping `json:"shipping,omitempty"`
 	// Device is the device information
 	Device *InvoiceDevice `json:"device,omitempty"`
+	// ExternalFraudTools is the contain objects that'll be forwarded to external fraud tools
+	ExternalFraudTools *InvoiceExternalFraudTools `json:"external_fraud_tools,omitempty"`
 
 	client *ProcessOut
 }
@@ -124,6 +126,9 @@ func (s *Invoice) SetClient(c *ProcessOut) *Invoice {
 	if s.Device != nil {
 		s.Device.SetClient(c)
 	}
+	if s.ExternalFraudTools != nil {
+		s.ExternalFraudTools.SetClient(c)
+	}
 
 	return s
 }
@@ -167,6 +172,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Risk = c.Risk
 	s.Shipping = c.Shipping
 	s.Device = c.Device
+	s.ExternalFraudTools = c.ExternalFraudTools
 
 	return s
 }
@@ -948,6 +954,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Shipping                   interface{} `json:"shipping"`
 		Device                     interface{} `json:"device"`
 		RequireBackendCapture      interface{} `json:"require_backend_capture"`
+		ExternalFraudTools         interface{} `json:"external_fraud_tools"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
@@ -970,6 +977,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Shipping:                   s.Shipping,
 		Device:                     s.Device,
 		RequireBackendCapture:      s.RequireBackendCapture,
+		ExternalFraudTools:         s.ExternalFraudTools,
 	}
 
 	body, err := json.Marshal(data)

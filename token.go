@@ -40,10 +40,18 @@ type Token struct {
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the tokenization was canceled (if required by tokenization method)
 	CancelURL *string `json:"cancel_url,omitempty"`
+	// Summary is the summary of the customer token, such as a description of the card used or the email of a PayPal account
+	Summary *string `json:"summary,omitempty"`
 	// IsChargeable is the true if the token is chargeable, false otherwise
 	IsChargeable *bool `json:"is_chargeable,omitempty"`
 	// CreatedAt is the date at which the customer token was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// Description is the description of the created token
+	Description *string `json:"description,omitempty"`
+	// Invoice is the invoice used to verify this token, if any
+	Invoice *Invoice `json:"invoice,omitempty"`
+	// InvoiceID is the iD of the invoice used to verify that token
+	InvoiceID *string `json:"invoice_id,omitempty"`
 
 	client *ProcessOut
 }
@@ -73,6 +81,9 @@ func (s *Token) SetClient(c *ProcessOut) *Token {
 	if s.Card != nil {
 		s.Card.SetClient(c)
 	}
+	if s.Invoice != nil {
+		s.Invoice.SetClient(c)
+	}
 
 	return s
 }
@@ -96,8 +107,12 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.IsDefault = c.IsDefault
 	s.ReturnURL = c.ReturnURL
 	s.CancelURL = c.CancelURL
+	s.Summary = c.Summary
 	s.IsChargeable = c.IsChargeable
 	s.CreatedAt = c.CreatedAt
+	s.Description = c.Description
+	s.Invoice = c.Invoice
+	s.InvoiceID = c.InvoiceID
 
 	return s
 }
@@ -334,6 +349,7 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 		Metadata       interface{} `json:"metadata"`
 		ReturnURL      interface{} `json:"return_url"`
 		CancelURL      interface{} `json:"cancel_url"`
+		Description    interface{} `json:"description"`
 		Source         interface{} `json:"source"`
 		Settings       interface{} `json:"settings"`
 		Device         interface{} `json:"device"`
@@ -345,6 +361,7 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 		Metadata:       s.Metadata,
 		ReturnURL:      s.ReturnURL,
 		CancelURL:      s.CancelURL,
+		Description:    s.Description,
 		Source:         opt.Source,
 		Settings:       opt.Settings,
 		Device:         opt.Device,

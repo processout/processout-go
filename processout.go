@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.20.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.20.1")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -289,6 +289,21 @@ func (c *ProcessOut) NewInvoice(prefill ...*Invoice) *Invoice {
 	}
 	if len(prefill) == 0 {
 		return &Invoice{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewInvoiceExternalFraudTools creates a new InvoiceExternalFraudTools object
+func (c *ProcessOut) NewInvoiceExternalFraudTools(prefill ...*InvoiceExternalFraudTools) *InvoiceExternalFraudTools {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the InvoiceExternalFraudTools, or none.")
+	}
+	if len(prefill) == 0 {
+		return &InvoiceExternalFraudTools{
 			client: c,
 		}
 	}
