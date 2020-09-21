@@ -117,7 +117,7 @@ func (s Event) FetchWebhooks(options ...EventFetchWebhooksParameters) (*Iterator
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/events/ev_" + url.QueryEscape(*s.ID) + "/webhooks"
+	path := "/events/" + url.QueryEscape(*s.ID) + "/webhooks"
 
 	req, err := http.NewRequest(
 		"GET",
@@ -330,7 +330,7 @@ func (s Event) Find(eventID string, options ...EventFindParameters) (*Event, err
 		return nil, errors.New(err, "", "")
 	}
 
-	path := "/events/ev_" + url.QueryEscape(eventID) + ""
+	path := "/events/" + url.QueryEscape(eventID) + ""
 
 	req, err := http.NewRequest(
 		"GET",
@@ -365,113 +365,6 @@ func (s Event) Find(eventID string, options ...EventFindParameters) (*Event, err
 
 	payload.Event.SetClient(s.client)
 	return payload.Event, nil
-}
-
-// EventFindByResourceIdParameters is the structure representing the
-// additional parameters used to call Event.FindByResourceId
-type EventFindByResourceIdParameters struct {
-	*Options
-	*Event
-}
-
-// FindByResourceId allows you to find an event by the Resource ID that generated it.
-func (s Event) FindByResourceId(resourceID string, options ...EventFindByResourceIdParameters) (*Iterator, error) {
-	if s.client == nil {
-		panic("Please use the client.NewEvent() method to create a new Event object")
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	opt := EventFindByResourceIdParameters{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if opt.Options == nil {
-		opt.Options = &Options{}
-	}
-	s.Prefill(opt.Event)
-
-	type Response struct {
-		Events []*Event `json:"events"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
-	}
-
-	data := struct {
-		*Options
-	}{
-		Options: opt.Options,
-	}
-
-	body, err := json.Marshal(data)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	path := "/events/by_resource_id/" + url.QueryEscape(resourceID) + ""
-
-	req, err := http.NewRequest(
-		"GET",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, errors.NewNetworkError(err)
-	}
-	setupRequest(s.client, opt.Options, req)
-
-	res, err := s.client.HTTPClient.Do(req)
-	if err != nil {
-		return nil, errors.NewNetworkError(err)
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	if res.StatusCode >= 500 {
-		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
-	}
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
-			payload.Message)
-
-		return nil, erri
-	}
-
-	eventsList := []Identifiable{}
-	for _, o := range payload.Events {
-		eventsList = append(eventsList, o.SetClient(s.client))
-	}
-	eventsIterator := &Iterator{
-		pos:     -1,
-		path:    path,
-		data:    eventsList,
-		options: opt.Options,
-		decoder: func(b io.Reader, i interface{}) (bool, error) {
-			r := struct {
-				Data    json.RawMessage `json:"events"`
-				HasMore bool            `json:"has_more"`
-			}{}
-			if err := json.NewDecoder(b).Decode(&r); err != nil {
-				return false, err
-			}
-			if err := json.Unmarshal(r.Data, i); err != nil {
-				return false, err
-			}
-			return r.HasMore, nil
-		},
-		client:      s.client,
-		hasMoreNext: payload.HasMore,
-		hasMorePrev: false,
-	}
-	return eventsIterator, nil
 }
 
 // dummyEvent is a dummy function that's only
