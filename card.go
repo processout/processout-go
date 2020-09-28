@@ -64,6 +64,8 @@ type Card struct {
 	IpAddress *string `json:"ip_address,omitempty"`
 	// Fingerprint is the fingerprint of the card (stays the same if the same card gets tokenized multiple times). Scoped per ProcessOut project
 	Fingerprint *string `json:"fingerprint,omitempty"`
+	// TokenType is the this field defines if the card was tokenized with a 3rd party tokenization method such as applepay
+	TokenType *string `json:"token_type,omitempty"`
 	// Metadata is the metadata related to the card, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// ExpiresSoon is the contains true if the card will expire soon, false otherwise
@@ -133,6 +135,7 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.CountryCode = c.CountryCode
 	s.IpAddress = c.IpAddress
 	s.Fingerprint = c.Fingerprint
+	s.TokenType = c.TokenType
 	s.Metadata = c.Metadata
 	s.ExpiresSoon = c.ExpiresSoon
 	s.Sandbox = c.Sandbox
