@@ -34,6 +34,8 @@ type Card struct {
 	BankName *string `json:"bank_name,omitempty"`
 	// Brand is the level of the card (Electron, Classic, Gold, ...)
 	Brand *string `json:"brand,omitempty"`
+	// Category is the category of the card (consumer, commercial, ...)
+	Category *string `json:"category,omitempty"`
 	// Iin is the first 6 digits of the card
 	Iin *string `json:"iin,omitempty"`
 	// Last4Digits is the last 4 digits of the card
@@ -120,6 +122,7 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.Type = c.Type
 	s.BankName = c.BankName
 	s.Brand = c.Brand
+	s.Category = c.Category
 	s.Iin = c.Iin
 	s.Last4Digits = c.Last4Digits
 	s.ExpMonth = c.ExpMonth

@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.20.3")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.20.4")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -514,6 +514,21 @@ func (c *ProcessOut) NewTransaction(prefill ...*Transaction) *Transaction {
 	}
 	if len(prefill) == 0 {
 		return &Transaction{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewThreeDS creates a new ThreeDS object
+func (c *ProcessOut) NewThreeDS(prefill ...*ThreeDS) *ThreeDS {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ThreeDS, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ThreeDS{
 			client: c,
 		}
 	}

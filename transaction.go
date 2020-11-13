@@ -74,6 +74,8 @@ type Transaction struct {
 	Currency *string `json:"currency,omitempty"`
 	// ErrorCode is the error code of the transaction, when the payment has failed
 	ErrorCode *string `json:"error_code,omitempty"`
+	// ErrorMessage is the error message of the transaction, when the payment has failed
+	ErrorMessage *string `json:"error_message,omitempty"`
 	// GatewayName is the name of the last gateway the transaction was attempted on (successfully or not). Use the operations list to get the full transaction's history
 	GatewayName *string `json:"gateway_name,omitempty"`
 	// ThreeDSStatus is the status of the potential 3-D Secure authentication
@@ -114,6 +116,8 @@ type Transaction struct {
 	ChargedbackAt *time.Time `json:"chargedback_at,omitempty"`
 	// RefundedAt is the date at which the transaction was refunded
 	RefundedAt *time.Time `json:"refunded_at,omitempty"`
+	// ThreeDS is the 3DS data of a transaction if it was authenticated
+	ThreeDS *ThreeDS `json:"three_d_s,omitempty"`
 
 	client *ProcessOut
 }
@@ -155,6 +159,9 @@ func (s *Transaction) SetClient(c *ProcessOut) *Transaction {
 	if s.GatewayConfiguration != nil {
 		s.GatewayConfiguration.SetClient(c)
 	}
+	if s.ThreeDS != nil {
+		s.ThreeDS.SetClient(c)
+	}
 
 	return s
 }
@@ -195,6 +202,7 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.AvailableAmountLocal = c.AvailableAmountLocal
 	s.Currency = c.Currency
 	s.ErrorCode = c.ErrorCode
+	s.ErrorMessage = c.ErrorMessage
 	s.GatewayName = c.GatewayName
 	s.ThreeDSStatus = c.ThreeDSStatus
 	s.Status = c.Status
@@ -215,6 +223,7 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.CreatedAt = c.CreatedAt
 	s.ChargedbackAt = c.ChargedbackAt
 	s.RefundedAt = c.RefundedAt
+	s.ThreeDS = c.ThreeDS
 
 	return s
 }
