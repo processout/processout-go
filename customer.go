@@ -70,6 +70,8 @@ type Customer struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// RegisteredAt is the date at which the customer was registered on your platform
 	RegisteredAt *time.Time `json:"registered_at,omitempty"`
+	// DateOfBirth is the date of birth of the customer
+	DateOfBirth *time.Time `json:"date_of_birth,omitempty"`
 
 	client *ProcessOut
 }
@@ -134,6 +136,7 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
 	s.RegisteredAt = c.RegisteredAt
+	s.DateOfBirth = c.DateOfBirth
 
 	return s
 }
@@ -775,6 +778,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		IpAddress     interface{} `json:"ip_address"`
 		PhoneNumber   interface{} `json:"phone_number"`
 		LegalDocument interface{} `json:"legal_document"`
+		DateOfBirth   interface{} `json:"date_of_birth"`
 		IsBusiness    interface{} `json:"is_business"`
 		Sex           interface{} `json:"sex"`
 		Metadata      interface{} `json:"metadata"`
@@ -796,6 +800,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		IpAddress:     s.IpAddress,
 		PhoneNumber:   s.PhoneNumber,
 		LegalDocument: s.LegalDocument,
+		DateOfBirth:   s.DateOfBirth,
 		IsBusiness:    s.IsBusiness,
 		Sex:           s.Sex,
 		Metadata:      s.Metadata,
@@ -975,6 +980,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		IpAddress      interface{} `json:"ip_address"`
 		PhoneNumber    interface{} `json:"phone_number"`
 		LegalDocument  interface{} `json:"legal_document"`
+		DateOfBirth    interface{} `json:"date_of_birth"`
 		IsBusiness     interface{} `json:"is_business"`
 		Sex            interface{} `json:"sex"`
 		Metadata       interface{} `json:"metadata"`
@@ -995,6 +1001,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		IpAddress:      s.IpAddress,
 		PhoneNumber:    s.PhoneNumber,
 		LegalDocument:  s.LegalDocument,
+		DateOfBirth:    s.DateOfBirth,
 		IsBusiness:     s.IsBusiness,
 		Sex:            s.Sex,
 		Metadata:       s.Metadata,

@@ -82,6 +82,8 @@ type Invoice struct {
 	Device *InvoiceDevice `json:"device,omitempty"`
 	// ExternalFraudTools is the contain objects that'll be forwarded to external fraud tools
 	ExternalFraudTools *InvoiceExternalFraudTools `json:"external_fraud_tools,omitempty"`
+	// ExemptionReason3ds2 is the reason provided to request 3DS2 exemption
+	ExemptionReason3ds2 *string `json:"exemption_reason_3ds2,omitempty"`
 
 	client *ProcessOut
 }
@@ -173,6 +175,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Shipping = c.Shipping
 	s.Device = c.Device
 	s.ExternalFraudTools = c.ExternalFraudTools
+	s.ExemptionReason3ds2 = c.ExemptionReason3ds2
 
 	return s
 }
@@ -940,6 +943,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Currency                   interface{} `json:"currency"`
 		Metadata                   interface{} `json:"metadata"`
 		Details                    interface{} `json:"details"`
+		ExemptionReason3ds2        interface{} `json:"exemption_reason_3ds2"`
 		GatewayData                interface{} `json:"gateway_data"`
 		MerchantInitiatorType      interface{} `json:"merchant_initiator_type"`
 		StatementDescriptor        interface{} `json:"statement_descriptor"`
@@ -963,6 +967,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Currency:                   s.Currency,
 		Metadata:                   s.Metadata,
 		Details:                    s.Details,
+		ExemptionReason3ds2:        s.ExemptionReason3ds2,
 		GatewayData:                s.GatewayData,
 		MerchantInitiatorType:      s.MerchantInitiatorType,
 		StatementDescriptor:        s.StatementDescriptor,

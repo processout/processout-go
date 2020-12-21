@@ -118,6 +118,10 @@ type Transaction struct {
 	RefundedAt *time.Time `json:"refunded_at,omitempty"`
 	// ThreeDS is the 3DS data of a transaction if it was authenticated
 	ThreeDS *ThreeDS `json:"three_d_s,omitempty"`
+	// CvcCheck is the cVC check done during the transaction
+	CvcCheck *string `json:"cvc_check,omitempty"`
+	// AvsCheck is the aVS check done during the transaction
+	AvsCheck *string `json:"avs_check,omitempty"`
 
 	client *ProcessOut
 }
@@ -224,6 +228,8 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.ChargedbackAt = c.ChargedbackAt
 	s.RefundedAt = c.RefundedAt
 	s.ThreeDS = c.ThreeDS
+	s.CvcCheck = c.CvcCheck
+	s.AvsCheck = c.AvsCheck
 
 	return s
 }
