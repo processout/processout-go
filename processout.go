@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.20.5")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.18.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -289,6 +289,21 @@ func (c *ProcessOut) NewInvoice(prefill ...*Invoice) *Invoice {
 	}
 	if len(prefill) == 0 {
 		return &Invoice{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewInvoiceTax creates a new InvoiceTax object
+func (c *ProcessOut) NewInvoiceTax(prefill ...*InvoiceTax) *InvoiceTax {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the InvoiceTax, or none.")
+	}
+	if len(prefill) == 0 {
+		return &InvoiceTax{
 			client: c,
 		}
 	}

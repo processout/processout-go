@@ -82,8 +82,16 @@ type Invoice struct {
 	Device *InvoiceDevice `json:"device,omitempty"`
 	// ExternalFraudTools is the contain objects that'll be forwarded to external fraud tools
 	ExternalFraudTools *InvoiceExternalFraudTools `json:"external_fraud_tools,omitempty"`
-	// ExemptionReason3ds2 is the reason provided to request 3DS2 exemption
+	// ExemptionReason3ds2 is the (Deprecated - use sca_exemption_reason) Reason provided to request 3DS2 exemption
 	ExemptionReason3ds2 *string `json:"exemption_reason_3ds2,omitempty"`
+	// ScaExemptionReason is the reason provided to request SCA exemption
+	ScaExemptionReason *string `json:"sca_exemption_reason,omitempty"`
+	// ChallengeIndicator is the challenge indicator when requesting 3DS2
+	ChallengeIndicator *string `json:"challenge_indicator,omitempty"`
+	// Incremental is the a boolean to indicate if an invoice can have incremental authorizations created for it.
+	Incremental *bool `json:"incremental,omitempty"`
+	// Tax is the tax for an invoice
+	Tax *InvoiceTax `json:"tax,omitempty"`
 
 	client *ProcessOut
 }
@@ -131,6 +139,9 @@ func (s *Invoice) SetClient(c *ProcessOut) *Invoice {
 	if s.ExternalFraudTools != nil {
 		s.ExternalFraudTools.SetClient(c)
 	}
+	if s.Tax != nil {
+		s.Tax.SetClient(c)
+	}
 
 	return s
 }
@@ -176,8 +187,95 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Device = c.Device
 	s.ExternalFraudTools = c.ExternalFraudTools
 	s.ExemptionReason3ds2 = c.ExemptionReason3ds2
+	s.ScaExemptionReason = c.ScaExemptionReason
+	s.ChallengeIndicator = c.ChallengeIndicator
+	s.Incremental = c.Incremental
+	s.Tax = c.Tax
 
 	return s
+}
+
+// InvoiceIncrementAuthorizationParameters is the structure representing the
+// additional parameters used to call Invoice.IncrementAuthorization
+type InvoiceIncrementAuthorizationParameters struct {
+	*Options
+	*Invoice
+}
+
+// IncrementAuthorization allows you to create an incremental authorization
+func (s Invoice) IncrementAuthorization(amount float64, options ...InvoiceIncrementAuthorizationParameters) (*Transaction, error) {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoiceIncrementAuthorizationParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		Transaction *Transaction `json:"transaction"`
+		HasMore     bool         `json:"has_more"`
+		Success     bool         `json:"success"`
+		Message     string       `json:"message"`
+		Code        string       `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+		Amount interface{} `json:"amount"`
+	}{
+		Options: opt.Options,
+		Amount:  amount,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(*s.ID) + "/increment_authorization"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Transaction.SetClient(s.client)
+	return payload.Transaction, nil
 }
 
 // InvoiceAuthorizeParameters is the structure representing the
@@ -221,6 +319,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 	data := struct {
 		*Options
 		Device                  interface{} `json:"device"`
+		Incremental             interface{} `json:"incremental"`
 		Synchronous             interface{} `json:"synchronous"`
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 		CaptureAmount           interface{} `json:"capture_amount"`
@@ -230,6 +329,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 	}{
 		Options:                 opt.Options,
 		Device:                  s.Device,
+		Incremental:             s.Incremental,
 		Synchronous:             opt.Synchronous,
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
 		CaptureAmount:           opt.CaptureAmount,
@@ -322,6 +422,7 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 	data := struct {
 		*Options
 		Device                  interface{} `json:"device"`
+		Incremental             interface{} `json:"incremental"`
 		AuthorizeOnly           interface{} `json:"authorize_only"`
 		Synchronous             interface{} `json:"synchronous"`
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
@@ -332,6 +433,7 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 	}{
 		Options:                 opt.Options,
 		Device:                  s.Device,
+		Incremental:             s.Incremental,
 		AuthorizeOnly:           opt.AuthorizeOnly,
 		Synchronous:             opt.Synchronous,
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
@@ -944,6 +1046,8 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Metadata                   interface{} `json:"metadata"`
 		Details                    interface{} `json:"details"`
 		ExemptionReason3ds2        interface{} `json:"exemption_reason_3ds2"`
+		ScaExemptionReason         interface{} `json:"sca_exemption_reason"`
+		ChallengeIndicator         interface{} `json:"challenge_indicator"`
 		GatewayData                interface{} `json:"gateway_data"`
 		MerchantInitiatorType      interface{} `json:"merchant_initiator_type"`
 		StatementDescriptor        interface{} `json:"statement_descriptor"`
@@ -959,6 +1063,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Device                     interface{} `json:"device"`
 		RequireBackendCapture      interface{} `json:"require_backend_capture"`
 		ExternalFraudTools         interface{} `json:"external_fraud_tools"`
+		Tax                        interface{} `json:"tax"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
@@ -968,6 +1073,8 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Metadata:                   s.Metadata,
 		Details:                    s.Details,
 		ExemptionReason3ds2:        s.ExemptionReason3ds2,
+		ScaExemptionReason:         s.ScaExemptionReason,
+		ChallengeIndicator:         s.ChallengeIndicator,
 		GatewayData:                s.GatewayData,
 		MerchantInitiatorType:      s.MerchantInitiatorType,
 		StatementDescriptor:        s.StatementDescriptor,
@@ -983,6 +1090,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Device:                     s.Device,
 		RequireBackendCapture:      s.RequireBackendCapture,
 		ExternalFraudTools:         s.ExternalFraudTools,
+		Tax:                        s.Tax,
 	}
 
 	body, err := json.Marshal(data)
