@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.21.1")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.22.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -139,6 +139,36 @@ func (c *ProcessOut) NewAPIVersion(prefill ...*APIVersion) *APIVersion {
 	}
 	if len(prefill) == 0 {
 		return &APIVersion{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewBalances creates a new Balances object
+func (c *ProcessOut) NewBalances(prefill ...*Balances) *Balances {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the Balances, or none.")
+	}
+	if len(prefill) == 0 {
+		return &Balances{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewBalance creates a new Balance object
+func (c *ProcessOut) NewBalance(prefill ...*Balance) *Balance {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the Balance, or none.")
+	}
+	if len(prefill) == 0 {
+		return &Balance{
 			client: c,
 		}
 	}

@@ -52,6 +52,8 @@ type Token struct {
 	Invoice *Invoice `json:"invoice,omitempty"`
 	// InvoiceID is the iD of the invoice used to verify that token
 	InvoiceID *string `json:"invoice_id,omitempty"`
+	// ManualInvoiceCancellation is the allow to refund or void the invoice manually
+	ManualInvoiceCancellation *bool `json:"manual_invoice_cancellation,omitempty"`
 
 	client *ProcessOut
 }
@@ -113,6 +115,7 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.Description = c.Description
 	s.Invoice = c.Invoice
 	s.InvoiceID = c.InvoiceID
+	s.ManualInvoiceCancellation = c.ManualInvoiceCancellation
 
 	return s
 }
@@ -346,28 +349,32 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 
 	data := struct {
 		*Options
-		Metadata       interface{} `json:"metadata"`
-		ReturnURL      interface{} `json:"return_url"`
-		CancelURL      interface{} `json:"cancel_url"`
-		Description    interface{} `json:"description"`
-		Source         interface{} `json:"source"`
-		Settings       interface{} `json:"settings"`
-		Device         interface{} `json:"device"`
-		Verify         interface{} `json:"verify"`
-		VerifyMetadata interface{} `json:"verify_metadata"`
-		SetDefault     interface{} `json:"set_default"`
+		Metadata                  interface{} `json:"metadata"`
+		ReturnURL                 interface{} `json:"return_url"`
+		CancelURL                 interface{} `json:"cancel_url"`
+		Description               interface{} `json:"description"`
+		InvoiceID                 interface{} `json:"invoice_id"`
+		ManualInvoiceCancellation interface{} `json:"manual_invoice_cancellation"`
+		Source                    interface{} `json:"source"`
+		Settings                  interface{} `json:"settings"`
+		Device                    interface{} `json:"device"`
+		Verify                    interface{} `json:"verify"`
+		VerifyMetadata            interface{} `json:"verify_metadata"`
+		SetDefault                interface{} `json:"set_default"`
 	}{
-		Options:        opt.Options,
-		Metadata:       s.Metadata,
-		ReturnURL:      s.ReturnURL,
-		CancelURL:      s.CancelURL,
-		Description:    s.Description,
-		Source:         opt.Source,
-		Settings:       opt.Settings,
-		Device:         opt.Device,
-		Verify:         opt.Verify,
-		VerifyMetadata: opt.VerifyMetadata,
-		SetDefault:     opt.SetDefault,
+		Options:                   opt.Options,
+		Metadata:                  s.Metadata,
+		ReturnURL:                 s.ReturnURL,
+		CancelURL:                 s.CancelURL,
+		Description:               s.Description,
+		InvoiceID:                 s.InvoiceID,
+		ManualInvoiceCancellation: s.ManualInvoiceCancellation,
+		Source:                    opt.Source,
+		Settings:                  opt.Settings,
+		Device:                    opt.Device,
+		Verify:                    opt.Verify,
+		VerifyMetadata:            opt.VerifyMetadata,
+		SetDefault:                opt.SetDefault,
 	}
 
 	body, err := json.Marshal(data)
