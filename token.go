@@ -54,6 +54,8 @@ type Token struct {
 	InvoiceID *string `json:"invoice_id,omitempty"`
 	// ManualInvoiceCancellation is the if true, allows to refund or void the invoice manually following the token verification process
 	ManualInvoiceCancellation *bool `json:"manual_invoice_cancellation,omitempty"`
+	// VerificationStatus is the when a token has been requested to be verified, the status will be displayed using this field. The status can have the following values: `success`, `pending`, `failed`, `not-requested` and `unknown`
+	VerificationStatus *string `json:"verification_status,omitempty"`
 	// CanGetBalance is the if true, the balance can be retrieved from the balances endpoint
 	CanGetBalance *bool `json:"can_get_balance,omitempty"`
 
@@ -118,6 +120,7 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.Invoice = c.Invoice
 	s.InvoiceID = c.InvoiceID
 	s.ManualInvoiceCancellation = c.ManualInvoiceCancellation
+	s.VerificationStatus = c.VerificationStatus
 	s.CanGetBalance = c.CanGetBalance
 
 	return s
