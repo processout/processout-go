@@ -59,7 +59,7 @@ type AlternativeMerchantCertificateSaveParameters struct {
 }
 
 // Save allows you to save new alternative apple pay certificates
-func (s AlternativeMerchantCertificate) Save(options ...AlternativeMerchantCertificateSaveParameters) (string, error) {
+func (s AlternativeMerchantCertificate) Save(options ...AlternativeMerchantCertificateSaveParameters) (*AlternativeMerchantCertificate, error) {
 	if s.client == nil {
 		panic("Please use the client.NewAlternativeMerchantCertificate() method to create a new AlternativeMerchantCertificate object")
 	}
@@ -77,10 +77,11 @@ func (s AlternativeMerchantCertificate) Save(options ...AlternativeMerchantCerti
 	s.Prefill(opt.AlternativeMerchantCertificate)
 
 	type Response struct {
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		AlternativeMerchantCertificate *AlternativeMerchantCertificate `json:"alternative_merchant_certificate"`
+		HasMore                        bool                            `json:"has_more"`
+		Success                        bool                            `json:"success"`
+		Message                        string                          `json:"message"`
+		Code                           string                          `json:"error_type"`
 	}
 
 	data := struct {
@@ -127,7 +128,8 @@ func (s AlternativeMerchantCertificate) Save(options ...AlternativeMerchantCerti
 		return nil, erri
 	}
 
-	return nil
+	payload.AlternativeMerchantCertificate.SetClient(s.client)
+	return payload.AlternativeMerchantCertificate, nil
 }
 
 // dummyAlternativeMerchantCertificate is a dummy function that's only
