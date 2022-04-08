@@ -34,6 +34,8 @@ type Refund struct {
 	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the refund was done
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// InvoiceDetailIds is the list of invoice details ids to refund
+	InvoiceDetailIds *[]string `json:"invoice_detail_ids,omitempty"`
 
 	client *ProcessOut
 }
@@ -77,6 +79,7 @@ func (s *Refund) Prefill(c *Refund) *Refund {
 	s.Metadata = c.Metadata
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
+	s.InvoiceDetailIds = c.InvoiceDetailIds
 
 	return s
 }
@@ -303,16 +306,18 @@ func (s Refund) Create(options ...RefundCreateParameters) error {
 
 	data := struct {
 		*Options
-		Amount      interface{} `json:"amount"`
-		Metadata    interface{} `json:"metadata"`
-		Reason      interface{} `json:"reason"`
-		Information interface{} `json:"information"`
+		Amount           interface{} `json:"amount"`
+		Metadata         interface{} `json:"metadata"`
+		Reason           interface{} `json:"reason"`
+		Information      interface{} `json:"information"`
+		InvoiceDetailIds interface{} `json:"invoice_detail_ids"`
 	}{
-		Options:     opt.Options,
-		Amount:      s.Amount,
-		Metadata:    s.Metadata,
-		Reason:      s.Reason,
-		Information: s.Information,
+		Options:          opt.Options,
+		Amount:           s.Amount,
+		Metadata:         s.Metadata,
+		Reason:           s.Reason,
+		Information:      s.Information,
+		InvoiceDetailIds: s.InvoiceDetailIds,
 	}
 
 	body, err := json.Marshal(data)

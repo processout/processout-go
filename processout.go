@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.24.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.25.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -139,6 +139,36 @@ func (c *ProcessOut) NewAPIVersion(prefill ...*APIVersion) *APIVersion {
 	}
 	if len(prefill) == 0 {
 		return &APIVersion{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewApplePayAlternativeMerchantCertificates creates a new ApplePayAlternativeMerchantCertificates object
+func (c *ProcessOut) NewApplePayAlternativeMerchantCertificates(prefill ...*ApplePayAlternativeMerchantCertificates) *ApplePayAlternativeMerchantCertificates {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ApplePayAlternativeMerchantCertificates, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ApplePayAlternativeMerchantCertificates{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewAlternativeMerchantCertificate creates a new AlternativeMerchantCertificate object
+func (c *ProcessOut) NewAlternativeMerchantCertificate(prefill ...*AlternativeMerchantCertificate) *AlternativeMerchantCertificate {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the AlternativeMerchantCertificate, or none.")
+	}
+	if len(prefill) == 0 {
+		return &AlternativeMerchantCertificate{
 			client: c,
 		}
 	}

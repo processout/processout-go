@@ -76,6 +76,8 @@ type Transaction struct {
 	ErrorCode *string `json:"error_code,omitempty"`
 	// ErrorMessage is the error message of the transaction, when the payment has failed
 	ErrorMessage *string `json:"error_message,omitempty"`
+	// AcquirerName is the name of the merchant acquirer
+	AcquirerName *string `json:"acquirer_name,omitempty"`
 	// GatewayName is the name of the last gateway the transaction was attempted on (successfully or not). Use the operations list to get the full transaction's history
 	GatewayName *string `json:"gateway_name,omitempty"`
 	// ThreeDSStatus is the status of the potential 3-D Secure authentication
@@ -207,6 +209,7 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.Currency = c.Currency
 	s.ErrorCode = c.ErrorCode
 	s.ErrorMessage = c.ErrorMessage
+	s.AcquirerName = c.AcquirerName
 	s.GatewayName = c.GatewayName
 	s.ThreeDSStatus = c.ThreeDSStatus
 	s.Status = c.Status

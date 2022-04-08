@@ -14,6 +14,8 @@ import (
 
 // InvoiceDetail represents the InvoiceDetail API object
 type InvoiceDetail struct {
+	// ID is the iD of the invoice detail
+	ID *string `json:"id,omitempty"`
 	// Name is the name of the invoice detail
 	Name *string `json:"name,omitempty"`
 	// Type is the type of the invoice detail. Can be a string containing anything, up to 30 characters
@@ -48,6 +50,15 @@ type InvoiceDetail struct {
 	client *ProcessOut
 }
 
+// GetID implements the  Identiable interface
+func (s *InvoiceDetail) GetID() string {
+	if s.ID == nil {
+		return ""
+	}
+
+	return *s.ID
+}
+
 // SetClient sets the client for the InvoiceDetail object and its
 // children
 func (s *InvoiceDetail) SetClient(c *ProcessOut) *InvoiceDetail {
@@ -65,6 +76,7 @@ func (s *InvoiceDetail) Prefill(c *InvoiceDetail) *InvoiceDetail {
 		return s
 	}
 
+	s.ID = c.ID
 	s.Name = c.Name
 	s.Type = c.Type
 	s.Amount = c.Amount
