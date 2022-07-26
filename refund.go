@@ -277,6 +277,7 @@ func (s Refund) Find(transactionID, refundID string, options ...RefundFindParame
 type RefundCreateParameters struct {
 	*Options
 	*Refund
+	Metadata interface{} `json:"metadata"`
 }
 
 // Create allows you to create a refund for a transaction.
@@ -307,17 +308,17 @@ func (s Refund) Create(options ...RefundCreateParameters) error {
 	data := struct {
 		*Options
 		Amount           interface{} `json:"amount"`
-		Metadata         interface{} `json:"metadata"`
 		Reason           interface{} `json:"reason"`
 		Information      interface{} `json:"information"`
 		InvoiceDetailIds interface{} `json:"invoice_detail_ids"`
+		Metadata         interface{} `json:"metadata"`
 	}{
 		Options:          opt.Options,
 		Amount:           s.Amount,
-		Metadata:         s.Metadata,
 		Reason:           s.Reason,
 		Information:      s.Information,
 		InvoiceDetailIds: s.InvoiceDetailIds,
+		Metadata:         opt.Metadata,
 	}
 
 	body, err := json.Marshal(data)

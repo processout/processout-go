@@ -132,6 +132,85 @@ func (s AlternativeMerchantCertificate) Save(options ...AlternativeMerchantCerti
 	return payload.AlternativeMerchantCertificate, nil
 }
 
+// AlternativeMerchantCertificateDeleteParameters is the structure representing the
+// additional parameters used to call AlternativeMerchantCertificate.Delete
+type AlternativeMerchantCertificateDeleteParameters struct {
+	*Options
+	*AlternativeMerchantCertificate
+}
+
+// Delete allows you to delete a given alternative merchant certificate
+func (s AlternativeMerchantCertificate) Delete(options ...AlternativeMerchantCertificateDeleteParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewAlternativeMerchantCertificate() method to create a new AlternativeMerchantCertificate object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := AlternativeMerchantCertificateDeleteParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.AlternativeMerchantCertificate)
+
+	type Response struct {
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "/projects/applepay/alternative-merchant-certificates/" + url.QueryEscape(*s.ID) + ""
+
+	req, err := http.NewRequest(
+		"DELETE",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
+}
+
 // dummyAlternativeMerchantCertificate is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't

@@ -92,6 +92,8 @@ type Invoice struct {
 	Incremental *bool `json:"incremental,omitempty"`
 	// Tax is the tax for an invoice
 	Tax *InvoiceTax `json:"tax,omitempty"`
+	// PaymentType is the payment type
+	PaymentType *string `json:"payment_type,omitempty"`
 
 	client *ProcessOut
 }
@@ -191,6 +193,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.ChallengeIndicator = c.ChallengeIndicator
 	s.Incremental = c.Incremental
 	s.Tax = c.Tax
+	s.PaymentType = c.PaymentType
 
 	return s
 }
@@ -200,6 +203,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 type InvoiceIncrementAuthorizationParameters struct {
 	*Options
 	*Invoice
+	Metadata interface{} `json:"metadata"`
 }
 
 // IncrementAuthorization allows you to create an incremental authorization
@@ -230,10 +234,12 @@ func (s Invoice) IncrementAuthorization(amount float64, options ...InvoiceIncrem
 
 	data := struct {
 		*Options
-		Amount interface{} `json:"amount"`
+		Metadata interface{} `json:"metadata"`
+		Amount   interface{} `json:"amount"`
 	}{
-		Options: opt.Options,
-		Amount:  amount,
+		Options:  opt.Options,
+		Metadata: opt.Metadata,
+		Amount:   amount,
 	}
 
 	body, err := json.Marshal(data)
@@ -288,6 +294,7 @@ type InvoiceAuthorizeParameters struct {
 	CaptureAmount           interface{} `json:"capture_amount"`
 	EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
 	AutoCaptureAt           interface{} `json:"auto_capture_at"`
+	Metadata                interface{} `json:"metadata"`
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
@@ -325,6 +332,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		CaptureAmount           interface{} `json:"capture_amount"`
 		EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
 		AutoCaptureAt           interface{} `json:"auto_capture_at"`
+		Metadata                interface{} `json:"metadata"`
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
@@ -335,6 +343,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		CaptureAmount:           opt.CaptureAmount,
 		EnableThreeDS2:          opt.EnableThreeDS2,
 		AutoCaptureAt:           opt.AutoCaptureAt,
+		Metadata:                opt.Metadata,
 		Source:                  source,
 	}
 
@@ -391,6 +400,7 @@ type InvoiceCaptureParameters struct {
 	CaptureAmount           interface{} `json:"capture_amount"`
 	AutoCaptureAt           interface{} `json:"auto_capture_at"`
 	EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
+	Metadata                interface{} `json:"metadata"`
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
@@ -429,6 +439,7 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		CaptureAmount           interface{} `json:"capture_amount"`
 		AutoCaptureAt           interface{} `json:"auto_capture_at"`
 		EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
+		Metadata                interface{} `json:"metadata"`
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
@@ -440,6 +451,7 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		CaptureAmount:           opt.CaptureAmount,
 		AutoCaptureAt:           opt.AutoCaptureAt,
 		EnableThreeDS2:          opt.EnableThreeDS2,
+		Metadata:                opt.Metadata,
 		Source:                  source,
 	}
 
@@ -821,6 +833,7 @@ func (s Invoice) FetchTransaction(options ...InvoiceFetchTransactionParameters) 
 type InvoiceVoidParameters struct {
 	*Options
 	*Invoice
+	Metadata interface{} `json:"metadata"`
 }
 
 // Void allows you to void the invoice
@@ -851,8 +864,10 @@ func (s Invoice) Void(options ...InvoiceVoidParameters) (*Transaction, error) {
 
 	data := struct {
 		*Options
+		Metadata interface{} `json:"metadata"`
 	}{
-		Options: opt.Options,
+		Options:  opt.Options,
+		Metadata: opt.Metadata,
 	}
 
 	body, err := json.Marshal(data)
@@ -1064,6 +1079,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		RequireBackendCapture      interface{} `json:"require_backend_capture"`
 		ExternalFraudTools         interface{} `json:"external_fraud_tools"`
 		Tax                        interface{} `json:"tax"`
+		PaymentType                interface{} `json:"payment_type"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
@@ -1091,6 +1107,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		RequireBackendCapture:      s.RequireBackendCapture,
 		ExternalFraudTools:         s.ExternalFraudTools,
 		Tax:                        s.Tax,
+		PaymentType:                s.PaymentType,
 	}
 
 	body, err := json.Marshal(data)

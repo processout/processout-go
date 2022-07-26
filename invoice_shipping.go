@@ -38,6 +38,8 @@ type InvoiceShipping struct {
 	PhoneNumber *string `json:"phone_number,omitempty"`
 	// ExpectsShippingAt is the date at which the shipment is expected to be sent
 	ExpectsShippingAt *time.Time `json:"expects_shipping_at,omitempty"`
+	// RelayStoreName is the relay store name
+	RelayStoreName *string `json:"relay_store_name,omitempty"`
 
 	client *ProcessOut
 }
@@ -71,6 +73,7 @@ func (s *InvoiceShipping) Prefill(c *InvoiceShipping) *InvoiceShipping {
 	s.Zip = c.Zip
 	s.PhoneNumber = c.PhoneNumber
 	s.ExpectsShippingAt = c.ExpectsShippingAt
+	s.RelayStoreName = c.RelayStoreName
 
 	return s
 }

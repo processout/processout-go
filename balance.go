@@ -18,6 +18,8 @@ type Balance struct {
 	Amount *string `json:"amount,omitempty"`
 	// Currency is the currency the balance is in
 	Currency *string `json:"currency,omitempty"`
+	// Expiry is the expiry time of the voucher
+	Expiry *time.Time `json:"expiry,omitempty"`
 
 	client *ProcessOut
 }
@@ -41,6 +43,7 @@ func (s *Balance) Prefill(c *Balance) *Balance {
 
 	s.Amount = c.Amount
 	s.Currency = c.Currency
+	s.Expiry = c.Expiry
 
 	return s
 }

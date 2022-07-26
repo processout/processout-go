@@ -14,6 +14,8 @@ import (
 
 // ApplePayAlternativeMerchantCertificates represents the ApplePayAlternativeMerchantCertificates API object
 type ApplePayAlternativeMerchantCertificates struct {
+	// Count is the number of alternative merchant certificate
+	Count *string `json:"count,omitempty"`
 	// AlternativeMerchantCertificates is the alternative merchant certificates available
 	AlternativeMerchantCertificates *[]*AlternativeMerchantCertificate `json:"alternative_merchant_certificates,omitempty"`
 
@@ -37,6 +39,7 @@ func (s *ApplePayAlternativeMerchantCertificates) Prefill(c *ApplePayAlternative
 		return s
 	}
 
+	s.Count = c.Count
 	s.AlternativeMerchantCertificates = c.AlternativeMerchantCertificates
 
 	return s
