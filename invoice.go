@@ -94,6 +94,10 @@ type Invoice struct {
 	Tax *InvoiceTax `json:"tax,omitempty"`
 	// PaymentType is the payment type
 	PaymentType *string `json:"payment_type,omitempty"`
+	// InitiationType is the initiation type of invoice
+	InitiationType *string `json:"initiation_type,omitempty"`
+	// PaymentIntent is the payment intent of invoice
+	PaymentIntent *string `json:"payment_intent,omitempty"`
 
 	client *ProcessOut
 }
@@ -194,6 +198,8 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Incremental = c.Incremental
 	s.Tax = c.Tax
 	s.PaymentType = c.PaymentType
+	s.InitiationType = c.InitiationType
+	s.PaymentIntent = c.PaymentIntent
 
 	return s
 }
@@ -1065,6 +1071,8 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		ChallengeIndicator         interface{} `json:"challenge_indicator"`
 		GatewayData                interface{} `json:"gateway_data"`
 		MerchantInitiatorType      interface{} `json:"merchant_initiator_type"`
+		InitiationType             interface{} `json:"initiation_type"`
+		PaymentIntent              interface{} `json:"payment_intent"`
 		StatementDescriptor        interface{} `json:"statement_descriptor"`
 		StatementDescriptorPhone   interface{} `json:"statement_descriptor_phone"`
 		StatementDescriptorCity    interface{} `json:"statement_descriptor_city"`
@@ -1093,6 +1101,8 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		ChallengeIndicator:         s.ChallengeIndicator,
 		GatewayData:                s.GatewayData,
 		MerchantInitiatorType:      s.MerchantInitiatorType,
+		InitiationType:             s.InitiationType,
+		PaymentIntent:              s.PaymentIntent,
 		StatementDescriptor:        s.StatementDescriptor,
 		StatementDescriptorPhone:   s.StatementDescriptorPhone,
 		StatementDescriptorCity:    s.StatementDescriptorCity,
