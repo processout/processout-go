@@ -299,6 +299,7 @@ type InvoiceAuthorizeParameters struct {
 	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 	CaptureAmount           interface{} `json:"capture_amount"`
 	EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
+	AllowFallbackToSale     interface{} `json:"allow_fallback_to_sale"`
 	AutoCaptureAt           interface{} `json:"auto_capture_at"`
 	Metadata                interface{} `json:"metadata"`
 }
@@ -337,6 +338,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
 		CaptureAmount           interface{} `json:"capture_amount"`
 		EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
+		AllowFallbackToSale     interface{} `json:"allow_fallback_to_sale"`
 		AutoCaptureAt           interface{} `json:"auto_capture_at"`
 		Metadata                interface{} `json:"metadata"`
 		Source                  interface{} `json:"source"`
@@ -348,6 +350,7 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
 		CaptureAmount:           opt.CaptureAmount,
 		EnableThreeDS2:          opt.EnableThreeDS2,
+		AllowFallbackToSale:     opt.AllowFallbackToSale,
 		AutoCaptureAt:           opt.AutoCaptureAt,
 		Metadata:                opt.Metadata,
 		Source:                  source,
