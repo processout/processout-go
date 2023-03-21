@@ -403,13 +403,14 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 type InvoiceCaptureParameters struct {
 	*Options
 	*Invoice
-	AuthorizeOnly           interface{} `json:"authorize_only"`
-	Synchronous             interface{} `json:"synchronous"`
-	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
-	CaptureAmount           interface{} `json:"capture_amount"`
-	AutoCaptureAt           interface{} `json:"auto_capture_at"`
-	EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
-	Metadata                interface{} `json:"metadata"`
+	AuthorizeOnly              interface{} `json:"authorize_only"`
+	Synchronous                interface{} `json:"synchronous"`
+	RetryDropLiabilityShift    interface{} `json:"retry_drop_liability_shift"`
+	CaptureAmount              interface{} `json:"capture_amount"`
+	AutoCaptureAt              interface{} `json:"auto_capture_at"`
+	EnableThreeDS2             interface{} `json:"enable_three_d_s_2"`
+	Metadata                   interface{} `json:"metadata"`
+	CaptureStatementDescriptor interface{} `json:"capture_statement_descriptor"`
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
@@ -440,28 +441,30 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 
 	data := struct {
 		*Options
-		Device                  interface{} `json:"device"`
-		Incremental             interface{} `json:"incremental"`
-		AuthorizeOnly           interface{} `json:"authorize_only"`
-		Synchronous             interface{} `json:"synchronous"`
-		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
-		CaptureAmount           interface{} `json:"capture_amount"`
-		AutoCaptureAt           interface{} `json:"auto_capture_at"`
-		EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
-		Metadata                interface{} `json:"metadata"`
-		Source                  interface{} `json:"source"`
+		Device                     interface{} `json:"device"`
+		Incremental                interface{} `json:"incremental"`
+		AuthorizeOnly              interface{} `json:"authorize_only"`
+		Synchronous                interface{} `json:"synchronous"`
+		RetryDropLiabilityShift    interface{} `json:"retry_drop_liability_shift"`
+		CaptureAmount              interface{} `json:"capture_amount"`
+		AutoCaptureAt              interface{} `json:"auto_capture_at"`
+		EnableThreeDS2             interface{} `json:"enable_three_d_s_2"`
+		Metadata                   interface{} `json:"metadata"`
+		CaptureStatementDescriptor interface{} `json:"capture_statement_descriptor"`
+		Source                     interface{} `json:"source"`
 	}{
-		Options:                 opt.Options,
-		Device:                  s.Device,
-		Incremental:             s.Incremental,
-		AuthorizeOnly:           opt.AuthorizeOnly,
-		Synchronous:             opt.Synchronous,
-		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
-		CaptureAmount:           opt.CaptureAmount,
-		AutoCaptureAt:           opt.AutoCaptureAt,
-		EnableThreeDS2:          opt.EnableThreeDS2,
-		Metadata:                opt.Metadata,
-		Source:                  source,
+		Options:                    opt.Options,
+		Device:                     s.Device,
+		Incremental:                s.Incremental,
+		AuthorizeOnly:              opt.AuthorizeOnly,
+		Synchronous:                opt.Synchronous,
+		RetryDropLiabilityShift:    opt.RetryDropLiabilityShift,
+		CaptureAmount:              opt.CaptureAmount,
+		AutoCaptureAt:              opt.AutoCaptureAt,
+		EnableThreeDS2:             opt.EnableThreeDS2,
+		Metadata:                   opt.Metadata,
+		CaptureStatementDescriptor: opt.CaptureStatementDescriptor,
+		Source:                     source,
 	}
 
 	body, err := json.Marshal(data)
