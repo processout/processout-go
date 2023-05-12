@@ -42,6 +42,8 @@ type Transaction struct {
 	CardID *string `json:"card_id,omitempty"`
 	// GatewayConfiguration is the gateway Configuration is the last gateway configuration that was used to process the payment, if any
 	GatewayConfiguration *GatewayConfiguration `json:"gateway_configuration,omitempty"`
+	// ExternalThreeDSGatewayConfiguration is the external ThreeDS Gateway Configuration is the gateway configuration that was used to authenticate the payment, if configured
+	ExternalThreeDSGatewayConfiguration *GatewayConfiguration `json:"external_three_d_s_gateway_configuration,omitempty"`
 	// GatewayConfigurationID is the iD of the last gateway configuration that was used to process the payment, if any
 	GatewayConfigurationID *string `json:"gateway_configuration_id,omitempty"`
 	// Operations is the operations linked to the transaction
@@ -124,6 +126,14 @@ type Transaction struct {
 	CvcCheck *string `json:"cvc_check,omitempty"`
 	// AvsCheck is the aVS check done during the transaction
 	AvsCheck *string `json:"avs_check,omitempty"`
+	// InitialSchemeTransactionID is the initial scheme ID that was referenced in the request
+	InitialSchemeTransactionID *string `json:"initial_scheme_transaction_id,omitempty"`
+	// SchemeID is the the ID assigned to the transaction by the scheme in the last successful authorization
+	SchemeID *string `json:"scheme_id,omitempty"`
+	// PaymentType is the payment type of the transaction
+	PaymentType *string `json:"payment_type,omitempty"`
+	// NativeApm is the native APM response data
+	NativeApm *NativeAPMResponse `json:"native_apm,omitempty"`
 
 	client *ProcessOut
 }
@@ -165,8 +175,14 @@ func (s *Transaction) SetClient(c *ProcessOut) *Transaction {
 	if s.GatewayConfiguration != nil {
 		s.GatewayConfiguration.SetClient(c)
 	}
+	if s.ExternalThreeDSGatewayConfiguration != nil {
+		s.ExternalThreeDSGatewayConfiguration.SetClient(c)
+	}
 	if s.ThreeDS != nil {
 		s.ThreeDS.SetClient(c)
+	}
+	if s.NativeApm != nil {
+		s.NativeApm.SetClient(c)
 	}
 
 	return s
@@ -192,6 +208,7 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.Card = c.Card
 	s.CardID = c.CardID
 	s.GatewayConfiguration = c.GatewayConfiguration
+	s.ExternalThreeDSGatewayConfiguration = c.ExternalThreeDSGatewayConfiguration
 	s.GatewayConfigurationID = c.GatewayConfigurationID
 	s.Operations = c.Operations
 	s.Refunds = c.Refunds
@@ -233,6 +250,10 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.ThreeDS = c.ThreeDS
 	s.CvcCheck = c.CvcCheck
 	s.AvsCheck = c.AvsCheck
+	s.InitialSchemeTransactionID = c.InitialSchemeTransactionID
+	s.SchemeID = c.SchemeID
+	s.PaymentType = c.PaymentType
+	s.NativeApm = c.NativeApm
 
 	return s
 }

@@ -36,6 +36,8 @@ type GatewayConfiguration struct {
 	CreatedAt *time.Time `json:"created_at,omitempty"`
 	// EnabledAt is the date at which the gateway configuration was enabled
 	EnabledAt *time.Time `json:"enabled_at,omitempty"`
+	// ProcessingRegion is the gateway's processing region (EEA, EEA-UK, UK etc)
+	ProcessingRegion *string `json:"processing_region,omitempty"`
 
 	client *ProcessOut
 }
@@ -83,6 +85,7 @@ func (s *GatewayConfiguration) Prefill(c *GatewayConfiguration) *GatewayConfigur
 	s.PublicKeys = c.PublicKeys
 	s.CreatedAt = c.CreatedAt
 	s.EnabledAt = c.EnabledAt
+	s.ProcessingRegion = c.ProcessingRegion
 
 	return s
 }
@@ -319,6 +322,7 @@ func (s GatewayConfiguration) Save(options ...GatewayConfigurationSaveParameters
 		Name               interface{} `json:"name"`
 		Enabled            interface{} `json:"enabled"`
 		DefaultCurrency    interface{} `json:"default_currency"`
+		ProcessingRegion   interface{} `json:"processing_region"`
 		Settings           interface{} `json:"settings"`
 		SubAccountsEnabled interface{} `json:"sub_accounts_enabled"`
 	}{
@@ -327,6 +331,7 @@ func (s GatewayConfiguration) Save(options ...GatewayConfigurationSaveParameters
 		Name:               s.Name,
 		Enabled:            s.Enabled,
 		DefaultCurrency:    s.DefaultCurrency,
+		ProcessingRegion:   s.ProcessingRegion,
 		Settings:           opt.Settings,
 		SubAccountsEnabled: opt.SubAccountsEnabled,
 	}
@@ -493,6 +498,7 @@ func (s GatewayConfiguration) Create(gatewayName string, options ...GatewayConfi
 		Name               interface{} `json:"name"`
 		Enabled            interface{} `json:"enabled"`
 		DefaultCurrency    interface{} `json:"default_currency"`
+		ProcessingRegion   interface{} `json:"processing_region"`
 		Settings           interface{} `json:"settings"`
 		SubAccountsEnabled interface{} `json:"sub_accounts_enabled"`
 	}{
@@ -501,6 +507,7 @@ func (s GatewayConfiguration) Create(gatewayName string, options ...GatewayConfi
 		Name:               s.Name,
 		Enabled:            s.Enabled,
 		DefaultCurrency:    s.DefaultCurrency,
+		ProcessingRegion:   s.ProcessingRegion,
 		Settings:           opt.Settings,
 		SubAccountsEnabled: opt.SubAccountsEnabled,
 	}

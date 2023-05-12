@@ -16,6 +16,8 @@ import (
 type InvoiceExternalFraudTools struct {
 	// Forter is the forter
 	Forter *string `json:"forter,omitempty"`
+	// Signifyd is the signifyd
+	Signifyd *string `json:"signifyd,omitempty"`
 
 	client *ProcessOut
 }
@@ -38,6 +40,7 @@ func (s *InvoiceExternalFraudTools) Prefill(c *InvoiceExternalFraudTools) *Invoi
 	}
 
 	s.Forter = c.Forter
+	s.Signifyd = c.Signifyd
 
 	return s
 }

@@ -18,6 +18,8 @@ type CustomerAction struct {
 	Type *string `json:"type,omitempty"`
 	// Value is the value of the customer action. If type is an URL, URL to which you should redirect your customer
 	Value *string `json:"value,omitempty"`
+	// Metadata is the metadata related to the customer action, in the form of a dictionary (key-value pair)
+	Metadata *map[string]string `json:"metadata,omitempty"`
 
 	client *ProcessOut
 }
@@ -41,6 +43,7 @@ func (s *CustomerAction) Prefill(c *CustomerAction) *CustomerAction {
 
 	s.Type = c.Type
 	s.Value = c.Value
+	s.Metadata = c.Metadata
 
 	return s
 }

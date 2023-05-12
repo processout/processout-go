@@ -319,12 +319,14 @@ func (s Token) Find(customerID, tokenID string, options ...TokenFindParameters) 
 type TokenCreateParameters struct {
 	*Options
 	*Token
-	Source         interface{} `json:"source"`
-	Settings       interface{} `json:"settings"`
-	Device         interface{} `json:"device"`
-	Verify         interface{} `json:"verify"`
-	VerifyMetadata interface{} `json:"verify_metadata"`
-	SetDefault     interface{} `json:"set_default"`
+	Source                    interface{} `json:"source"`
+	Settings                  interface{} `json:"settings"`
+	Device                    interface{} `json:"device"`
+	Verify                    interface{} `json:"verify"`
+	VerifyMetadata            interface{} `json:"verify_metadata"`
+	SetDefault                interface{} `json:"set_default"`
+	VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
+	InvoiceReturnURL          interface{} `json:"invoice_return_url"`
 }
 
 // Create allows you to create a new token for the given customer ID.
@@ -367,6 +369,8 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 		Verify                    interface{} `json:"verify"`
 		VerifyMetadata            interface{} `json:"verify_metadata"`
 		SetDefault                interface{} `json:"set_default"`
+		VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
+		InvoiceReturnURL          interface{} `json:"invoice_return_url"`
 	}{
 		Options:                   opt.Options,
 		Metadata:                  s.Metadata,
@@ -381,6 +385,8 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 		Verify:                    opt.Verify,
 		VerifyMetadata:            opt.VerifyMetadata,
 		SetDefault:                opt.SetDefault,
+		VerifyStatementDescriptor: opt.VerifyStatementDescriptor,
+		InvoiceReturnURL:          opt.InvoiceReturnURL,
 	}
 
 	body, err := json.Marshal(data)
@@ -430,12 +436,14 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 type TokenSaveParameters struct {
 	*Options
 	*Token
-	Source         interface{} `json:"source"`
-	Settings       interface{} `json:"settings"`
-	Device         interface{} `json:"device"`
-	Verify         interface{} `json:"verify"`
-	VerifyMetadata interface{} `json:"verify_metadata"`
-	SetDefault     interface{} `json:"set_default"`
+	Source                    interface{} `json:"source"`
+	Settings                  interface{} `json:"settings"`
+	Device                    interface{} `json:"device"`
+	Verify                    interface{} `json:"verify"`
+	VerifyMetadata            interface{} `json:"verify_metadata"`
+	SetDefault                interface{} `json:"set_default"`
+	VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
+	InvoiceReturnURL          interface{} `json:"invoice_return_url"`
 }
 
 // Save allows you to save the updated customer attributes.
@@ -465,20 +473,24 @@ func (s Token) Save(options ...TokenSaveParameters) error {
 
 	data := struct {
 		*Options
-		Source         interface{} `json:"source"`
-		Settings       interface{} `json:"settings"`
-		Device         interface{} `json:"device"`
-		Verify         interface{} `json:"verify"`
-		VerifyMetadata interface{} `json:"verify_metadata"`
-		SetDefault     interface{} `json:"set_default"`
+		Source                    interface{} `json:"source"`
+		Settings                  interface{} `json:"settings"`
+		Device                    interface{} `json:"device"`
+		Verify                    interface{} `json:"verify"`
+		VerifyMetadata            interface{} `json:"verify_metadata"`
+		SetDefault                interface{} `json:"set_default"`
+		VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
+		InvoiceReturnURL          interface{} `json:"invoice_return_url"`
 	}{
-		Options:        opt.Options,
-		Source:         opt.Source,
-		Settings:       opt.Settings,
-		Device:         opt.Device,
-		Verify:         opt.Verify,
-		VerifyMetadata: opt.VerifyMetadata,
-		SetDefault:     opt.SetDefault,
+		Options:                   opt.Options,
+		Source:                    opt.Source,
+		Settings:                  opt.Settings,
+		Device:                    opt.Device,
+		Verify:                    opt.Verify,
+		VerifyMetadata:            opt.VerifyMetadata,
+		SetDefault:                opt.SetDefault,
+		VerifyStatementDescriptor: opt.VerifyStatementDescriptor,
+		InvoiceReturnURL:          opt.InvoiceReturnURL,
 	}
 
 	body, err := json.Marshal(data)
