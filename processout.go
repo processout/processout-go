@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.31.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.32.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -357,36 +357,6 @@ func (c *ProcessOut) NewInvoice(prefill ...*Invoice) *Invoice {
 	return prefill[0]
 }
 
-// NewNativeAPMRequest creates a new NativeAPMRequest object
-func (c *ProcessOut) NewNativeAPMRequest(prefill ...*NativeAPMRequest) *NativeAPMRequest {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMRequest, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMRequest{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewNativeAPMParameterValue creates a new NativeAPMParameterValue object
-func (c *ProcessOut) NewNativeAPMParameterValue(prefill ...*NativeAPMParameterValue) *NativeAPMParameterValue {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMParameterValue, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMParameterValue{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
 // NewInvoiceTax creates a new InvoiceTax object
 func (c *ProcessOut) NewInvoiceTax(prefill ...*InvoiceTax) *InvoiceTax {
 	if len(prefill) > 1 {
@@ -642,51 +612,6 @@ func (c *ProcessOut) NewTransaction(prefill ...*Transaction) *Transaction {
 	return prefill[0]
 }
 
-// NewNativeAPMResponse creates a new NativeAPMResponse object
-func (c *ProcessOut) NewNativeAPMResponse(prefill ...*NativeAPMResponse) *NativeAPMResponse {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMResponse, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMResponse{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewNativeAPMParameterDefinition creates a new NativeAPMParameterDefinition object
-func (c *ProcessOut) NewNativeAPMParameterDefinition(prefill ...*NativeAPMParameterDefinition) *NativeAPMParameterDefinition {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMParameterDefinition, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMParameterDefinition{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewNativeAPMParameterValueDefinition creates a new NativeAPMParameterValueDefinition object
-func (c *ProcessOut) NewNativeAPMParameterValueDefinition(prefill ...*NativeAPMParameterValueDefinition) *NativeAPMParameterValueDefinition {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMParameterValueDefinition, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMParameterValueDefinition{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
 // NewThreeDS creates a new ThreeDS object
 func (c *ProcessOut) NewThreeDS(prefill ...*ThreeDS) *ThreeDS {
 	if len(prefill) > 1 {
@@ -784,51 +709,6 @@ func (c *ProcessOut) NewWebhookEndpoint(prefill ...*WebhookEndpoint) *WebhookEnd
 	}
 	if len(prefill) == 0 {
 		return &WebhookEndpoint{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewNativeAPMTransactionDetailsGateway creates a new NativeAPMTransactionDetailsGateway object
-func (c *ProcessOut) NewNativeAPMTransactionDetailsGateway(prefill ...*NativeAPMTransactionDetailsGateway) *NativeAPMTransactionDetailsGateway {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetailsGateway, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMTransactionDetailsGateway{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewNativeAPMTransactionDetailsInvoice creates a new NativeAPMTransactionDetailsInvoice object
-func (c *ProcessOut) NewNativeAPMTransactionDetailsInvoice(prefill ...*NativeAPMTransactionDetailsInvoice) *NativeAPMTransactionDetailsInvoice {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetailsInvoice, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMTransactionDetailsInvoice{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewNativeAPMTransactionDetails creates a new NativeAPMTransactionDetails object
-func (c *ProcessOut) NewNativeAPMTransactionDetails(prefill ...*NativeAPMTransactionDetails) *NativeAPMTransactionDetails {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetails, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMTransactionDetails{
 			client: c,
 		}
 	}

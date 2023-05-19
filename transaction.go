@@ -72,6 +72,10 @@ type Transaction struct {
 	AvailableAmount *string `json:"available_amount,omitempty"`
 	// AvailableAmountLocal is the amount available on the transaction (captured - refunded), in the currency of the project
 	AvailableAmountLocal *string `json:"available_amount_local,omitempty"`
+	// VoidedAmount is the amount that was voided on the transaction
+	VoidedAmount *string `json:"voided_amount,omitempty"`
+	// VoidedAmountLocal is the amount that was voided on the transaction, in the currency of the project
+	VoidedAmountLocal *string `json:"voided_amount_local,omitempty"`
 	// Currency is the currency of the transaction
 	Currency *string `json:"currency,omitempty"`
 	// ErrorCode is the error code of the transaction, when the payment has failed
@@ -132,8 +136,6 @@ type Transaction struct {
 	SchemeID *string `json:"scheme_id,omitempty"`
 	// PaymentType is the payment type of the transaction
 	PaymentType *string `json:"payment_type,omitempty"`
-	// NativeApm is the native APM response data
-	NativeApm *NativeAPMResponse `json:"native_apm,omitempty"`
 
 	client *ProcessOut
 }
@@ -181,9 +183,6 @@ func (s *Transaction) SetClient(c *ProcessOut) *Transaction {
 	if s.ThreeDS != nil {
 		s.ThreeDS.SetClient(c)
 	}
-	if s.NativeApm != nil {
-		s.NativeApm.SetClient(c)
-	}
 
 	return s
 }
@@ -223,6 +222,8 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.RefundedAmountLocal = c.RefundedAmountLocal
 	s.AvailableAmount = c.AvailableAmount
 	s.AvailableAmountLocal = c.AvailableAmountLocal
+	s.VoidedAmount = c.VoidedAmount
+	s.VoidedAmountLocal = c.VoidedAmountLocal
 	s.Currency = c.Currency
 	s.ErrorCode = c.ErrorCode
 	s.ErrorMessage = c.ErrorMessage
@@ -253,7 +254,6 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.InitialSchemeTransactionID = c.InitialSchemeTransactionID
 	s.SchemeID = c.SchemeID
 	s.PaymentType = c.PaymentType
-	s.NativeApm = c.NativeApm
 
 	return s
 }
