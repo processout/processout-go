@@ -4,9 +4,17 @@ on:
   push:
     branches:
       - master
+  pull_request:
 
 jobs:
-  semver:
-    name: Semver
-    uses: processout/actions/.github/workflows/semver-release.yaml@master
-    secrets: inherit
+  semrel:
+    name: Generate Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: go-semantic-release/action@v1
+        id: semrel
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          force-bump-patch-version: true
