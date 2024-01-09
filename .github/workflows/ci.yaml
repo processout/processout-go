@@ -10,11 +10,3 @@ jobs:
     name: Semver
     uses: processout/actions/.github/workflows/semver-release.yaml@master
     secrets: inherit
-
-  tag:
-    needs: [ semver ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: git push origin ${{ needs.semver.outputs.version }}
