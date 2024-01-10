@@ -94,12 +94,16 @@ type Invoice struct {
 	Tax *InvoiceTax `json:"tax,omitempty"`
 	// PaymentType is the payment type
 	PaymentType *string `json:"payment_type,omitempty"`
+	// NativeApm is the native APM data
+	NativeApm *NativeAPMRequest `json:"native_apm,omitempty"`
 	// InitiationType is the initiation type of invoice
 	InitiationType *string `json:"initiation_type,omitempty"`
 	// PaymentIntent is the payment intent of invoice
 	PaymentIntent *string `json:"payment_intent,omitempty"`
 	// Billing is the billing information
 	Billing *InvoiceBilling `json:"billing,omitempty"`
+	// UnsupportedFeatureBypass is the flags to bypass unsupported features
+	UnsupportedFeatureBypass *UnsupportedFeatureBypass `json:"unsupported_feature_bypass,omitempty"`
 
 	client *ProcessOut
 }
@@ -150,8 +154,14 @@ func (s *Invoice) SetClient(c *ProcessOut) *Invoice {
 	if s.Tax != nil {
 		s.Tax.SetClient(c)
 	}
+	if s.NativeApm != nil {
+		s.NativeApm.SetClient(c)
+	}
 	if s.Billing != nil {
 		s.Billing.SetClient(c)
+	}
+	if s.UnsupportedFeatureBypass != nil {
+		s.UnsupportedFeatureBypass.SetClient(c)
 	}
 
 	return s
@@ -203,9 +213,11 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Incremental = c.Incremental
 	s.Tax = c.Tax
 	s.PaymentType = c.PaymentType
+	s.NativeApm = c.NativeApm
 	s.InitiationType = c.InitiationType
 	s.PaymentIntent = c.PaymentIntent
 	s.Billing = c.Billing
+	s.UnsupportedFeatureBypass = c.UnsupportedFeatureBypass
 
 	return s
 }
@@ -685,6 +697,262 @@ func (s Invoice) AssignCustomer(customerID string, options ...InvoiceAssignCusto
 	return payload.Customer, nil
 }
 
+// InvoicePayoutParameters is the structure representing the
+// additional parameters used to call Invoice.Payout
+type InvoicePayoutParameters struct {
+	*Options
+	*Invoice
+	ForceGatewayConfigurationID interface{} `json:"force_gateway_configuration_id"`
+}
+
+// Payout allows you to process the payout invoice using the given source (customer or token)
+func (s Invoice) Payout(gatewayConfigurationID, source string, options ...InvoicePayoutParameters) (*Transaction, error) {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoicePayoutParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		Transaction *Transaction `json:"transaction"`
+		HasMore     bool         `json:"has_more"`
+		Success     bool         `json:"success"`
+		Message     string       `json:"message"`
+		Code        string       `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+		ForceGatewayConfigurationID interface{} `json:"force_gateway_configuration_id"`
+		GatewayConfigurationID      interface{} `json:"gateway_configuration_id"`
+		Source                      interface{} `json:"source"`
+	}{
+		Options:                     opt.Options,
+		ForceGatewayConfigurationID: opt.ForceGatewayConfigurationID,
+		GatewayConfigurationID:      gatewayConfigurationID,
+		Source:                      source,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(*s.ID) + "/payout"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Transaction.SetClient(s.client)
+	return payload.Transaction, nil
+}
+
+// InvoiceShowNativePaymentTransactionParameters is the structure representing the
+// additional parameters used to call Invoice.ShowNativePaymentTransaction
+type InvoiceShowNativePaymentTransactionParameters struct {
+	*Options
+	*Invoice
+}
+
+// ShowNativePaymentTransaction allows you to fetches the Native APM payment
+func (s Invoice) ShowNativePaymentTransaction(invoiceID, gatewayConfigurationID string, options ...InvoiceShowNativePaymentTransactionParameters) (*NativeAPMTransactionDetails, error) {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoiceShowNativePaymentTransactionParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		NativeAPMTransactionDetails *NativeAPMTransactionDetails `json:"native_apm"`
+		HasMore                     bool                         `json:"has_more"`
+		Success                     bool                         `json:"success"`
+		Message                     string                       `json:"message"`
+		Code                        string                       `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoiceID) + "/native-payment/" + url.QueryEscape(gatewayConfigurationID) + ""
+
+	req, err := http.NewRequest(
+		"GET",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.NativeAPMTransactionDetails.SetClient(s.client)
+	return payload.NativeAPMTransactionDetails, nil
+}
+
+// InvoiceProcessNativePaymentParameters is the structure representing the
+// additional parameters used to call Invoice.ProcessNativePayment
+type InvoiceProcessNativePaymentParameters struct {
+	*Options
+	*Invoice
+	GatewayConfigurationID interface{} `json:"gateway_configuration_id"`
+	NativeApm              interface{} `json:"native_apm"`
+}
+
+// ProcessNativePayment allows you to process the Native APM payment flow
+func (s Invoice) ProcessNativePayment(invoiceID string, options ...InvoiceProcessNativePaymentParameters) (*InvoicesProcessNativePaymentResponse, error) {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoiceProcessNativePaymentParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		InvoicesProcessNativePaymentResponse *InvoicesProcessNativePaymentResponse `json:""`
+		HasMore                              bool                                  `json:"has_more"`
+		Success                              bool                                  `json:"success"`
+		Message                              string                                `json:"message"`
+		Code                                 string                                `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+		GatewayConfigurationID interface{} `json:"gateway_configuration_id"`
+		NativeApm              interface{} `json:"native_apm"`
+	}{
+		Options:                opt.Options,
+		GatewayConfigurationID: opt.GatewayConfigurationID,
+		NativeApm:              opt.NativeApm,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoiceID) + "/native-payment"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.InvoicesProcessNativePaymentResponse.SetClient(s.client)
+	return payload.InvoicesProcessNativePaymentResponse, nil
+}
+
 // InvoiceInitiateThreeDSParameters is the structure representing the
 // additional parameters used to call Invoice.InitiateThreeDS
 type InvoiceInitiateThreeDSParameters struct {
@@ -1110,6 +1378,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Tax                        interface{} `json:"tax"`
 		PaymentType                interface{} `json:"payment_type"`
 		Billing                    interface{} `json:"billing"`
+		UnsupportedFeatureBypass   interface{} `json:"unsupported_feature_bypass"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
@@ -1141,6 +1410,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Tax:                        s.Tax,
 		PaymentType:                s.PaymentType,
 		Billing:                    s.Billing,
+		UnsupportedFeatureBypass:   s.UnsupportedFeatureBypass,
 	}
 
 	body, err := json.Marshal(data)
