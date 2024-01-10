@@ -34,8 +34,10 @@ type InvoiceShipping struct {
 	CountryCode *string `json:"country_code,omitempty"`
 	// Zip is the zIP where the shipment will be delivered
 	Zip *string `json:"zip,omitempty"`
-	// PhoneNumber is the phone number for the shipment
+	// PhoneNumber is the shipment full phone number, consisting of a combined dialing code and phone number
 	PhoneNumber *string `json:"phone_number,omitempty"`
+	// Phone is the phone number for the shipment
+	Phone *InvoiceShippingPhone `json:"phone,omitempty"`
 	// ExpectsShippingAt is the date at which the shipment is expected to be sent
 	ExpectsShippingAt *time.Time `json:"expects_shipping_at,omitempty"`
 	// RelayStoreName is the relay store name
@@ -51,6 +53,9 @@ func (s *InvoiceShipping) SetClient(c *ProcessOut) *InvoiceShipping {
 		return s
 	}
 	s.client = c
+	if s.Phone != nil {
+		s.Phone.SetClient(c)
+	}
 
 	return s
 }
@@ -72,6 +77,7 @@ func (s *InvoiceShipping) Prefill(c *InvoiceShipping) *InvoiceShipping {
 	s.CountryCode = c.CountryCode
 	s.Zip = c.Zip
 	s.PhoneNumber = c.PhoneNumber
+	s.Phone = c.Phone
 	s.ExpectsShippingAt = c.ExpectsShippingAt
 	s.RelayStoreName = c.RelayStoreName
 
