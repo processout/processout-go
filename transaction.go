@@ -136,6 +136,10 @@ type Transaction struct {
 	SchemeID *string `json:"scheme_id,omitempty"`
 	// PaymentType is the payment type of the transaction
 	PaymentType *string `json:"payment_type,omitempty"`
+	// NativeApm is the native APM response data
+	NativeApm *NativeAPMResponse `json:"native_apm,omitempty"`
+	// ExternalDetails is the additional data about the transaction, originating from a PSP, for example customer shipping address
+	ExternalDetails interface{} `json:"external_details,omitempty"`
 
 	client *ProcessOut
 }
@@ -182,6 +186,9 @@ func (s *Transaction) SetClient(c *ProcessOut) *Transaction {
 	}
 	if s.ThreeDS != nil {
 		s.ThreeDS.SetClient(c)
+	}
+	if s.NativeApm != nil {
+		s.NativeApm.SetClient(c)
 	}
 
 	return s
@@ -254,6 +261,8 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.InitialSchemeTransactionID = c.InitialSchemeTransactionID
 	s.SchemeID = c.SchemeID
 	s.PaymentType = c.PaymentType
+	s.NativeApm = c.NativeApm
+	s.ExternalDetails = c.ExternalDetails
 
 	return s
 }
