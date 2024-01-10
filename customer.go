@@ -54,8 +54,10 @@ type Customer struct {
 	CountryCode *string `json:"country_code,omitempty"`
 	// IpAddress is the iP address of the customer (IPv4 or IPv6)
 	IpAddress *string `json:"ip_address,omitempty"`
-	// PhoneNumber is the phone number of the customer
+	// PhoneNumber is the customer full phone number, consisting of a combined dialing code and phone number
 	PhoneNumber *string `json:"phone_number,omitempty"`
+	// Phone is the customer phone number
+	Phone *CustomerPhone `json:"phone,omitempty"`
 	// LegalDocument is the legal document number
 	LegalDocument *string `json:"legal_document,omitempty"`
 	// Sex is the sex of the customer
@@ -98,6 +100,9 @@ func (s *Customer) SetClient(c *ProcessOut) *Customer {
 	if s.DefaultToken != nil {
 		s.DefaultToken.SetClient(c)
 	}
+	if s.Phone != nil {
+		s.Phone.SetClient(c)
+	}
 
 	return s
 }
@@ -129,6 +134,7 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.CountryCode = c.CountryCode
 	s.IpAddress = c.IpAddress
 	s.PhoneNumber = c.PhoneNumber
+	s.Phone = c.Phone
 	s.LegalDocument = c.LegalDocument
 	s.Sex = c.Sex
 	s.IsBusiness = c.IsBusiness
@@ -776,7 +782,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		Zip           interface{} `json:"zip"`
 		CountryCode   interface{} `json:"country_code"`
 		IpAddress     interface{} `json:"ip_address"`
-		PhoneNumber   interface{} `json:"phone_number"`
+		Phone         interface{} `json:"phone"`
 		LegalDocument interface{} `json:"legal_document"`
 		DateOfBirth   interface{} `json:"date_of_birth"`
 		IsBusiness    interface{} `json:"is_business"`
@@ -784,6 +790,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		Metadata      interface{} `json:"metadata"`
 		ID            interface{} `json:"id"`
 		RegisteredAt  interface{} `json:"registered_at"`
+		PhoneNumber   interface{} `json:"phone_number"`
 	}{
 		Options:       opt.Options,
 		Balance:       s.Balance,
@@ -798,7 +805,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		Zip:           s.Zip,
 		CountryCode:   s.CountryCode,
 		IpAddress:     s.IpAddress,
-		PhoneNumber:   s.PhoneNumber,
+		Phone:         s.Phone,
 		LegalDocument: s.LegalDocument,
 		DateOfBirth:   s.DateOfBirth,
 		IsBusiness:    s.IsBusiness,
@@ -806,6 +813,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		Metadata:      s.Metadata,
 		ID:            s.ID,
 		RegisteredAt:  s.RegisteredAt,
+		PhoneNumber:   s.PhoneNumber,
 	}
 
 	body, err := json.Marshal(data)
@@ -978,13 +986,14 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		Zip            interface{} `json:"zip"`
 		CountryCode    interface{} `json:"country_code"`
 		IpAddress      interface{} `json:"ip_address"`
-		PhoneNumber    interface{} `json:"phone_number"`
+		Phone          interface{} `json:"phone"`
 		LegalDocument  interface{} `json:"legal_document"`
 		DateOfBirth    interface{} `json:"date_of_birth"`
 		IsBusiness     interface{} `json:"is_business"`
 		Sex            interface{} `json:"sex"`
 		Metadata       interface{} `json:"metadata"`
 		RegisteredAt   interface{} `json:"registered_at"`
+		PhoneNumber    interface{} `json:"phone_number"`
 	}{
 		Options:        opt.Options,
 		Balance:        s.Balance,
@@ -999,13 +1008,14 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		Zip:            s.Zip,
 		CountryCode:    s.CountryCode,
 		IpAddress:      s.IpAddress,
-		PhoneNumber:    s.PhoneNumber,
+		Phone:          s.Phone,
 		LegalDocument:  s.LegalDocument,
 		DateOfBirth:    s.DateOfBirth,
 		IsBusiness:     s.IsBusiness,
 		Sex:            s.Sex,
 		Metadata:       s.Metadata,
 		RegisteredAt:   s.RegisteredAt,
+		PhoneNumber:    s.PhoneNumber,
 	}
 
 	body, err := json.Marshal(data)
