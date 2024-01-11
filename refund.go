@@ -84,6 +84,96 @@ func (s *Refund) Prefill(c *Refund) *Refund {
 	return s
 }
 
+// RefundCreateForInvoiceParameters is the structure representing the
+// additional parameters used to call Refund.CreateForInvoice
+type RefundCreateForInvoiceParameters struct {
+	*Options
+	*Refund
+	Metadata interface{} `json:"metadata"`
+}
+
+// CreateForInvoice allows you to create a refund for an invoice.
+func (s Refund) CreateForInvoice(invoiceID string, options ...RefundCreateForInvoiceParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewRefund() method to create a new Refund object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := RefundCreateForInvoiceParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Refund)
+
+	type Response struct {
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+		Amount           interface{} `json:"amount"`
+		Reason           interface{} `json:"reason"`
+		Information      interface{} `json:"information"`
+		InvoiceDetailIds interface{} `json:"invoice_detail_ids"`
+		Metadata         interface{} `json:"metadata"`
+	}{
+		Options:          opt.Options,
+		Amount:           s.Amount,
+		Reason:           s.Reason,
+		Information:      s.Information,
+		InvoiceDetailIds: s.InvoiceDetailIds,
+		Metadata:         opt.Metadata,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoiceID) + "/refunds"
+
+	req, err := http.NewRequest(
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
+}
+
 // RefundFetchTransactionRefundsParameters is the structure representing the
 // additional parameters used to call Refund.FetchTransactionRefunds
 type RefundFetchTransactionRefundsParameters struct {

@@ -68,6 +68,10 @@ type Card struct {
 	Fingerprint *string `json:"fingerprint,omitempty"`
 	// TokenType is the this field defines if the card was tokenized with a 3rd party tokenization method such as applepay
 	TokenType *string `json:"token_type,omitempty"`
+	// Used is the contains true if the card was used to create a customer token or a direct transaction, false otherwise
+	Used *bool `json:"used,omitempty"`
+	// HasBeenAuthorized is the contains true if the card was successfully authorized, false otherwise
+	HasBeenAuthorized *bool `json:"has_been_authorized,omitempty"`
 	// Metadata is the metadata related to the card, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// ExpiresSoon is the contains true if the card will expire soon, false otherwise
@@ -139,6 +143,8 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.IpAddress = c.IpAddress
 	s.Fingerprint = c.Fingerprint
 	s.TokenType = c.TokenType
+	s.Used = c.Used
+	s.HasBeenAuthorized = c.HasBeenAuthorized
 	s.Metadata = c.Metadata
 	s.ExpiresSoon = c.ExpiresSoon
 	s.Sandbox = c.Sandbox
