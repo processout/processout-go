@@ -136,6 +136,8 @@ type Transaction struct {
 	SchemeID *string `json:"scheme_id,omitempty"`
 	// PaymentType is the payment type of the transaction
 	PaymentType *string `json:"payment_type,omitempty"`
+	// Eci is the the Electronic Commerce Indicator
+	Eci *string `json:"eci,omitempty"`
 	// NativeApm is the native APM response data
 	NativeApm *NativeAPMResponse `json:"native_apm,omitempty"`
 	// ExternalDetails is the additional data about the transaction, originating from a PSP, for example customer shipping address
@@ -261,6 +263,7 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.InitialSchemeTransactionID = c.InitialSchemeTransactionID
 	s.SchemeID = c.SchemeID
 	s.PaymentType = c.PaymentType
+	s.Eci = c.Eci
 	s.NativeApm = c.NativeApm
 	s.ExternalDetails = c.ExternalDetails
 

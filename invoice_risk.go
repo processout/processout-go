@@ -18,6 +18,8 @@ type InvoiceRisk struct {
 	Score *string `json:"score,omitempty"`
 	// IsLegit is the define whether or not the invoice is legit
 	IsLegit *bool `json:"is_legit,omitempty"`
+	// SkipGatewayRules is the skip payment gateway fraud engine rules (on compatible gateways only.)
+	SkipGatewayRules *bool `json:"skip_gateway_rules,omitempty"`
 
 	client *ProcessOut
 }
@@ -41,6 +43,7 @@ func (s *InvoiceRisk) Prefill(c *InvoiceRisk) *InvoiceRisk {
 
 	s.Score = c.Score
 	s.IsLegit = c.IsLegit
+	s.SkipGatewayRules = c.SkipGatewayRules
 
 	return s
 }
