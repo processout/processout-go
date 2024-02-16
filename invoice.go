@@ -42,6 +42,8 @@ type Invoice struct {
 	URL *string `json:"url,omitempty"`
 	// Name is the name of the invoice
 	Name *string `json:"name,omitempty"`
+	// OrderID is the iD of the order for this transaction in merchant's system
+	OrderID *string `json:"order_id,omitempty"`
 	// Amount is the amount to be paid
 	Amount *string `json:"amount,omitempty"`
 	// Currency is the currency of the invoice
@@ -104,6 +106,8 @@ type Invoice struct {
 	Billing *InvoiceBilling `json:"billing,omitempty"`
 	// UnsupportedFeatureBypass is the flags to bypass unsupported features
 	UnsupportedFeatureBypass *UnsupportedFeatureBypass `json:"unsupported_feature_bypass,omitempty"`
+	// Verification is the a boolean to indicate if an invoice is a verification invoice. This is used to manually create a verification invoice.
+	Verification *bool `json:"verification,omitempty"`
 
 	client *ProcessOut
 }
@@ -187,6 +191,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Details = c.Details
 	s.URL = c.URL
 	s.Name = c.Name
+	s.OrderID = c.OrderID
 	s.Amount = c.Amount
 	s.Currency = c.Currency
 	s.MerchantInitiatorType = c.MerchantInitiatorType
@@ -218,6 +223,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.PaymentIntent = c.PaymentIntent
 	s.Billing = c.Billing
 	s.UnsupportedFeatureBypass = c.UnsupportedFeatureBypass
+	s.Verification = c.Verification
 
 	return s
 }
@@ -1351,6 +1357,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		*Options
 		CustomerID                 interface{} `json:"customer_id"`
 		Name                       interface{} `json:"name"`
+		OrderID                    interface{} `json:"order_id"`
 		Amount                     interface{} `json:"amount"`
 		Currency                   interface{} `json:"currency"`
 		Metadata                   interface{} `json:"metadata"`
@@ -1379,10 +1386,12 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		PaymentType                interface{} `json:"payment_type"`
 		Billing                    interface{} `json:"billing"`
 		UnsupportedFeatureBypass   interface{} `json:"unsupported_feature_bypass"`
+		Verification               interface{} `json:"verification"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
 		Name:                       s.Name,
+		OrderID:                    s.OrderID,
 		Amount:                     s.Amount,
 		Currency:                   s.Currency,
 		Metadata:                   s.Metadata,
@@ -1411,6 +1420,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		PaymentType:                s.PaymentType,
 		Billing:                    s.Billing,
 		UnsupportedFeatureBypass:   s.UnsupportedFeatureBypass,
+		Verification:               s.Verification,
 	}
 
 	body, err := json.Marshal(data)
