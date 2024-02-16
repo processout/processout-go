@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.34.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.35.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -109,21 +109,6 @@ func (c *ProcessOut) NewAddon(prefill ...*Addon) *Addon {
 	}
 	if len(prefill) == 0 {
 		return &Addon{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewAPIRequest creates a new APIRequest object
-func (c *ProcessOut) NewAPIRequest(prefill ...*APIRequest) *APIRequest {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the APIRequest, or none.")
-	}
-	if len(prefill) == 0 {
-		return &APIRequest{
 			client: c,
 		}
 	}

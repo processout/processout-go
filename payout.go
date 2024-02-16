@@ -406,6 +406,85 @@ func (s Payout) Find(payoutID string, options ...PayoutFindParameters) (*Payout,
 	return payload.Payout, nil
 }
 
+// PayoutDeleteParameters is the structure representing the
+// additional parameters used to call Payout.Delete
+type PayoutDeleteParameters struct {
+	*Options
+	*Payout
+}
+
+// Delete allows you to delete the payout along with its payout items
+func (s Payout) Delete(payoutID string, options ...PayoutDeleteParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewPayout() method to create a new Payout object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := PayoutDeleteParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Payout)
+
+	type Response struct {
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "/payouts/" + url.QueryEscape(payoutID) + ""
+
+	req, err := http.NewRequest(
+		"DELETE",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
+}
+
 // dummyPayout is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't

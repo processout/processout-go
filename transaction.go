@@ -124,6 +124,12 @@ type Transaction struct {
 	ChargedbackAt *time.Time `json:"chargedback_at,omitempty"`
 	// RefundedAt is the date at which the transaction was refunded
 	RefundedAt *time.Time `json:"refunded_at,omitempty"`
+	// AuthorizedAt is the date at which the transaction was authorized
+	AuthorizedAt *time.Time `json:"authorized_at,omitempty"`
+	// CapturedAt is the date at which the transaction was captured
+	CapturedAt *time.Time `json:"captured_at,omitempty"`
+	// VoidedAt is the date at which the transaction was voided
+	VoidedAt *time.Time `json:"voided_at,omitempty"`
 	// ThreeDS is the 3DS data of a transaction if it was authenticated
 	ThreeDS *ThreeDS `json:"three_d_s,omitempty"`
 	// CvcCheck is the cVC check done during the transaction
@@ -257,6 +263,9 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.CreatedAt = c.CreatedAt
 	s.ChargedbackAt = c.ChargedbackAt
 	s.RefundedAt = c.RefundedAt
+	s.AuthorizedAt = c.AuthorizedAt
+	s.CapturedAt = c.CapturedAt
+	s.VoidedAt = c.VoidedAt
 	s.ThreeDS = c.ThreeDS
 	s.CvcCheck = c.CvcCheck
 	s.AvsCheck = c.AvsCheck
