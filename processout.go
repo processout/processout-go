@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.35.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.36.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -214,6 +214,21 @@ func (c *ProcessOut) NewCardInformation(prefill ...*CardInformation) *CardInform
 	}
 	if len(prefill) == 0 {
 		return &CardInformation{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewPhone creates a new Phone object
+func (c *ProcessOut) NewPhone(prefill ...*Phone) *Phone {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the Phone, or none.")
+	}
+	if len(prefill) == 0 {
+		return &Phone{
 			client: c,
 		}
 	}
@@ -582,6 +597,21 @@ func (c *ProcessOut) NewPayoutItem(prefill ...*PayoutItem) *PayoutItem {
 	return prefill[0]
 }
 
+// NewPayoutItemAmountBreakdowns creates a new PayoutItemAmountBreakdowns object
+func (c *ProcessOut) NewPayoutItemAmountBreakdowns(prefill ...*PayoutItemAmountBreakdowns) *PayoutItemAmountBreakdowns {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the PayoutItemAmountBreakdowns, or none.")
+	}
+	if len(prefill) == 0 {
+		return &PayoutItemAmountBreakdowns{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
 // NewPlan creates a new Plan object
 func (c *ProcessOut) NewPlan(prefill ...*Plan) *Plan {
 	if len(prefill) > 1 {
@@ -829,6 +859,81 @@ func (c *ProcessOut) NewWebhookEndpoint(prefill ...*WebhookEndpoint) *WebhookEnd
 	}
 	if len(prefill) == 0 {
 		return &WebhookEndpoint{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewCardCreateRequest creates a new CardCreateRequest object
+func (c *ProcessOut) NewCardCreateRequest(prefill ...*CardCreateRequest) *CardCreateRequest {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the CardCreateRequest, or none.")
+	}
+	if len(prefill) == 0 {
+		return &CardCreateRequest{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewDevice creates a new Device object
+func (c *ProcessOut) NewDevice(prefill ...*Device) *Device {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the Device, or none.")
+	}
+	if len(prefill) == 0 {
+		return &Device{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewCardContact creates a new CardContact object
+func (c *ProcessOut) NewCardContact(prefill ...*CardContact) *CardContact {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the CardContact, or none.")
+	}
+	if len(prefill) == 0 {
+		return &CardContact{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewCardShipping creates a new CardShipping object
+func (c *ProcessOut) NewCardShipping(prefill ...*CardShipping) *CardShipping {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the CardShipping, or none.")
+	}
+	if len(prefill) == 0 {
+		return &CardShipping{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewCardUpdateRequest creates a new CardUpdateRequest object
+func (c *ProcessOut) NewCardUpdateRequest(prefill ...*CardUpdateRequest) *CardUpdateRequest {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the CardUpdateRequest, or none.")
+	}
+	if len(prefill) == 0 {
+		return &CardUpdateRequest{
 			client: c,
 		}
 	}
