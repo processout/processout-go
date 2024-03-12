@@ -40,6 +40,8 @@ type PayoutItem struct {
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// CreatedAt is the date at which the payout item was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// Breakdown is the breakdown of amount for the item
+	Breakdown *PayoutItemAmountBreakdowns `json:"breakdown,omitempty"`
 
 	client *ProcessOut
 }
@@ -69,6 +71,9 @@ func (s *PayoutItem) SetClient(c *ProcessOut) *PayoutItem {
 	if s.Transaction != nil {
 		s.Transaction.SetClient(c)
 	}
+	if s.Breakdown != nil {
+		s.Breakdown.SetClient(c)
+	}
 
 	return s
 }
@@ -92,6 +97,7 @@ func (s *PayoutItem) Prefill(c *PayoutItem) *PayoutItem {
 	s.Fees = c.Fees
 	s.Metadata = c.Metadata
 	s.CreatedAt = c.CreatedAt
+	s.Breakdown = c.Breakdown
 
 	return s
 }
