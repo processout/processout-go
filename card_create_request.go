@@ -134,8 +134,42 @@ func (s CardCreateRequest) Create(options ...CardCreateRequestCreateParameters) 
 
 	data := struct {
 		*Options
+		Device           interface{} `json:"device"`
+		Name             interface{} `json:"name"`
+		Number           interface{} `json:"number"`
+		ExpDay           interface{} `json:"exp_day"`
+		ExpMonth         interface{} `json:"exp_month"`
+		ExpYear          interface{} `json:"exp_year"`
+		Cvc2             interface{} `json:"cvc2"`
+		PreferredScheme  interface{} `json:"preferred_scheme"`
+		Metadata         interface{} `json:"metadata"`
+		TokenType        interface{} `json:"token_type"`
+		Eci              interface{} `json:"eci"`
+		Cryptogram       interface{} `json:"cryptogram"`
+		ApplepayResponse interface{} `json:"applepay_response"`
+		ApplepayMid      interface{} `json:"applepay_mid"`
+		PaymentToken     interface{} `json:"payment_token"`
+		Contact          interface{} `json:"contact"`
+		Shipping         interface{} `json:"shipping"`
 	}{
-		Options: opt.Options,
+		Options:          opt.Options,
+		Device:           s.Device,
+		Name:             s.Name,
+		Number:           s.Number,
+		ExpDay:           s.ExpDay,
+		ExpMonth:         s.ExpMonth,
+		ExpYear:          s.ExpYear,
+		Cvc2:             s.Cvc2,
+		PreferredScheme:  s.PreferredScheme,
+		Metadata:         s.Metadata,
+		TokenType:        s.TokenType,
+		Eci:              s.Eci,
+		Cryptogram:       s.Cryptogram,
+		ApplepayResponse: s.ApplepayResponse,
+		ApplepayMid:      s.ApplepayMid,
+		PaymentToken:     s.PaymentToken,
+		Contact:          s.Contact,
+		Shipping:         s.Shipping,
 	}
 
 	body, err := json.Marshal(data)

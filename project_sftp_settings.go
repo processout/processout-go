@@ -14,7 +14,7 @@ import (
 
 // ProjectSFTPSettings represents the ProjectSFTPSettings API object
 type ProjectSFTPSettings struct {
-	// Endpoint is the sFTP server endpoint, port is required.
+	// Endpoint is the sFTP server endpoint, port is required
 	Endpoint *string `json:"endpoint,omitempty"`
 	// Username is the sFTP server username
 	Username *string `json:"username,omitempty"`
