@@ -83,8 +83,14 @@ func (s CardUpdateRequest) Update(cardID string, options ...CardUpdateRequestUpd
 
 	data := struct {
 		*Options
+		UpdateType      interface{} `json:"update_type"`
+		UpdateReason    interface{} `json:"update_reason"`
+		PreferredScheme interface{} `json:"preferred_scheme"`
 	}{
-		Options: opt.Options,
+		Options:         opt.Options,
+		UpdateType:      s.UpdateType,
+		UpdateReason:    s.UpdateReason,
+		PreferredScheme: s.PreferredScheme,
 	}
 
 	body, err := json.Marshal(data)
