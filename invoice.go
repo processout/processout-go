@@ -108,6 +108,8 @@ type Invoice struct {
 	UnsupportedFeatureBypass *UnsupportedFeatureBypass `json:"unsupported_feature_bypass,omitempty"`
 	// Verification is the a boolean to indicate if an invoice is a verification invoice. This is used to manually create a verification invoice.
 	Verification *bool `json:"verification,omitempty"`
+	// AutoCaptureAt is the a timestamp to indicate when an auto capture should take place following an authorization. This takes priority over the value sent in the authorization request.
+	AutoCaptureAt *time.Time `json:"auto_capture_at,omitempty"`
 
 	client *ProcessOut
 }
@@ -224,6 +226,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Billing = c.Billing
 	s.UnsupportedFeatureBypass = c.UnsupportedFeatureBypass
 	s.Verification = c.Verification
+	s.AutoCaptureAt = c.AutoCaptureAt
 
 	return s
 }
@@ -1387,6 +1390,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Billing                    interface{} `json:"billing"`
 		UnsupportedFeatureBypass   interface{} `json:"unsupported_feature_bypass"`
 		Verification               interface{} `json:"verification"`
+		AutoCaptureAt              interface{} `json:"auto_capture_at"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
@@ -1421,6 +1425,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		Billing:                    s.Billing,
 		UnsupportedFeatureBypass:   s.UnsupportedFeatureBypass,
 		Verification:               s.Verification,
+		AutoCaptureAt:              s.AutoCaptureAt,
 	}
 
 	body, err := json.Marshal(data)
