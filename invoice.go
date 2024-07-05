@@ -40,6 +40,8 @@ type Invoice struct {
 	Details *[]*InvoiceDetail `json:"details,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the payment
 	URL *string `json:"url,omitempty"`
+	// URLQrcode is the base64-encoded QR code for the invoice URL
+	URLQrcode *string `json:"url_qrcode,omitempty"`
 	// Name is the name of the invoice
 	Name *string `json:"name,omitempty"`
 	// OrderID is the iD of the order for this transaction in merchant's system
@@ -76,6 +78,8 @@ type Invoice struct {
 	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the invoice was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// ExpiresAt is the date at which the invoice will expire
+	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	// Risk is the risk information
 	Risk *InvoiceRisk `json:"risk,omitempty"`
 	// Shipping is the shipping information
@@ -192,6 +196,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.TokenID = c.TokenID
 	s.Details = c.Details
 	s.URL = c.URL
+	s.URLQrcode = c.URLQrcode
 	s.Name = c.Name
 	s.OrderID = c.OrderID
 	s.Amount = c.Amount
@@ -210,6 +215,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.RequireBackendCapture = c.RequireBackendCapture
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
+	s.ExpiresAt = c.ExpiresAt
 	s.Risk = c.Risk
 	s.Shipping = c.Shipping
 	s.Device = c.Device
@@ -333,7 +339,7 @@ type InvoiceAuthorizeParameters struct {
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
-func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters) (*Transaction, error) {
+func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters) (*InvoicesAuthorizeResponse, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -351,11 +357,11 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 	s.Prefill(opt.Invoice)
 
 	type Response struct {
-		Transaction *Transaction `json:"transaction"`
-		HasMore     bool         `json:"has_more"`
-		Success     bool         `json:"success"`
-		Message     string       `json:"message"`
-		Code        string       `json:"error_type"`
+		InvoicesAuthorizeResponse *InvoicesAuthorizeResponse `json:""`
+		HasMore                   bool                       `json:"has_more"`
+		Success                   bool                       `json:"success"`
+		Message                   string                     `json:"message"`
+		Code                      string                     `json:"error_type"`
 	}
 
 	data := struct {
@@ -424,8 +430,8 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		return nil, erri
 	}
 
-	payload.Transaction.SetClient(s.client)
-	return payload.Transaction, nil
+	payload.InvoicesAuthorizeResponse.SetClient(s.client)
+	return payload.InvoicesAuthorizeResponse, nil
 }
 
 // InvoiceCaptureParameters is the structure representing the
@@ -445,7 +451,7 @@ type InvoiceCaptureParameters struct {
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
-func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*Transaction, error) {
+func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*InvoicesCaptureResponse, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -463,11 +469,11 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 	s.Prefill(opt.Invoice)
 
 	type Response struct {
-		Transaction *Transaction `json:"transaction"`
-		HasMore     bool         `json:"has_more"`
-		Success     bool         `json:"success"`
-		Message     string       `json:"message"`
-		Code        string       `json:"error_type"`
+		InvoicesCaptureResponse *InvoicesCaptureResponse `json:""`
+		HasMore                 bool                     `json:"has_more"`
+		Success                 bool                     `json:"success"`
+		Message                 string                   `json:"message"`
+		Code                    string                   `json:"error_type"`
 	}
 
 	data := struct {
@@ -538,8 +544,8 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		return nil, erri
 	}
 
-	payload.Transaction.SetClient(s.client)
-	return payload.Transaction, nil
+	payload.InvoicesCaptureResponse.SetClient(s.client)
+	return payload.InvoicesCaptureResponse, nil
 }
 
 // InvoiceFetchCustomerParameters is the structure representing the
@@ -1391,6 +1397,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		UnsupportedFeatureBypass   interface{} `json:"unsupported_feature_bypass"`
 		Verification               interface{} `json:"verification"`
 		AutoCaptureAt              interface{} `json:"auto_capture_at"`
+		ExpiresAt                  interface{} `json:"expires_at"`
 	}{
 		Options:                    opt.Options,
 		CustomerID:                 s.CustomerID,
@@ -1426,6 +1433,7 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 		UnsupportedFeatureBypass:   s.UnsupportedFeatureBypass,
 		Verification:               s.Verification,
 		AutoCaptureAt:              s.AutoCaptureAt,
+		ExpiresAt:                  s.ExpiresAt,
 	}
 
 	body, err := json.Marshal(data)
@@ -1549,6 +1557,85 @@ func (s Invoice) Find(invoiceID string, options ...InvoiceFindParameters) (*Invo
 
 	payload.Invoice.SetClient(s.client)
 	return payload.Invoice, nil
+}
+
+// InvoiceDeleteParameters is the structure representing the
+// additional parameters used to call Invoice.Delete
+type InvoiceDeleteParameters struct {
+	*Options
+	*Invoice
+}
+
+// Delete allows you to delete an invoice by its ID. Only invoices that have not been used yet can be deleted.
+func (s Invoice) Delete(invoiceID string, options ...InvoiceDeleteParameters) error {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoiceDeleteParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoiceID) + ""
+
+	req, err := http.NewRequest(
+		"DELETE",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return erri
+	}
+
+	return nil
 }
 
 // dummyInvoice is a dummy function that's only

@@ -62,7 +62,7 @@ func TestCaptureInvoice(t *testing.T) {
 	req, _ := http.NewRequest("POST", "https://processout.com?token=test-valid", bytes.NewReader([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
 	gr := NewGatewayRequest("gway_conf_44ae90db0a62f819a404ef6a8ff994ca", req)
-	tr, err := iv.Capture(gr.String())
+	tr, _, err := iv.Capture(gr.String())
 	if err != nil {
 		t.Errorf("The invoice should have been captured, but got: %s", err.Error())
 	}
@@ -166,7 +166,8 @@ func TestExpandCustomerProject(t *testing.T) {
 	cust, _ := p.NewCustomer().Create(CustomerCreateParameters{
 		Options: &Options{
 			Expand: []string{"project"},
-		}})
+		},
+	})
 	if cust.Project == nil {
 		t.Errorf("The customer project should be expanded")
 	}

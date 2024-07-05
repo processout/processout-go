@@ -327,6 +327,7 @@ type TokenCreateParameters struct {
 	SetDefault                interface{} `json:"set_default"`
 	VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
 	InvoiceReturnURL          interface{} `json:"invoice_return_url"`
+	Summary                   interface{} `json:"summary"`
 }
 
 // Create allows you to create a new token for the given customer ID.
@@ -371,6 +372,7 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 		SetDefault                interface{} `json:"set_default"`
 		VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
 		InvoiceReturnURL          interface{} `json:"invoice_return_url"`
+		Summary                   interface{} `json:"summary"`
 	}{
 		Options:                   opt.Options,
 		Metadata:                  s.Metadata,
@@ -387,6 +389,7 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 		SetDefault:                opt.SetDefault,
 		VerifyStatementDescriptor: opt.VerifyStatementDescriptor,
 		InvoiceReturnURL:          opt.InvoiceReturnURL,
+		Summary:                   opt.Summary,
 	}
 
 	body, err := json.Marshal(data)

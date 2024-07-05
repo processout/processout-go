@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.38.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.0.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -987,13 +987,13 @@ func (c *ProcessOut) NewCategoryErrorCodes(prefill ...*CategoryErrorCodes) *Cate
 	return prefill[0]
 }
 
-// NewNativeAPMTransactionDetailsGateway creates a new NativeAPMTransactionDetailsGateway object
-func (c *ProcessOut) NewNativeAPMTransactionDetailsGateway(prefill ...*NativeAPMTransactionDetailsGateway) *NativeAPMTransactionDetailsGateway {
+// NewInvoicesAuthorizeResponse creates a new InvoicesAuthorizeResponse object
+func (c *ProcessOut) NewInvoicesAuthorizeResponse(prefill ...*InvoicesAuthorizeResponse) *InvoicesAuthorizeResponse {
 	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetailsGateway, or none.")
+		panic("You may only provide one structure used to prefill the InvoicesAuthorizeResponse, or none.")
 	}
 	if len(prefill) == 0 {
-		return &NativeAPMTransactionDetailsGateway{
+		return &InvoicesAuthorizeResponse{
 			client: c,
 		}
 	}
@@ -1002,13 +1002,13 @@ func (c *ProcessOut) NewNativeAPMTransactionDetailsGateway(prefill ...*NativeAPM
 	return prefill[0]
 }
 
-// NewNativeAPMTransactionDetailsInvoice creates a new NativeAPMTransactionDetailsInvoice object
-func (c *ProcessOut) NewNativeAPMTransactionDetailsInvoice(prefill ...*NativeAPMTransactionDetailsInvoice) *NativeAPMTransactionDetailsInvoice {
+// NewInvoicesCaptureResponse creates a new InvoicesCaptureResponse object
+func (c *ProcessOut) NewInvoicesCaptureResponse(prefill ...*InvoicesCaptureResponse) *InvoicesCaptureResponse {
 	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetailsInvoice, or none.")
+		panic("You may only provide one structure used to prefill the InvoicesCaptureResponse, or none.")
 	}
 	if len(prefill) == 0 {
-		return &NativeAPMTransactionDetailsInvoice{
+		return &InvoicesCaptureResponse{
 			client: c,
 		}
 	}
@@ -1039,6 +1039,36 @@ func (c *ProcessOut) NewInvoicesProcessNativePaymentResponse(prefill ...*Invoice
 	}
 	if len(prefill) == 0 {
 		return &InvoicesProcessNativePaymentResponse{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewNativeAPMTransactionDetailsGateway creates a new NativeAPMTransactionDetailsGateway object
+func (c *ProcessOut) NewNativeAPMTransactionDetailsGateway(prefill ...*NativeAPMTransactionDetailsGateway) *NativeAPMTransactionDetailsGateway {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetailsGateway, or none.")
+	}
+	if len(prefill) == 0 {
+		return &NativeAPMTransactionDetailsGateway{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewNativeAPMTransactionDetailsInvoice creates a new NativeAPMTransactionDetailsInvoice object
+func (c *ProcessOut) NewNativeAPMTransactionDetailsInvoice(prefill ...*NativeAPMTransactionDetailsInvoice) *NativeAPMTransactionDetailsInvoice {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetailsInvoice, or none.")
+	}
+	if len(prefill) == 0 {
+		return &NativeAPMTransactionDetailsInvoice{
 			client: c,
 		}
 	}

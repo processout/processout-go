@@ -28,6 +28,12 @@ type CardShipping struct {
 	Zip *string `json:"zip,omitempty"`
 	// Phone is the shipping phone number
 	Phone *Phone `json:"phone,omitempty"`
+	// FirstName is the first name of the card shipping
+	FirstName *string `json:"first_name,omitempty"`
+	// LastName is the last name of the card shipping
+	LastName *string `json:"last_name,omitempty"`
+	// Email is the email of the card shipping
+	Email *string `json:"email,omitempty"`
 
 	client *ProcessOut
 }
@@ -59,6 +65,9 @@ func (s *CardShipping) Prefill(c *CardShipping) *CardShipping {
 	s.CountryCode = c.CountryCode
 	s.Zip = c.Zip
 	s.Phone = c.Phone
+	s.FirstName = c.FirstName
+	s.LastName = c.LastName
+	s.Email = c.Email
 
 	return s
 }
