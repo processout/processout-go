@@ -15,11 +15,11 @@ import (
 // InvoiceExternalFraudTools represents the InvoiceExternalFraudTools API object
 type InvoiceExternalFraudTools struct {
 	// Forter is the forter
-	Forter *string `json:"forter,omitempty"`
+	Forter interface{} `json:"forter,omitempty"`
 	// Ravelin is the ravelin
-	Ravelin *string `json:"ravelin,omitempty"`
+	Ravelin interface{} `json:"ravelin,omitempty"`
 	// Signifyd is the signifyd
-	Signifyd *string `json:"signifyd,omitempty"`
+	Signifyd interface{} `json:"signifyd,omitempty"`
 
 	client *ProcessOut
 }

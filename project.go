@@ -441,6 +441,7 @@ type ProjectCreateSupervisedParameters struct {
 	*Options
 	*Project
 	ApplepaySettings interface{} `json:"applepay_settings"`
+	PublicMetadata   interface{} `json:"public_metadata"`
 }
 
 // CreateSupervised allows you to create a new supervised project.
@@ -476,6 +477,7 @@ func (s Project) CreateSupervised(options ...ProjectCreateSupervisedParameters) 
 		DefaultCurrency      interface{} `json:"default_currency"`
 		DunningConfiguration interface{} `json:"dunning_configuration"`
 		ApplepaySettings     interface{} `json:"applepay_settings"`
+		PublicMetadata       interface{} `json:"public_metadata"`
 	}{
 		Options:              opt.Options,
 		ID:                   s.ID,
@@ -483,6 +485,7 @@ func (s Project) CreateSupervised(options ...ProjectCreateSupervisedParameters) 
 		DefaultCurrency:      s.DefaultCurrency,
 		DunningConfiguration: s.DunningConfiguration,
 		ApplepaySettings:     opt.ApplepaySettings,
+		PublicMetadata:       opt.PublicMetadata,
 	}
 
 	body, err := json.Marshal(data)
