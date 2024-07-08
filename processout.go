@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v4.38.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.0.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -1024,21 +1024,6 @@ func (c *ProcessOut) NewNativeAPMTransactionDetails(prefill ...*NativeAPMTransac
 	}
 	if len(prefill) == 0 {
 		return &NativeAPMTransactionDetails{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewInvoicesProcessNativePaymentResponse creates a new InvoicesProcessNativePaymentResponse object
-func (c *ProcessOut) NewInvoicesProcessNativePaymentResponse(prefill ...*InvoicesProcessNativePaymentResponse) *InvoicesProcessNativePaymentResponse {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the InvoicesProcessNativePaymentResponse, or none.")
-	}
-	if len(prefill) == 0 {
-		return &InvoicesProcessNativePaymentResponse{
 			client: c,
 		}
 	}

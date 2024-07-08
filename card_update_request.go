@@ -14,11 +14,7 @@ import (
 
 // CardUpdateRequest represents the CardUpdateRequest API object
 type CardUpdateRequest struct {
-	// UpdateType is the card update type. Possible values: "new-cvc2" or "other"
-	UpdateType *string `json:"update_type,omitempty"`
-	// UpdateReason is the card update reason.
-	UpdateReason *string `json:"update_reason,omitempty"`
-	// PreferredScheme is the customer preferred scheme, such as carte bancaire vs visa
+	// PreferredScheme is the customer preferred scheme, such as carte bancaire vs visa. Can be set to none to clear the previous value
 	PreferredScheme *string `json:"preferred_scheme,omitempty"`
 
 	client *ProcessOut
@@ -41,8 +37,6 @@ func (s *CardUpdateRequest) Prefill(c *CardUpdateRequest) *CardUpdateRequest {
 		return s
 	}
 
-	s.UpdateType = c.UpdateType
-	s.UpdateReason = c.UpdateReason
 	s.PreferredScheme = c.PreferredScheme
 
 	return s
@@ -83,13 +77,9 @@ func (s CardUpdateRequest) Update(cardID string, options ...CardUpdateRequestUpd
 
 	data := struct {
 		*Options
-		UpdateType      interface{} `json:"update_type"`
-		UpdateReason    interface{} `json:"update_reason"`
 		PreferredScheme interface{} `json:"preferred_scheme"`
 	}{
 		Options:         opt.Options,
-		UpdateType:      s.UpdateType,
-		UpdateReason:    s.UpdateReason,
 		PreferredScheme: s.PreferredScheme,
 	}
 
