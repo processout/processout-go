@@ -336,6 +336,8 @@ type InvoiceAuthorizeParameters struct {
 	AutoCaptureAt           interface{} `json:"auto_capture_at"`
 	Metadata                interface{} `json:"metadata"`
 	OverrideMacBlocking     interface{} `json:"override_mac_blocking"`
+	ExternalThreeDS         interface{} `json:"external_three_d_s"`
+	SaveSource              interface{} `json:"save_source"`
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
@@ -377,6 +379,8 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		AutoCaptureAt           interface{} `json:"auto_capture_at"`
 		Metadata                interface{} `json:"metadata"`
 		OverrideMacBlocking     interface{} `json:"override_mac_blocking"`
+		ExternalThreeDS         interface{} `json:"external_three_d_s"`
+		SaveSource              interface{} `json:"save_source"`
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
@@ -390,6 +394,8 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 		AutoCaptureAt:           opt.AutoCaptureAt,
 		Metadata:                opt.Metadata,
 		OverrideMacBlocking:     opt.OverrideMacBlocking,
+		ExternalThreeDS:         opt.ExternalThreeDS,
+		SaveSource:              opt.SaveSource,
 		Source:                  source,
 	}
 
@@ -450,6 +456,8 @@ type InvoiceCaptureParameters struct {
 	Metadata                   interface{} `json:"metadata"`
 	CaptureStatementDescriptor interface{} `json:"capture_statement_descriptor"`
 	OverrideMacBlocking        interface{} `json:"override_mac_blocking"`
+	ExternalThreeDS            interface{} `json:"external_three_d_s"`
+	SaveSource                 interface{} `json:"save_source"`
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
@@ -492,6 +500,8 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		Metadata                   interface{} `json:"metadata"`
 		CaptureStatementDescriptor interface{} `json:"capture_statement_descriptor"`
 		OverrideMacBlocking        interface{} `json:"override_mac_blocking"`
+		ExternalThreeDS            interface{} `json:"external_three_d_s"`
+		SaveSource                 interface{} `json:"save_source"`
 		Source                     interface{} `json:"source"`
 	}{
 		Options:                    opt.Options,
@@ -506,6 +516,8 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 		Metadata:                   opt.Metadata,
 		CaptureStatementDescriptor: opt.CaptureStatementDescriptor,
 		OverrideMacBlocking:        opt.OverrideMacBlocking,
+		ExternalThreeDS:            opt.ExternalThreeDS,
+		SaveSource:                 opt.SaveSource,
 		Source:                     source,
 	}
 

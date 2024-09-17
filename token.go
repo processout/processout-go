@@ -331,7 +331,7 @@ type TokenCreateParameters struct {
 }
 
 // Create allows you to create a new token for the given customer ID.
-func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
+func (s Token) Create(options ...TokenCreateParameters) (*Token, *CustomerAction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewToken() method to create a new Token object")
 	}
@@ -349,11 +349,12 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 	s.Prefill(opt.Token)
 
 	type Response struct {
-		Token   *Token `json:"token"`
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Token          *Token          `json:"token"`
+		CustomerAction *CustomerAction `json:"customer_action"`
+		HasMore        bool            `json:"has_more"`
+		Success        bool            `json:"success"`
+		Message        string          `json:"message"`
+		Code           string          `json:"error_type"`
 	}
 
 	data := struct {
@@ -394,7 +395,7 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 
 	body, err := json.Marshal(data)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, nil, errors.New(err, "", "")
 	}
 
 	path := "/customers/" + url.QueryEscape(*s.CustomerID) + "/tokens"
@@ -405,33 +406,34 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, error) {
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, errors.NewNetworkError(err)
+		return nil, nil, errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, errors.NewNetworkError(err)
+		return nil, nil, errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	if res.StatusCode >= 500 {
-		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+		return nil, nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
 	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, errors.New(err, "", "")
+		return nil, nil, errors.New(err, "", "")
 	}
 
 	if !payload.Success {
 		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
 			payload.Message)
 
-		return nil, erri
+		return nil, nil, erri
 	}
 
 	payload.Token.SetClient(s.client)
-	return payload.Token, nil
+	payload.CustomerAction.SetClient(s.client)
+	return payload.Token, payload.CustomerAction, nil
 }
 
 // TokenSaveParameters is the structure representing the
