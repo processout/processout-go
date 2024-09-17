@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.0.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.1.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -319,6 +319,126 @@ func (c *ProcessOut) NewEvent(prefill ...*Event) *Event {
 	}
 	if len(prefill) == 0 {
 		return &Event{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewExportLayout creates a new ExportLayout object
+func (c *ProcessOut) NewExportLayout(prefill ...*ExportLayout) *ExportLayout {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExportLayout, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExportLayout{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewExportLayoutConfiguration creates a new ExportLayoutConfiguration object
+func (c *ProcessOut) NewExportLayoutConfiguration(prefill ...*ExportLayoutConfiguration) *ExportLayoutConfiguration {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExportLayoutConfiguration, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExportLayoutConfiguration{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewExportLayoutConfigurationColumn creates a new ExportLayoutConfigurationColumn object
+func (c *ProcessOut) NewExportLayoutConfigurationColumn(prefill ...*ExportLayoutConfigurationColumn) *ExportLayoutConfigurationColumn {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExportLayoutConfigurationColumn, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExportLayoutConfigurationColumn{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewExportLayoutConfigurationTime creates a new ExportLayoutConfigurationTime object
+func (c *ProcessOut) NewExportLayoutConfigurationTime(prefill ...*ExportLayoutConfigurationTime) *ExportLayoutConfigurationTime {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExportLayoutConfigurationTime, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExportLayoutConfigurationTime{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewExportLayoutConfigurationAmount creates a new ExportLayoutConfigurationAmount object
+func (c *ProcessOut) NewExportLayoutConfigurationAmount(prefill ...*ExportLayoutConfigurationAmount) *ExportLayoutConfigurationAmount {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExportLayoutConfigurationAmount, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExportLayoutConfigurationAmount{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewExportLayoutConfigurationOptions creates a new ExportLayoutConfigurationOptions object
+func (c *ProcessOut) NewExportLayoutConfigurationOptions(prefill ...*ExportLayoutConfigurationOptions) *ExportLayoutConfigurationOptions {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExportLayoutConfigurationOptions, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExportLayoutConfigurationOptions{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewExportLayoutConfigurationConfigurationOptionsTime creates a new ExportLayoutConfigurationConfigurationOptionsTime object
+func (c *ProcessOut) NewExportLayoutConfigurationConfigurationOptionsTime(prefill ...*ExportLayoutConfigurationConfigurationOptionsTime) *ExportLayoutConfigurationConfigurationOptionsTime {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExportLayoutConfigurationConfigurationOptionsTime, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExportLayoutConfigurationConfigurationOptionsTime{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewExportLayoutConfigurationConfigurationOptionsAmount creates a new ExportLayoutConfigurationConfigurationOptionsAmount object
+func (c *ProcessOut) NewExportLayoutConfigurationConfigurationOptionsAmount(prefill ...*ExportLayoutConfigurationConfigurationOptionsAmount) *ExportLayoutConfigurationConfigurationOptionsAmount {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExportLayoutConfigurationConfigurationOptionsAmount, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExportLayoutConfigurationConfigurationOptionsAmount{
 			client: c,
 		}
 	}
@@ -987,6 +1107,36 @@ func (c *ProcessOut) NewCategoryErrorCodes(prefill ...*CategoryErrorCodes) *Cate
 	return prefill[0]
 }
 
+// NewExternalThreeDS creates a new ExternalThreeDS object
+func (c *ProcessOut) NewExternalThreeDS(prefill ...*ExternalThreeDS) *ExternalThreeDS {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the ExternalThreeDS, or none.")
+	}
+	if len(prefill) == 0 {
+		return &ExternalThreeDS{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewNativeAPMTransactionDetails creates a new NativeAPMTransactionDetails object
+func (c *ProcessOut) NewNativeAPMTransactionDetails(prefill ...*NativeAPMTransactionDetails) *NativeAPMTransactionDetails {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetails, or none.")
+	}
+	if len(prefill) == 0 {
+		return &NativeAPMTransactionDetails{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
 // NewNativeAPMTransactionDetailsGateway creates a new NativeAPMTransactionDetailsGateway object
 func (c *ProcessOut) NewNativeAPMTransactionDetailsGateway(prefill ...*NativeAPMTransactionDetailsGateway) *NativeAPMTransactionDetailsGateway {
 	if len(prefill) > 1 {
@@ -1009,21 +1159,6 @@ func (c *ProcessOut) NewNativeAPMTransactionDetailsInvoice(prefill ...*NativeAPM
 	}
 	if len(prefill) == 0 {
 		return &NativeAPMTransactionDetailsInvoice{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewNativeAPMTransactionDetails creates a new NativeAPMTransactionDetails object
-func (c *ProcessOut) NewNativeAPMTransactionDetails(prefill ...*NativeAPMTransactionDetails) *NativeAPMTransactionDetails {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetails, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMTransactionDetails{
 			client: c,
 		}
 	}
