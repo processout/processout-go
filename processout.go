@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.1.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.2.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -1002,6 +1002,36 @@ func (c *ProcessOut) NewWebhookEndpoint(prefill ...*WebhookEndpoint) *WebhookEnd
 	return prefill[0]
 }
 
+// NewCardShipping creates a new CardShipping object
+func (c *ProcessOut) NewCardShipping(prefill ...*CardShipping) *CardShipping {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the CardShipping, or none.")
+	}
+	if len(prefill) == 0 {
+		return &CardShipping{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewCardUpdateRequest creates a new CardUpdateRequest object
+func (c *ProcessOut) NewCardUpdateRequest(prefill ...*CardUpdateRequest) *CardUpdateRequest {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the CardUpdateRequest, or none.")
+	}
+	if len(prefill) == 0 {
+		return &CardUpdateRequest{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
 // NewCardCreateRequest creates a new CardCreateRequest object
 func (c *ProcessOut) NewCardCreateRequest(prefill ...*CardCreateRequest) *CardCreateRequest {
 	if len(prefill) > 1 {
@@ -1039,36 +1069,6 @@ func (c *ProcessOut) NewCardContact(prefill ...*CardContact) *CardContact {
 	}
 	if len(prefill) == 0 {
 		return &CardContact{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewCardShipping creates a new CardShipping object
-func (c *ProcessOut) NewCardShipping(prefill ...*CardShipping) *CardShipping {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the CardShipping, or none.")
-	}
-	if len(prefill) == 0 {
-		return &CardShipping{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
-// NewCardUpdateRequest creates a new CardUpdateRequest object
-func (c *ProcessOut) NewCardUpdateRequest(prefill ...*CardUpdateRequest) *CardUpdateRequest {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the CardUpdateRequest, or none.")
-	}
-	if len(prefill) == 0 {
-		return &CardUpdateRequest{
 			client: c,
 		}
 	}

@@ -1656,6 +1656,176 @@ func (s Invoice) Delete(invoiceID string, options ...InvoiceDeleteParameters) er
 	return nil
 }
 
+// InvoiceSyncWithPSPParameters is the structure representing the
+// additional parameters used to call Invoice.SyncWithPSP
+type InvoiceSyncWithPSPParameters struct {
+	*Options
+	*Invoice
+}
+
+// SyncWithPSP allows you to refresh invoice by its ID with PSP.
+func (s Invoice) SyncWithPSP(invoiceID string, options ...InvoiceSyncWithPSPParameters) (*Invoice, error) {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoiceSyncWithPSPParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		Invoice *Invoice `json:"invoice"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+	}{
+		Options: opt.Options,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoiceID) + "/sync-with-psp"
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Invoice.SetClient(s.client)
+	return payload.Invoice, nil
+}
+
+// InvoiceUpdateParameters is the structure representing the
+// additional parameters used to call Invoice.Update
+type InvoiceUpdateParameters struct {
+	*Options
+	*Invoice
+}
+
+// Update allows you to update invoice by its ID.
+func (s Invoice) Update(invoiceID string, options ...InvoiceUpdateParameters) (*Invoice, error) {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoiceUpdateParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		Invoice *Invoice `json:"invoice"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+		Amount   interface{} `json:"amount"`
+		Tax      interface{} `json:"tax"`
+		Details  interface{} `json:"details"`
+		Shipping interface{} `json:"shipping"`
+	}{
+		Options:  opt.Options,
+		Amount:   s.Amount,
+		Tax:      s.Tax,
+		Details:  s.Details,
+		Shipping: s.Shipping,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	path := "/invoices/" + url.QueryEscape(invoiceID) + ""
+
+	req, err := http.NewRequest(
+		"PUT",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, erri
+	}
+
+	payload.Invoice.SetClient(s.client)
+	return payload.Invoice, nil
+}
+
 // dummyInvoice is a dummy function that's only
 // here because some files need specific packages and some don't.
 // It's easier to include it for every file. In case you couldn't
