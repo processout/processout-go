@@ -50,6 +50,8 @@ type TransactionOperation struct {
 	Arn *string `json:"arn,omitempty"`
 	// ErrorCode is the error code returned when attempting the operation, if any
 	ErrorCode *string `json:"error_code,omitempty"`
+	// ErrorMessage is the error message returned when attempting the operation, if any
+	ErrorMessage *string `json:"error_message,omitempty"`
 	// GatewayData is the additionnal context saved when processing the transaction on the specific PSP
 	GatewayData *map[string]string `json:"gateway_data,omitempty"`
 	// PaymentDataThreeDSRequest is the threeDS request payment data (read-only)
@@ -62,6 +64,8 @@ type TransactionOperation struct {
 	InitialSchemeTransactionID *string `json:"initial_scheme_transaction_id,omitempty"`
 	// SchemeID is the the ID assigned to the transaction by the scheme in the last successful authorization
 	SchemeID *string `json:"scheme_id,omitempty"`
+	// ProcessedWithNetworkToken is the indicates whether the transaction was processed with a network token instead of raw card details
+	ProcessedWithNetworkToken *bool `json:"processed_with_network_token,omitempty"`
 	// PaymentType is the payment type of the transaction
 	PaymentType *string `json:"payment_type,omitempty"`
 	// Metadata is the metadata related to the operation, in the form of a dictionary (key-value pair)
@@ -139,12 +143,14 @@ func (s *TransactionOperation) Prefill(c *TransactionOperation) *TransactionOper
 	s.GatewayOperationID = c.GatewayOperationID
 	s.Arn = c.Arn
 	s.ErrorCode = c.ErrorCode
+	s.ErrorMessage = c.ErrorMessage
 	s.GatewayData = c.GatewayData
 	s.PaymentDataThreeDSRequest = c.PaymentDataThreeDSRequest
 	s.PaymentDataThreeDSAuthentication = c.PaymentDataThreeDSAuthentication
 	s.PaymentDataNetworkAuthentication = c.PaymentDataNetworkAuthentication
 	s.InitialSchemeTransactionID = c.InitialSchemeTransactionID
 	s.SchemeID = c.SchemeID
+	s.ProcessedWithNetworkToken = c.ProcessedWithNetworkToken
 	s.PaymentType = c.PaymentType
 	s.Metadata = c.Metadata
 	s.GatewayFee = c.GatewayFee
