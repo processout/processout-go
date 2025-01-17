@@ -40,6 +40,8 @@ type Customer struct {
 	FirstName *string `json:"first_name,omitempty"`
 	// LastName is the last name of the customer
 	LastName *string `json:"last_name,omitempty"`
+	// CompanyName is the company name of the customer (for business customers only)
+	CompanyName *string `json:"company_name,omitempty"`
 	// Address1 is the address of the customer
 	Address1 *string `json:"address1,omitempty"`
 	// Address2 is the secondary address of the customer
@@ -126,6 +128,7 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.Email = c.Email
 	s.FirstName = c.FirstName
 	s.LastName = c.LastName
+	s.CompanyName = c.CompanyName
 	s.Address1 = c.Address1
 	s.Address2 = c.Address2
 	s.City = c.City
@@ -775,6 +778,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		Email         interface{} `json:"email"`
 		FirstName     interface{} `json:"first_name"`
 		LastName      interface{} `json:"last_name"`
+		CompanyName   interface{} `json:"company_name"`
 		Address1      interface{} `json:"address1"`
 		Address2      interface{} `json:"address2"`
 		City          interface{} `json:"city"`
@@ -798,6 +802,7 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 		Email:         s.Email,
 		FirstName:     s.FirstName,
 		LastName:      s.LastName,
+		CompanyName:   s.CompanyName,
 		Address1:      s.Address1,
 		Address2:      s.Address2,
 		City:          s.City,
@@ -979,6 +984,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		Email          interface{} `json:"email"`
 		FirstName      interface{} `json:"first_name"`
 		LastName       interface{} `json:"last_name"`
+		CompanyName    interface{} `json:"company_name"`
 		Address1       interface{} `json:"address1"`
 		Address2       interface{} `json:"address2"`
 		City           interface{} `json:"city"`
@@ -1001,6 +1007,7 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 		Email:          s.Email,
 		FirstName:      s.FirstName,
 		LastName:       s.LastName,
+		CompanyName:    s.CompanyName,
 		Address1:       s.Address1,
 		Address2:       s.Address2,
 		City:           s.City,

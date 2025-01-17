@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.1.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.2.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -1122,21 +1122,6 @@ func (c *ProcessOut) NewExternalThreeDS(prefill ...*ExternalThreeDS) *ExternalTh
 	return prefill[0]
 }
 
-// NewNativeAPMTransactionDetails creates a new NativeAPMTransactionDetails object
-func (c *ProcessOut) NewNativeAPMTransactionDetails(prefill ...*NativeAPMTransactionDetails) *NativeAPMTransactionDetails {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetails, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMTransactionDetails{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
 // NewNativeAPMTransactionDetailsGateway creates a new NativeAPMTransactionDetailsGateway object
 func (c *ProcessOut) NewNativeAPMTransactionDetailsGateway(prefill ...*NativeAPMTransactionDetailsGateway) *NativeAPMTransactionDetailsGateway {
 	if len(prefill) > 1 {
@@ -1159,6 +1144,21 @@ func (c *ProcessOut) NewNativeAPMTransactionDetailsInvoice(prefill ...*NativeAPM
 	}
 	if len(prefill) == 0 {
 		return &NativeAPMTransactionDetailsInvoice{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewNativeAPMTransactionDetails creates a new NativeAPMTransactionDetails object
+func (c *ProcessOut) NewNativeAPMTransactionDetails(prefill ...*NativeAPMTransactionDetails) *NativeAPMTransactionDetails {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetails, or none.")
+	}
+	if len(prefill) == 0 {
+		return &NativeAPMTransactionDetails{
 			client: c,
 		}
 	}
