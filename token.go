@@ -28,7 +28,7 @@ type Token struct {
 	Card *Card `json:"card,omitempty"`
 	// CardID is the iD of the card used to create the token, if any
 	CardID *string `json:"card_id,omitempty"`
-	// Type is the type of the token. Can be card or gateway_token
+	// Type is the type of the token. Can be card, bank_account or gateway_token
 	Type *string `json:"type,omitempty"`
 	// Metadata is the metadata related to the token, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
@@ -40,7 +40,7 @@ type Token struct {
 	ReturnURL *string `json:"return_url,omitempty"`
 	// CancelURL is the uRL where the customer will be redirected if the tokenization was canceled (if required by tokenization method)
 	CancelURL *string `json:"cancel_url,omitempty"`
-	// Summary is the summary of the customer token, such as a description of the card used or the email of a PayPal account
+	// Summary is the summary of the customer token, such as a description of the card used or bank account or the email of a PayPal account
 	Summary *string `json:"summary,omitempty"`
 	// IsChargeable is the true if the token is chargeable, false otherwise
 	IsChargeable *bool `json:"is_chargeable,omitempty"`

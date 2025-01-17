@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.1.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.2.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -657,6 +657,51 @@ func (c *ProcessOut) NewInvoiceDetail(prefill ...*InvoiceDetail) *InvoiceDetail 
 	return prefill[0]
 }
 
+// NewInvoiceSubmerchant creates a new InvoiceSubmerchant object
+func (c *ProcessOut) NewInvoiceSubmerchant(prefill ...*InvoiceSubmerchant) *InvoiceSubmerchant {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the InvoiceSubmerchant, or none.")
+	}
+	if len(prefill) == 0 {
+		return &InvoiceSubmerchant{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewSubmerchantPhoneNumber creates a new SubmerchantPhoneNumber object
+func (c *ProcessOut) NewSubmerchantPhoneNumber(prefill ...*SubmerchantPhoneNumber) *SubmerchantPhoneNumber {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the SubmerchantPhoneNumber, or none.")
+	}
+	if len(prefill) == 0 {
+		return &SubmerchantPhoneNumber{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewSubmerchantAddress creates a new SubmerchantAddress object
+func (c *ProcessOut) NewSubmerchantAddress(prefill ...*SubmerchantAddress) *SubmerchantAddress {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the SubmerchantAddress, or none.")
+	}
+	if len(prefill) == 0 {
+		return &SubmerchantAddress{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
 // NewCustomerAction creates a new CustomerAction object
 func (c *ProcessOut) NewCustomerAction(prefill ...*CustomerAction) *CustomerAction {
 	if len(prefill) > 1 {
@@ -1122,21 +1167,6 @@ func (c *ProcessOut) NewExternalThreeDS(prefill ...*ExternalThreeDS) *ExternalTh
 	return prefill[0]
 }
 
-// NewNativeAPMTransactionDetails creates a new NativeAPMTransactionDetails object
-func (c *ProcessOut) NewNativeAPMTransactionDetails(prefill ...*NativeAPMTransactionDetails) *NativeAPMTransactionDetails {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetails, or none.")
-	}
-	if len(prefill) == 0 {
-		return &NativeAPMTransactionDetails{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
 // NewNativeAPMTransactionDetailsGateway creates a new NativeAPMTransactionDetailsGateway object
 func (c *ProcessOut) NewNativeAPMTransactionDetailsGateway(prefill ...*NativeAPMTransactionDetailsGateway) *NativeAPMTransactionDetailsGateway {
 	if len(prefill) > 1 {
@@ -1159,6 +1189,21 @@ func (c *ProcessOut) NewNativeAPMTransactionDetailsInvoice(prefill ...*NativeAPM
 	}
 	if len(prefill) == 0 {
 		return &NativeAPMTransactionDetailsInvoice{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewNativeAPMTransactionDetails creates a new NativeAPMTransactionDetails object
+func (c *ProcessOut) NewNativeAPMTransactionDetails(prefill ...*NativeAPMTransactionDetails) *NativeAPMTransactionDetails {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the NativeAPMTransactionDetails, or none.")
+	}
+	if len(prefill) == 0 {
+		return &NativeAPMTransactionDetails{
 			client: c,
 		}
 	}
