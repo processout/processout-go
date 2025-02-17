@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/processout.v4/errors"
+	"gopkg.in/processout.v5/errors"
 )
 
 // CardCreateRequest represents the CardCreateRequest API object

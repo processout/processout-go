@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/processout.v4/errors"
+	"gopkg.in/processout.v5/errors"
 )
 
 // Discount represents the Discount API object
