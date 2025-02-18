@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/processout.v4/errors"
+	"gopkg.in/processout.v5/errors"
 )
 
 // ExportLayoutConfigurationColumn represents the ExportLayoutConfigurationColumn API object

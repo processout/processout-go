@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"gopkg.in/processout.v4/errors"
+	"gopkg.in/processout.v5/errors"
 )
 
 // NativeAPMParameterValueDefinition represents the NativeAPMParameterValueDefinition API object
