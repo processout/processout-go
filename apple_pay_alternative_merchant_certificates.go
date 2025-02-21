@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -54,6 +55,11 @@ type ApplePayAlternativeMerchantCertificatesFetchParameters struct {
 
 // Fetch allows you to fetch the project's alternative certificates by ID
 func (s ApplePayAlternativeMerchantCertificates) Fetch(options ...ApplePayAlternativeMerchantCertificatesFetchParameters) (*ApplePayAlternativeMerchantCertificates, error) {
+	return s.FetchWithContext(context.Background(), options...)
+}
+
+// Fetch allows you to fetch the project's alternative certificates by ID, passes the provided context to the request
+func (s ApplePayAlternativeMerchantCertificates) FetchWithContext(ctx context.Context, options ...ApplePayAlternativeMerchantCertificatesFetchParameters) (*ApplePayAlternativeMerchantCertificates, error) {
 	if s.client == nil {
 		panic("Please use the client.NewApplePayAlternativeMerchantCertificates() method to create a new ApplePayAlternativeMerchantCertificates object")
 	}
@@ -91,7 +97,8 @@ func (s ApplePayAlternativeMerchantCertificates) Fetch(options ...ApplePayAltern
 
 	path := "/projects/applepay/alternative-merchant-certificates"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

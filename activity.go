@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -81,6 +82,11 @@ type ActivityAllParameters struct {
 
 // All allows you to get all the project activities.
 func (s Activity) All(options ...ActivityAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the project activities., passes the provided context to the request
+func (s Activity) AllWithContext(ctx context.Context, options ...ActivityAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewActivity() method to create a new Activity object")
 	}
@@ -119,7 +125,8 @@ func (s Activity) All(options ...ActivityAllParameters) (*Iterator, error) {
 
 	path := "/activities"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -188,6 +195,11 @@ type ActivityFindParameters struct {
 
 // Find allows you to find a specific activity and fetch its data.
 func (s Activity) Find(activityID string, options ...ActivityFindParameters) (*Activity, error) {
+	return s.FindWithContext(context.Background(), activityID, options...)
+}
+
+// Find allows you to find a specific activity and fetch its data., passes the provided context to the request
+func (s Activity) FindWithContext(ctx context.Context, activityID string, options ...ActivityFindParameters) (*Activity, error) {
 	if s.client == nil {
 		panic("Please use the client.NewActivity() method to create a new Activity object")
 	}
@@ -225,7 +237,8 @@ func (s Activity) Find(activityID string, options ...ActivityFindParameters) (*A
 
 	path := "/activities/" + url.QueryEscape(activityID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

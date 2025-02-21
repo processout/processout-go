@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -60,6 +61,11 @@ type AlternativeMerchantCertificateSaveParameters struct {
 
 // Save allows you to save new alternative apple pay certificates
 func (s AlternativeMerchantCertificate) Save(options ...AlternativeMerchantCertificateSaveParameters) (*AlternativeMerchantCertificate, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save new alternative apple pay certificates, passes the provided context to the request
+func (s AlternativeMerchantCertificate) SaveWithContext(ctx context.Context, options ...AlternativeMerchantCertificateSaveParameters) (*AlternativeMerchantCertificate, error) {
 	if s.client == nil {
 		panic("Please use the client.NewAlternativeMerchantCertificate() method to create a new AlternativeMerchantCertificate object")
 	}
@@ -97,7 +103,8 @@ func (s AlternativeMerchantCertificate) Save(options ...AlternativeMerchantCerti
 
 	path := "/projects/applepay/alternative-merchant-certificates"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -141,6 +148,11 @@ type AlternativeMerchantCertificateDeleteParameters struct {
 
 // Delete allows you to delete a given alternative merchant certificate
 func (s AlternativeMerchantCertificate) Delete(options ...AlternativeMerchantCertificateDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete a given alternative merchant certificate, passes the provided context to the request
+func (s AlternativeMerchantCertificate) DeleteWithContext(ctx context.Context, options ...AlternativeMerchantCertificateDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewAlternativeMerchantCertificate() method to create a new AlternativeMerchantCertificate object")
 	}
@@ -177,7 +189,8 @@ func (s AlternativeMerchantCertificate) Delete(options ...AlternativeMerchantCer
 
 	path := "/projects/applepay/alternative-merchant-certificates/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

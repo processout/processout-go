@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -288,6 +289,11 @@ type TransactionFetchRefundsParameters struct {
 
 // FetchRefunds allows you to get the transaction's refunds.
 func (s Transaction) FetchRefunds(options ...TransactionFetchRefundsParameters) (*Iterator, error) {
+	return s.FetchRefundsWithContext(context.Background(), options...)
+}
+
+// FetchRefunds allows you to get the transaction's refunds., passes the provided context to the request
+func (s Transaction) FetchRefundsWithContext(ctx context.Context, options ...TransactionFetchRefundsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewTransaction() method to create a new Transaction object")
 	}
@@ -326,7 +332,8 @@ func (s Transaction) FetchRefunds(options ...TransactionFetchRefundsParameters) 
 
 	path := "/transactions/" + url.QueryEscape(*s.ID) + "/refunds"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -395,6 +402,11 @@ type TransactionFindRefundParameters struct {
 
 // FindRefund allows you to find a transaction's refund by its ID.
 func (s Transaction) FindRefund(refundID string, options ...TransactionFindRefundParameters) (*Refund, error) {
+	return s.FindRefundWithContext(context.Background(), refundID, options...)
+}
+
+// FindRefund allows you to find a transaction's refund by its ID., passes the provided context to the request
+func (s Transaction) FindRefundWithContext(ctx context.Context, refundID string, options ...TransactionFindRefundParameters) (*Refund, error) {
 	if s.client == nil {
 		panic("Please use the client.NewTransaction() method to create a new Transaction object")
 	}
@@ -432,7 +444,8 @@ func (s Transaction) FindRefund(refundID string, options ...TransactionFindRefun
 
 	path := "/transactions/" + url.QueryEscape(*s.ID) + "/refunds/" + url.QueryEscape(refundID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -476,6 +489,11 @@ type TransactionAllParameters struct {
 
 // All allows you to get all the transactions.
 func (s Transaction) All(options ...TransactionAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the transactions., passes the provided context to the request
+func (s Transaction) AllWithContext(ctx context.Context, options ...TransactionAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewTransaction() method to create a new Transaction object")
 	}
@@ -514,7 +532,8 @@ func (s Transaction) All(options ...TransactionAllParameters) (*Iterator, error)
 
 	path := "/transactions"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -583,6 +602,11 @@ type TransactionListParameters struct {
 
 // List allows you to get full transactions data for specified list of ids.
 func (s Transaction) List(options ...TransactionListParameters) (*Iterator, error) {
+	return s.ListWithContext(context.Background(), options...)
+}
+
+// List allows you to get full transactions data for specified list of ids., passes the provided context to the request
+func (s Transaction) ListWithContext(ctx context.Context, options ...TransactionListParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewTransaction() method to create a new Transaction object")
 	}
@@ -621,7 +645,8 @@ func (s Transaction) List(options ...TransactionListParameters) (*Iterator, erro
 
 	path := "/transactions"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -690,6 +715,11 @@ type TransactionFindParameters struct {
 
 // Find allows you to find a transaction by its ID.
 func (s Transaction) Find(transactionID string, options ...TransactionFindParameters) (*Transaction, error) {
+	return s.FindWithContext(context.Background(), transactionID, options...)
+}
+
+// Find allows you to find a transaction by its ID., passes the provided context to the request
+func (s Transaction) FindWithContext(ctx context.Context, transactionID string, options ...TransactionFindParameters) (*Transaction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewTransaction() method to create a new Transaction object")
 	}
@@ -727,7 +757,8 @@ func (s Transaction) Find(transactionID string, options ...TransactionFindParame
 
 	path := "/transactions/" + url.QueryEscape(transactionID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

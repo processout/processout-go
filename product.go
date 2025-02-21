@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -96,6 +97,11 @@ type ProductCreateInvoiceParameters struct {
 
 // CreateInvoice allows you to create a new invoice from the product.
 func (s Product) CreateInvoice(options ...ProductCreateInvoiceParameters) (*Invoice, error) {
+	return s.CreateInvoiceWithContext(context.Background(), options...)
+}
+
+// CreateInvoice allows you to create a new invoice from the product., passes the provided context to the request
+func (s Product) CreateInvoiceWithContext(ctx context.Context, options ...ProductCreateInvoiceParameters) (*Invoice, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
@@ -133,7 +139,8 @@ func (s Product) CreateInvoice(options ...ProductCreateInvoiceParameters) (*Invo
 
 	path := "/products/" + url.QueryEscape(*s.ID) + "/invoices"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -177,6 +184,11 @@ type ProductAllParameters struct {
 
 // All allows you to get all the products.
 func (s Product) All(options ...ProductAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the products., passes the provided context to the request
+func (s Product) AllWithContext(ctx context.Context, options ...ProductAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
@@ -215,7 +227,8 @@ func (s Product) All(options ...ProductAllParameters) (*Iterator, error) {
 
 	path := "/products"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -284,6 +297,11 @@ type ProductCreateParameters struct {
 
 // Create allows you to create a new product.
 func (s Product) Create(options ...ProductCreateParameters) (*Product, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new product., passes the provided context to the request
+func (s Product) CreateWithContext(ctx context.Context, options ...ProductCreateParameters) (*Product, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
@@ -333,7 +351,8 @@ func (s Product) Create(options ...ProductCreateParameters) (*Product, error) {
 
 	path := "/products"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -377,6 +396,11 @@ type ProductFindParameters struct {
 
 // Find allows you to find a product by its ID.
 func (s Product) Find(productID string, options ...ProductFindParameters) (*Product, error) {
+	return s.FindWithContext(context.Background(), productID, options...)
+}
+
+// Find allows you to find a product by its ID., passes the provided context to the request
+func (s Product) FindWithContext(ctx context.Context, productID string, options ...ProductFindParameters) (*Product, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
@@ -414,7 +438,8 @@ func (s Product) Find(productID string, options ...ProductFindParameters) (*Prod
 
 	path := "/products/" + url.QueryEscape(productID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -458,6 +483,11 @@ type ProductSaveParameters struct {
 
 // Save allows you to save the updated product attributes.
 func (s Product) Save(options ...ProductSaveParameters) (*Product, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated product attributes., passes the provided context to the request
+func (s Product) SaveWithContext(ctx context.Context, options ...ProductSaveParameters) (*Product, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
@@ -507,7 +537,8 @@ func (s Product) Save(options ...ProductSaveParameters) (*Product, error) {
 
 	path := "/products/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -551,6 +582,11 @@ type ProductDeleteParameters struct {
 
 // Delete allows you to delete the product.
 func (s Product) Delete(options ...ProductDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete the product., passes the provided context to the request
+func (s Product) DeleteWithContext(ctx context.Context, options ...ProductDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewProduct() method to create a new Product object")
 	}
@@ -587,7 +623,8 @@ func (s Product) Delete(options ...ProductDeleteParameters) error {
 
 	path := "/products/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -159,6 +160,11 @@ type CustomerFetchSubscriptionsParameters struct {
 
 // FetchSubscriptions allows you to get the subscriptions belonging to the customer.
 func (s Customer) FetchSubscriptions(options ...CustomerFetchSubscriptionsParameters) (*Iterator, error) {
+	return s.FetchSubscriptionsWithContext(context.Background(), options...)
+}
+
+// FetchSubscriptions allows you to get the subscriptions belonging to the customer., passes the provided context to the request
+func (s Customer) FetchSubscriptionsWithContext(ctx context.Context, options ...CustomerFetchSubscriptionsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -197,7 +203,8 @@ func (s Customer) FetchSubscriptions(options ...CustomerFetchSubscriptionsParame
 
 	path := "/customers/" + url.QueryEscape(*s.ID) + "/subscriptions"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -266,6 +273,11 @@ type CustomerFetchTokensParameters struct {
 
 // FetchTokens allows you to get the customer's tokens.
 func (s Customer) FetchTokens(options ...CustomerFetchTokensParameters) (*Iterator, error) {
+	return s.FetchTokensWithContext(context.Background(), options...)
+}
+
+// FetchTokens allows you to get the customer's tokens., passes the provided context to the request
+func (s Customer) FetchTokensWithContext(ctx context.Context, options ...CustomerFetchTokensParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -304,7 +316,8 @@ func (s Customer) FetchTokens(options ...CustomerFetchTokensParameters) (*Iterat
 
 	path := "/customers/" + url.QueryEscape(*s.ID) + "/tokens"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -373,6 +386,11 @@ type CustomerFindTokenParameters struct {
 
 // FindToken allows you to find a customer's token by its ID.
 func (s Customer) FindToken(tokenID string, options ...CustomerFindTokenParameters) (*Token, error) {
+	return s.FindTokenWithContext(context.Background(), tokenID, options...)
+}
+
+// FindToken allows you to find a customer's token by its ID., passes the provided context to the request
+func (s Customer) FindTokenWithContext(ctx context.Context, tokenID string, options ...CustomerFindTokenParameters) (*Token, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -410,7 +428,8 @@ func (s Customer) FindToken(tokenID string, options ...CustomerFindTokenParamete
 
 	path := "/customers/" + url.QueryEscape(*s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -454,6 +473,11 @@ type CustomerDeleteTokenParameters struct {
 
 // DeleteToken allows you to delete a customer's token by its ID.
 func (s Customer) DeleteToken(tokenID string, options ...CustomerDeleteTokenParameters) error {
+	return s.DeleteTokenWithContext(context.Background(), tokenID, options...)
+}
+
+// DeleteToken allows you to delete a customer's token by its ID., passes the provided context to the request
+func (s Customer) DeleteTokenWithContext(ctx context.Context, tokenID string, options ...CustomerDeleteTokenParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -490,7 +514,8 @@ func (s Customer) DeleteToken(tokenID string, options ...CustomerDeleteTokenPara
 
 	path := "/customers/" + url.QueryEscape(*s.ID) + "/tokens/" + url.QueryEscape(tokenID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),
@@ -533,6 +558,11 @@ type CustomerFetchTransactionsParameters struct {
 
 // FetchTransactions allows you to get the transactions belonging to the customer.
 func (s Customer) FetchTransactions(options ...CustomerFetchTransactionsParameters) (*Iterator, error) {
+	return s.FetchTransactionsWithContext(context.Background(), options...)
+}
+
+// FetchTransactions allows you to get the transactions belonging to the customer., passes the provided context to the request
+func (s Customer) FetchTransactionsWithContext(ctx context.Context, options ...CustomerFetchTransactionsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -571,7 +601,8 @@ func (s Customer) FetchTransactions(options ...CustomerFetchTransactionsParamete
 
 	path := "/customers/" + url.QueryEscape(*s.ID) + "/transactions"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -640,6 +671,11 @@ type CustomerAllParameters struct {
 
 // All allows you to get all the customers.
 func (s Customer) All(options ...CustomerAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the customers., passes the provided context to the request
+func (s Customer) AllWithContext(ctx context.Context, options ...CustomerAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -678,7 +714,8 @@ func (s Customer) All(options ...CustomerAllParameters) (*Iterator, error) {
 
 	path := "/customers"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -747,6 +784,11 @@ type CustomerCreateParameters struct {
 
 // Create allows you to create a new customer.
 func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new customer., passes the provided context to the request
+func (s Customer) CreateWithContext(ctx context.Context, options ...CustomerCreateParameters) (*Customer, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -828,7 +870,8 @@ func (s Customer) Create(options ...CustomerCreateParameters) (*Customer, error)
 
 	path := "/customers"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -872,6 +915,11 @@ type CustomerFindParameters struct {
 
 // Find allows you to find a customer by its ID.
 func (s Customer) Find(customerID string, options ...CustomerFindParameters) (*Customer, error) {
+	return s.FindWithContext(context.Background(), customerID, options...)
+}
+
+// Find allows you to find a customer by its ID., passes the provided context to the request
+func (s Customer) FindWithContext(ctx context.Context, customerID string, options ...CustomerFindParameters) (*Customer, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -909,7 +957,8 @@ func (s Customer) Find(customerID string, options ...CustomerFindParameters) (*C
 
 	path := "/customers/" + url.QueryEscape(customerID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -953,6 +1002,11 @@ type CustomerSaveParameters struct {
 
 // Save allows you to save the updated customer attributes.
 func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated customer attributes., passes the provided context to the request
+func (s Customer) SaveWithContext(ctx context.Context, options ...CustomerSaveParameters) (*Customer, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -1032,7 +1086,8 @@ func (s Customer) Save(options ...CustomerSaveParameters) (*Customer, error) {
 
 	path := "/customers/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -1076,6 +1131,11 @@ type CustomerDeleteParameters struct {
 
 // Delete allows you to delete the customer.
 func (s Customer) Delete(options ...CustomerDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete the customer., passes the provided context to the request
+func (s Customer) DeleteWithContext(ctx context.Context, options ...CustomerDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewCustomer() method to create a new Customer object")
 	}
@@ -1112,7 +1172,8 @@ func (s Customer) Delete(options ...CustomerDeleteParameters) error {
 
 	path := "/customers/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -94,6 +95,11 @@ type RefundCreateForInvoiceParameters struct {
 
 // CreateForInvoice allows you to create a refund for an invoice.
 func (s Refund) CreateForInvoice(invoiceID string, options ...RefundCreateForInvoiceParameters) error {
+	return s.CreateForInvoiceWithContext(context.Background(), invoiceID, options...)
+}
+
+// CreateForInvoice allows you to create a refund for an invoice., passes the provided context to the request
+func (s Refund) CreateForInvoiceWithContext(ctx context.Context, invoiceID string, options ...RefundCreateForInvoiceParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewRefund() method to create a new Refund object")
 	}
@@ -140,7 +146,8 @@ func (s Refund) CreateForInvoice(invoiceID string, options ...RefundCreateForInv
 
 	path := "/invoices/" + url.QueryEscape(invoiceID) + "/refunds"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -183,6 +190,11 @@ type RefundFetchTransactionRefundsParameters struct {
 
 // FetchTransactionRefunds allows you to get the transaction's refunds.
 func (s Refund) FetchTransactionRefunds(transactionID string, options ...RefundFetchTransactionRefundsParameters) (*Iterator, error) {
+	return s.FetchTransactionRefundsWithContext(context.Background(), transactionID, options...)
+}
+
+// FetchTransactionRefunds allows you to get the transaction's refunds., passes the provided context to the request
+func (s Refund) FetchTransactionRefundsWithContext(ctx context.Context, transactionID string, options ...RefundFetchTransactionRefundsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewRefund() method to create a new Refund object")
 	}
@@ -221,7 +233,8 @@ func (s Refund) FetchTransactionRefunds(transactionID string, options ...RefundF
 
 	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -290,6 +303,11 @@ type RefundFindParameters struct {
 
 // Find allows you to find a transaction's refund by its ID.
 func (s Refund) Find(transactionID, refundID string, options ...RefundFindParameters) (*Refund, error) {
+	return s.FindWithContext(context.Background(), transactionID, refundID, options...)
+}
+
+// Find allows you to find a transaction's refund by its ID., passes the provided context to the request
+func (s Refund) FindWithContext(ctx context.Context, transactionID, refundID string, options ...RefundFindParameters) (*Refund, error) {
 	if s.client == nil {
 		panic("Please use the client.NewRefund() method to create a new Refund object")
 	}
@@ -327,7 +345,8 @@ func (s Refund) Find(transactionID, refundID string, options ...RefundFindParame
 
 	path := "/transactions/" + url.QueryEscape(transactionID) + "/refunds/" + url.QueryEscape(refundID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -372,6 +391,11 @@ type RefundCreateParameters struct {
 
 // Create allows you to create a refund for a transaction.
 func (s Refund) Create(options ...RefundCreateParameters) error {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a refund for a transaction., passes the provided context to the request
+func (s Refund) CreateWithContext(ctx context.Context, options ...RefundCreateParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewRefund() method to create a new Refund object")
 	}
@@ -418,7 +442,8 @@ func (s Refund) Create(options ...RefundCreateParameters) error {
 
 	path := "/transactions/" + url.QueryEscape(*s.TransactionID) + "/refunds"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),

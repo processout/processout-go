@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -90,6 +91,11 @@ type GatewayFetchGatewayConfigurationsParameters struct {
 
 // FetchGatewayConfigurations allows you to get all the gateway configurations of the gateway
 func (s Gateway) FetchGatewayConfigurations(options ...GatewayFetchGatewayConfigurationsParameters) (*Iterator, error) {
+	return s.FetchGatewayConfigurationsWithContext(context.Background(), options...)
+}
+
+// FetchGatewayConfigurations allows you to get all the gateway configurations of the gateway, passes the provided context to the request
+func (s Gateway) FetchGatewayConfigurationsWithContext(ctx context.Context, options ...GatewayFetchGatewayConfigurationsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewGateway() method to create a new Gateway object")
 	}
@@ -128,7 +134,8 @@ func (s Gateway) FetchGatewayConfigurations(options ...GatewayFetchGatewayConfig
 
 	path := "/gateways/" + url.QueryEscape(*s.Name) + "/gateway-configurations"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

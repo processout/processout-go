@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -102,6 +103,11 @@ type PlanAllParameters struct {
 
 // All allows you to get all the plans.
 func (s Plan) All(options ...PlanAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the plans., passes the provided context to the request
+func (s Plan) AllWithContext(ctx context.Context, options ...PlanAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}
@@ -140,7 +146,8 @@ func (s Plan) All(options ...PlanAllParameters) (*Iterator, error) {
 
 	path := "/plans"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -209,6 +216,11 @@ type PlanCreateParameters struct {
 
 // Create allows you to create a new plan.
 func (s Plan) Create(options ...PlanCreateParameters) (*Plan, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new plan., passes the provided context to the request
+func (s Plan) CreateWithContext(ctx context.Context, options ...PlanCreateParameters) (*Plan, error) {
 	if s.client == nil {
 		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}
@@ -264,7 +276,8 @@ func (s Plan) Create(options ...PlanCreateParameters) (*Plan, error) {
 
 	path := "/plans"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -308,6 +321,11 @@ type PlanFindParameters struct {
 
 // Find allows you to find a plan by its ID.
 func (s Plan) Find(planID string, options ...PlanFindParameters) (*Plan, error) {
+	return s.FindWithContext(context.Background(), planID, options...)
+}
+
+// Find allows you to find a plan by its ID., passes the provided context to the request
+func (s Plan) FindWithContext(ctx context.Context, planID string, options ...PlanFindParameters) (*Plan, error) {
 	if s.client == nil {
 		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}
@@ -345,7 +363,8 @@ func (s Plan) Find(planID string, options ...PlanFindParameters) (*Plan, error) 
 
 	path := "/plans/" + url.QueryEscape(planID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -389,6 +408,11 @@ type PlanSaveParameters struct {
 
 // Save allows you to save the updated plan attributes. This action won't affect subscriptions already linked to this plan.
 func (s Plan) Save(options ...PlanSaveParameters) (*Plan, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated plan attributes. This action won't affect subscriptions already linked to this plan., passes the provided context to the request
+func (s Plan) SaveWithContext(ctx context.Context, options ...PlanSaveParameters) (*Plan, error) {
 	if s.client == nil {
 		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}
@@ -436,7 +460,8 @@ func (s Plan) Save(options ...PlanSaveParameters) (*Plan, error) {
 
 	path := "/plans/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -480,6 +505,11 @@ type PlanEndParameters struct {
 
 // End allows you to delete a plan. Subscriptions linked to this plan won't be affected.
 func (s Plan) End(options ...PlanEndParameters) error {
+	return s.EndWithContext(context.Background(), options...)
+}
+
+// End allows you to delete a plan. Subscriptions linked to this plan won't be affected., passes the provided context to the request
+func (s Plan) EndWithContext(ctx context.Context, options ...PlanEndParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewPlan() method to create a new Plan object")
 	}
@@ -516,7 +546,8 @@ func (s Plan) End(options ...PlanEndParameters) error {
 
 	path := "/plans/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

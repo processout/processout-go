@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -51,6 +52,11 @@ type CardUpdateRequestUpdateParameters struct {
 
 // Update allows you to update a card by its ID.
 func (s CardUpdateRequest) Update(cardID string, options ...CardUpdateRequestUpdateParameters) (*CardUpdateRequest, error) {
+	return s.UpdateWithContext(context.Background(), cardID, options...)
+}
+
+// Update allows you to update a card by its ID., passes the provided context to the request
+func (s CardUpdateRequest) UpdateWithContext(ctx context.Context, cardID string, options ...CardUpdateRequestUpdateParameters) (*CardUpdateRequest, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCardUpdateRequest() method to create a new CardUpdateRequest object")
 	}
@@ -90,7 +96,8 @@ func (s CardUpdateRequest) Update(cardID string, options ...CardUpdateRequestUpd
 
 	path := "/cards/" + url.QueryEscape(cardID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),

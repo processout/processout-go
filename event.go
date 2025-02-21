@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -81,6 +82,11 @@ type EventFetchWebhooksParameters struct {
 
 // FetchWebhooks allows you to get all the webhooks of the event.
 func (s Event) FetchWebhooks(options ...EventFetchWebhooksParameters) (*Iterator, error) {
+	return s.FetchWebhooksWithContext(context.Background(), options...)
+}
+
+// FetchWebhooks allows you to get all the webhooks of the event., passes the provided context to the request
+func (s Event) FetchWebhooksWithContext(ctx context.Context, options ...EventFetchWebhooksParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewEvent() method to create a new Event object")
 	}
@@ -119,7 +125,8 @@ func (s Event) FetchWebhooks(options ...EventFetchWebhooksParameters) (*Iterator
 
 	path := "/events/" + url.QueryEscape(*s.ID) + "/webhooks"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -188,6 +195,11 @@ type EventAllParameters struct {
 
 // All allows you to get all the events.
 func (s Event) All(options ...EventAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the events., passes the provided context to the request
+func (s Event) AllWithContext(ctx context.Context, options ...EventAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewEvent() method to create a new Event object")
 	}
@@ -226,7 +238,8 @@ func (s Event) All(options ...EventAllParameters) (*Iterator, error) {
 
 	path := "/events"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -295,6 +308,11 @@ type EventFindParameters struct {
 
 // Find allows you to find an event by its ID.
 func (s Event) Find(eventID string, options ...EventFindParameters) (*Event, error) {
+	return s.FindWithContext(context.Background(), eventID, options...)
+}
+
+// Find allows you to find an event by its ID., passes the provided context to the request
+func (s Event) FindWithContext(ctx context.Context, eventID string, options ...EventFindParameters) (*Event, error) {
 	if s.client == nil {
 		panic("Please use the client.NewEvent() method to create a new Event object")
 	}
@@ -332,7 +350,8 @@ func (s Event) Find(eventID string, options ...EventFindParameters) (*Event, err
 
 	path := "/events/" + url.QueryEscape(eventID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

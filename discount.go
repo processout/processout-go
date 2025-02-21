@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -108,6 +109,11 @@ type DiscountFetchSubscriptionDiscountsParameters struct {
 
 // FetchSubscriptionDiscounts allows you to get the discounts applied to the subscription.
 func (s Discount) FetchSubscriptionDiscounts(subscriptionID string, options ...DiscountFetchSubscriptionDiscountsParameters) (*Iterator, error) {
+	return s.FetchSubscriptionDiscountsWithContext(context.Background(), subscriptionID, options...)
+}
+
+// FetchSubscriptionDiscounts allows you to get the discounts applied to the subscription., passes the provided context to the request
+func (s Discount) FetchSubscriptionDiscountsWithContext(ctx context.Context, subscriptionID string, options ...DiscountFetchSubscriptionDiscountsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewDiscount() method to create a new Discount object")
 	}
@@ -146,7 +152,8 @@ func (s Discount) FetchSubscriptionDiscounts(subscriptionID string, options ...D
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/discounts"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -215,6 +222,11 @@ type DiscountCreateParameters struct {
 
 // Create allows you to create a new discount for the given subscription ID.
 func (s Discount) Create(options ...DiscountCreateParameters) (*Discount, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new discount for the given subscription ID., passes the provided context to the request
+func (s Discount) CreateWithContext(ctx context.Context, options ...DiscountCreateParameters) (*Discount, error) {
 	if s.client == nil {
 		panic("Please use the client.NewDiscount() method to create a new Discount object")
 	}
@@ -262,7 +274,8 @@ func (s Discount) Create(options ...DiscountCreateParameters) (*Discount, error)
 
 	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/discounts"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -306,6 +319,11 @@ type DiscountFindParameters struct {
 
 // Find allows you to find a subscription's discount by its ID.
 func (s Discount) Find(subscriptionID, discountID string, options ...DiscountFindParameters) (*Discount, error) {
+	return s.FindWithContext(context.Background(), subscriptionID, discountID, options...)
+}
+
+// Find allows you to find a subscription's discount by its ID., passes the provided context to the request
+func (s Discount) FindWithContext(ctx context.Context, subscriptionID, discountID string, options ...DiscountFindParameters) (*Discount, error) {
 	if s.client == nil {
 		panic("Please use the client.NewDiscount() method to create a new Discount object")
 	}
@@ -343,7 +361,8 @@ func (s Discount) Find(subscriptionID, discountID string, options ...DiscountFin
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/discounts/" + url.QueryEscape(discountID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -387,6 +406,11 @@ type DiscountDeleteParameters struct {
 
 // Delete allows you to delete a discount applied to a subscription.
 func (s Discount) Delete(options ...DiscountDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete a discount applied to a subscription., passes the provided context to the request
+func (s Discount) DeleteWithContext(ctx context.Context, options ...DiscountDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewDiscount() method to create a new Discount object")
 	}
@@ -423,7 +447,8 @@ func (s Discount) Delete(options ...DiscountDeleteParameters) error {
 
 	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/discounts/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),
