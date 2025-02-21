@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -57,6 +58,11 @@ type ProjectSFTPSettingsPublicFetchSftpSettingsParameters struct {
 
 // FetchSftpSettings allows you to fetch the SFTP settings for the project.
 func (s ProjectSFTPSettingsPublic) FetchSftpSettings(ID string, options ...ProjectSFTPSettingsPublicFetchSftpSettingsParameters) (*ProjectSFTPSettingsPublic, error) {
+	return s.FetchSftpSettingsWithContext(context.Background(), ID, options...)
+}
+
+// FetchSftpSettings allows you to fetch the SFTP settings for the project., passes the provided context to the request
+func (s ProjectSFTPSettingsPublic) FetchSftpSettingsWithContext(ctx context.Context, ID string, options ...ProjectSFTPSettingsPublicFetchSftpSettingsParameters) (*ProjectSFTPSettingsPublic, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProjectSFTPSettingsPublic() method to create a new ProjectSFTPSettingsPublic object")
 	}
@@ -94,7 +100,8 @@ func (s ProjectSFTPSettingsPublic) FetchSftpSettings(ID string, options ...Proje
 
 	path := "/projects/" + url.QueryEscape(ID) + "/sftp-settings"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

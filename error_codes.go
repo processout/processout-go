@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -54,6 +55,11 @@ type ErrorCodesAllParameters struct {
 
 // All allows you to get all error codes.
 func (s ErrorCodes) All(options ...ErrorCodesAllParameters) (*ErrorCodes, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all error codes., passes the provided context to the request
+func (s ErrorCodes) AllWithContext(ctx context.Context, options ...ErrorCodesAllParameters) (*ErrorCodes, error) {
 	if s.client == nil {
 		panic("Please use the client.NewErrorCodes() method to create a new ErrorCodes object")
 	}
@@ -91,7 +97,8 @@ func (s ErrorCodes) All(options ...ErrorCodesAllParameters) (*ErrorCodes, error)
 
 	path := "/error-codes"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

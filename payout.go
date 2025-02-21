@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -120,6 +121,11 @@ type PayoutFetchItemsParameters struct {
 
 // FetchItems allows you to get all the items linked to the payout.
 func (s Payout) FetchItems(options ...PayoutFetchItemsParameters) (*Iterator, error) {
+	return s.FetchItemsWithContext(context.Background(), options...)
+}
+
+// FetchItems allows you to get all the items linked to the payout., passes the provided context to the request
+func (s Payout) FetchItemsWithContext(ctx context.Context, options ...PayoutFetchItemsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewPayout() method to create a new Payout object")
 	}
@@ -158,7 +164,8 @@ func (s Payout) FetchItems(options ...PayoutFetchItemsParameters) (*Iterator, er
 
 	path := "/payouts/" + url.QueryEscape(*s.ID) + "/items"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -227,6 +234,11 @@ type PayoutAllParameters struct {
 
 // All allows you to get all the payouts.
 func (s Payout) All(options ...PayoutAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the payouts., passes the provided context to the request
+func (s Payout) AllWithContext(ctx context.Context, options ...PayoutAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewPayout() method to create a new Payout object")
 	}
@@ -265,7 +277,8 @@ func (s Payout) All(options ...PayoutAllParameters) (*Iterator, error) {
 
 	path := "/payouts"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -334,6 +347,11 @@ type PayoutFindParameters struct {
 
 // Find allows you to find a payout by its ID.
 func (s Payout) Find(payoutID string, options ...PayoutFindParameters) (*Payout, error) {
+	return s.FindWithContext(context.Background(), payoutID, options...)
+}
+
+// Find allows you to find a payout by its ID., passes the provided context to the request
+func (s Payout) FindWithContext(ctx context.Context, payoutID string, options ...PayoutFindParameters) (*Payout, error) {
 	if s.client == nil {
 		panic("Please use the client.NewPayout() method to create a new Payout object")
 	}
@@ -371,7 +389,8 @@ func (s Payout) Find(payoutID string, options ...PayoutFindParameters) (*Payout,
 
 	path := "/payouts/" + url.QueryEscape(payoutID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -415,6 +434,11 @@ type PayoutDeleteParameters struct {
 
 // Delete allows you to delete the payout along with its payout items
 func (s Payout) Delete(payoutID string, options ...PayoutDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), payoutID, options...)
+}
+
+// Delete allows you to delete the payout along with its payout items, passes the provided context to the request
+func (s Payout) DeleteWithContext(ctx context.Context, payoutID string, options ...PayoutDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewPayout() method to create a new Payout object")
 	}
@@ -451,7 +475,8 @@ func (s Payout) Delete(payoutID string, options ...PayoutDeleteParameters) error
 
 	path := "/payouts/" + url.QueryEscape(payoutID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

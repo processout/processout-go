@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -51,6 +52,11 @@ type BalancesFindParameters struct {
 
 // Find allows you to fetch a customer token's balance
 func (s Balances) Find(tokenID string, options ...BalancesFindParameters) (*Balances, error) {
+	return s.FindWithContext(context.Background(), tokenID, options...)
+}
+
+// Find allows you to fetch a customer token's balance, passes the provided context to the request
+func (s Balances) FindWithContext(ctx context.Context, tokenID string, options ...BalancesFindParameters) (*Balances, error) {
 	if s.client == nil {
 		panic("Please use the client.NewBalances() method to create a new Balances object")
 	}
@@ -88,7 +94,8 @@ func (s Balances) Find(tokenID string, options ...BalancesFindParameters) (*Bala
 
 	path := "/balances/tokens/" + url.QueryEscape(tokenID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

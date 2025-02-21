@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -108,6 +109,11 @@ type CardCreateRequestCreateParameters struct {
 
 // Create allows you to create a new card.
 func (s CardCreateRequest) Create(options ...CardCreateRequestCreateParameters) (*CardCreateRequest, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new card., passes the provided context to the request
+func (s CardCreateRequest) CreateWithContext(ctx context.Context, options ...CardCreateRequestCreateParameters) (*CardCreateRequest, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCardCreateRequest() method to create a new CardCreateRequest object")
 	}
@@ -179,7 +185,8 @@ func (s CardCreateRequest) Create(options ...CardCreateRequestCreateParameters) 
 
 	path := "/cards"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),

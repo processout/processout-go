@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -63,6 +64,11 @@ type ExportLayoutConfigurationOptionsFetchParameters struct {
 
 // Fetch allows you to fetch export layout configuration options.
 func (s ExportLayoutConfigurationOptions) Fetch(exportType string, options ...ExportLayoutConfigurationOptionsFetchParameters) (*ExportLayoutConfigurationOptions, error) {
+	return s.FetchWithContext(context.Background(), exportType, options...)
+}
+
+// Fetch allows you to fetch export layout configuration options., passes the provided context to the request
+func (s ExportLayoutConfigurationOptions) FetchWithContext(ctx context.Context, exportType string, options ...ExportLayoutConfigurationOptionsFetchParameters) (*ExportLayoutConfigurationOptions, error) {
 	if s.client == nil {
 		panic("Please use the client.NewExportLayoutConfigurationOptions() method to create a new ExportLayoutConfigurationOptions object")
 	}
@@ -100,7 +106,8 @@ func (s ExportLayoutConfigurationOptions) Fetch(exportType string, options ...Ex
 
 	path := "/exports/layouts/options/" + url.QueryEscape(exportType) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
