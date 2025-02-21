@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -247,6 +248,11 @@ type InvoiceIncrementAuthorizationParameters struct {
 
 // IncrementAuthorization allows you to create an incremental authorization
 func (s Invoice) IncrementAuthorization(amount float64, options ...InvoiceIncrementAuthorizationParameters) (*Transaction, error) {
+	return s.IncrementAuthorizationWithContext(context.Background(), amount, options...)
+}
+
+// IncrementAuthorization allows you to create an incremental authorization, passes the provided context to the request
+func (s Invoice) IncrementAuthorizationWithContext(ctx context.Context, amount float64, options ...InvoiceIncrementAuthorizationParameters) (*Transaction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -288,7 +294,8 @@ func (s Invoice) IncrementAuthorization(amount float64, options ...InvoiceIncrem
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/increment_authorization"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -342,6 +349,11 @@ type InvoiceAuthorizeParameters struct {
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
 func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters) (*Transaction, *CustomerAction, error) {
+	return s.AuthorizeWithContext(context.Background(), source, options...)
+}
+
+// Authorize allows you to authorize the invoice using the given source (customer or token), passes the provided context to the request
+func (s Invoice) AuthorizeWithContext(ctx context.Context, source string, options ...InvoiceAuthorizeParameters) (*Transaction, *CustomerAction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -406,7 +418,8 @@ func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters)
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/authorize"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -462,6 +475,11 @@ type InvoiceCaptureParameters struct {
 
 // Capture allows you to capture the invoice using the given source (customer or token)
 func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*Transaction, *CustomerAction, error) {
+	return s.CaptureWithContext(context.Background(), source, options...)
+}
+
+// Capture allows you to capture the invoice using the given source (customer or token), passes the provided context to the request
+func (s Invoice) CaptureWithContext(ctx context.Context, source string, options ...InvoiceCaptureParameters) (*Transaction, *CustomerAction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -528,7 +546,8 @@ func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*T
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/capture"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -573,6 +592,11 @@ type InvoiceFetchCustomerParameters struct {
 
 // FetchCustomer allows you to get the customer linked to the invoice.
 func (s Invoice) FetchCustomer(options ...InvoiceFetchCustomerParameters) (*Customer, error) {
+	return s.FetchCustomerWithContext(context.Background(), options...)
+}
+
+// FetchCustomer allows you to get the customer linked to the invoice., passes the provided context to the request
+func (s Invoice) FetchCustomerWithContext(ctx context.Context, options ...InvoiceFetchCustomerParameters) (*Customer, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -610,7 +634,8 @@ func (s Invoice) FetchCustomer(options ...InvoiceFetchCustomerParameters) (*Cust
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/customers"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -654,6 +679,11 @@ type InvoiceAssignCustomerParameters struct {
 
 // AssignCustomer allows you to assign a customer to the invoice.
 func (s Invoice) AssignCustomer(customerID string, options ...InvoiceAssignCustomerParameters) (*Customer, error) {
+	return s.AssignCustomerWithContext(context.Background(), customerID, options...)
+}
+
+// AssignCustomer allows you to assign a customer to the invoice., passes the provided context to the request
+func (s Invoice) AssignCustomerWithContext(ctx context.Context, customerID string, options ...InvoiceAssignCustomerParameters) (*Customer, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -693,7 +723,8 @@ func (s Invoice) AssignCustomer(customerID string, options ...InvoiceAssignCusto
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/customers"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -738,6 +769,11 @@ type InvoicePayoutParameters struct {
 
 // Payout allows you to process the payout invoice using the given source (customer or token)
 func (s Invoice) Payout(gatewayConfigurationID, source string, options ...InvoicePayoutParameters) (*Transaction, error) {
+	return s.PayoutWithContext(context.Background(), gatewayConfigurationID, source, options...)
+}
+
+// Payout allows you to process the payout invoice using the given source (customer or token), passes the provided context to the request
+func (s Invoice) PayoutWithContext(ctx context.Context, gatewayConfigurationID, source string, options ...InvoicePayoutParameters) (*Transaction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -781,7 +817,8 @@ func (s Invoice) Payout(gatewayConfigurationID, source string, options ...Invoic
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/payout"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -825,6 +862,11 @@ type InvoiceShowNativePaymentTransactionParameters struct {
 
 // ShowNativePaymentTransaction allows you to fetches the Native APM payment
 func (s Invoice) ShowNativePaymentTransaction(invoiceID, gatewayConfigurationID string, options ...InvoiceShowNativePaymentTransactionParameters) (*NativeAPMTransactionDetails, error) {
+	return s.ShowNativePaymentTransactionWithContext(context.Background(), invoiceID, gatewayConfigurationID, options...)
+}
+
+// ShowNativePaymentTransaction allows you to fetches the Native APM payment, passes the provided context to the request
+func (s Invoice) ShowNativePaymentTransactionWithContext(ctx context.Context, invoiceID, gatewayConfigurationID string, options ...InvoiceShowNativePaymentTransactionParameters) (*NativeAPMTransactionDetails, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -862,7 +904,8 @@ func (s Invoice) ShowNativePaymentTransaction(invoiceID, gatewayConfigurationID 
 
 	path := "/invoices/" + url.QueryEscape(invoiceID) + "/native-payment/" + url.QueryEscape(gatewayConfigurationID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -908,6 +951,11 @@ type InvoiceProcessNativePaymentParameters struct {
 
 // ProcessNativePayment allows you to process the Native APM payment flow
 func (s Invoice) ProcessNativePayment(invoiceID string, options ...InvoiceProcessNativePaymentParameters) (*Transaction, *NativeAPMResponse, error) {
+	return s.ProcessNativePaymentWithContext(context.Background(), invoiceID, options...)
+}
+
+// ProcessNativePayment allows you to process the Native APM payment flow, passes the provided context to the request
+func (s Invoice) ProcessNativePaymentWithContext(ctx context.Context, invoiceID string, options ...InvoiceProcessNativePaymentParameters) (*Transaction, *NativeAPMResponse, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -950,7 +998,8 @@ func (s Invoice) ProcessNativePayment(invoiceID string, options ...InvoiceProces
 
 	path := "/invoices/" + url.QueryEscape(invoiceID) + "/native-payment"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -996,6 +1045,11 @@ type InvoiceInitiateThreeDSParameters struct {
 
 // InitiateThreeDS allows you to initiate a 3-D Secure authentication
 func (s Invoice) InitiateThreeDS(source string, options ...InvoiceInitiateThreeDSParameters) (*CustomerAction, error) {
+	return s.InitiateThreeDSWithContext(context.Background(), source, options...)
+}
+
+// InitiateThreeDS allows you to initiate a 3-D Secure authentication, passes the provided context to the request
+func (s Invoice) InitiateThreeDSWithContext(ctx context.Context, source string, options ...InvoiceInitiateThreeDSParameters) (*CustomerAction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1037,7 +1091,8 @@ func (s Invoice) InitiateThreeDS(source string, options ...InvoiceInitiateThreeD
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/three-d-s"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -1081,6 +1136,11 @@ type InvoiceFetchTransactionParameters struct {
 
 // FetchTransaction allows you to get the transaction of the invoice.
 func (s Invoice) FetchTransaction(options ...InvoiceFetchTransactionParameters) (*Transaction, error) {
+	return s.FetchTransactionWithContext(context.Background(), options...)
+}
+
+// FetchTransaction allows you to get the transaction of the invoice., passes the provided context to the request
+func (s Invoice) FetchTransactionWithContext(ctx context.Context, options ...InvoiceFetchTransactionParameters) (*Transaction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1118,7 +1178,8 @@ func (s Invoice) FetchTransaction(options ...InvoiceFetchTransactionParameters) 
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/transactions"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -1164,6 +1225,11 @@ type InvoiceVoidParameters struct {
 
 // Void allows you to void the invoice
 func (s Invoice) Void(options ...InvoiceVoidParameters) (*Transaction, error) {
+	return s.VoidWithContext(context.Background(), options...)
+}
+
+// Void allows you to void the invoice, passes the provided context to the request
+func (s Invoice) VoidWithContext(ctx context.Context, options ...InvoiceVoidParameters) (*Transaction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1205,7 +1271,8 @@ func (s Invoice) Void(options ...InvoiceVoidParameters) (*Transaction, error) {
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/void"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -1249,6 +1316,11 @@ type InvoiceAllParameters struct {
 
 // All allows you to get all the invoices.
 func (s Invoice) All(options ...InvoiceAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the invoices., passes the provided context to the request
+func (s Invoice) AllWithContext(ctx context.Context, options ...InvoiceAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1287,7 +1359,8 @@ func (s Invoice) All(options ...InvoiceAllParameters) (*Iterator, error) {
 
 	path := "/invoices"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -1356,6 +1429,11 @@ type InvoiceCreateParameters struct {
 
 // Create allows you to create a new invoice.
 func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new invoice., passes the provided context to the request
+func (s Invoice) CreateWithContext(ctx context.Context, options ...InvoiceCreateParameters) (*Invoice, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1461,7 +1539,8 @@ func (s Invoice) Create(options ...InvoiceCreateParameters) (*Invoice, error) {
 
 	path := "/invoices"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -1505,6 +1584,11 @@ type InvoiceFindParameters struct {
 
 // Find allows you to find an invoice by its ID.
 func (s Invoice) Find(invoiceID string, options ...InvoiceFindParameters) (*Invoice, error) {
+	return s.FindWithContext(context.Background(), invoiceID, options...)
+}
+
+// Find allows you to find an invoice by its ID., passes the provided context to the request
+func (s Invoice) FindWithContext(ctx context.Context, invoiceID string, options ...InvoiceFindParameters) (*Invoice, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1542,7 +1626,8 @@ func (s Invoice) Find(invoiceID string, options ...InvoiceFindParameters) (*Invo
 
 	path := "/invoices/" + url.QueryEscape(invoiceID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -1586,6 +1671,11 @@ type InvoiceDeleteParameters struct {
 
 // Delete allows you to delete an invoice by its ID. Only invoices that have not been used yet can be deleted.
 func (s Invoice) Delete(invoiceID string, options ...InvoiceDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), invoiceID, options...)
+}
+
+// Delete allows you to delete an invoice by its ID. Only invoices that have not been used yet can be deleted., passes the provided context to the request
+func (s Invoice) DeleteWithContext(ctx context.Context, invoiceID string, options ...InvoiceDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1622,7 +1712,8 @@ func (s Invoice) Delete(invoiceID string, options ...InvoiceDeleteParameters) er
 
 	path := "/invoices/" + url.QueryEscape(invoiceID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),
@@ -1665,6 +1756,11 @@ type InvoiceSyncWithPspParameters struct {
 
 // SyncWithPsp allows you to refresh invoice by its ID with PSP.
 func (s Invoice) SyncWithPsp(invoiceID string, options ...InvoiceSyncWithPspParameters) (*Invoice, error) {
+	return s.SyncWithPspWithContext(context.Background(), invoiceID, options...)
+}
+
+// SyncWithPsp allows you to refresh invoice by its ID with PSP., passes the provided context to the request
+func (s Invoice) SyncWithPspWithContext(ctx context.Context, invoiceID string, options ...InvoiceSyncWithPspParameters) (*Invoice, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1702,7 +1798,8 @@ func (s Invoice) SyncWithPsp(invoiceID string, options ...InvoiceSyncWithPspPara
 
 	path := "/invoices/" + url.QueryEscape(invoiceID) + "/sync-with-psp"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -1746,6 +1843,11 @@ type InvoiceUpdateParameters struct {
 
 // Update allows you to update invoice by its ID.
 func (s Invoice) Update(invoiceID string, options ...InvoiceUpdateParameters) (*Invoice, error) {
+	return s.UpdateWithContext(context.Background(), invoiceID, options...)
+}
+
+// Update allows you to update invoice by its ID., passes the provided context to the request
+func (s Invoice) UpdateWithContext(ctx context.Context, invoiceID string, options ...InvoiceUpdateParameters) (*Invoice, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -1791,7 +1893,8 @@ func (s Invoice) Update(invoiceID string, options ...InvoiceUpdateParameters) (*
 
 	path := "/invoices/" + url.QueryEscape(invoiceID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),

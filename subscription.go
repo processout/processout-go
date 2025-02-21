@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -174,6 +175,11 @@ type SubscriptionFetchAddonsParameters struct {
 
 // FetchAddons allows you to get the addons applied to the subscription.
 func (s Subscription) FetchAddons(options ...SubscriptionFetchAddonsParameters) (*Iterator, error) {
+	return s.FetchAddonsWithContext(context.Background(), options...)
+}
+
+// FetchAddons allows you to get the addons applied to the subscription., passes the provided context to the request
+func (s Subscription) FetchAddonsWithContext(ctx context.Context, options ...SubscriptionFetchAddonsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -212,7 +218,8 @@ func (s Subscription) FetchAddons(options ...SubscriptionFetchAddonsParameters) 
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/addons"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -281,6 +288,11 @@ type SubscriptionFindAddonParameters struct {
 
 // FindAddon allows you to find a subscription's addon by its ID.
 func (s Subscription) FindAddon(addonID string, options ...SubscriptionFindAddonParameters) (*Addon, error) {
+	return s.FindAddonWithContext(context.Background(), addonID, options...)
+}
+
+// FindAddon allows you to find a subscription's addon by its ID., passes the provided context to the request
+func (s Subscription) FindAddonWithContext(ctx context.Context, addonID string, options ...SubscriptionFindAddonParameters) (*Addon, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -318,7 +330,8 @@ func (s Subscription) FindAddon(addonID string, options ...SubscriptionFindAddon
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/addons/" + url.QueryEscape(addonID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -365,6 +378,11 @@ type SubscriptionDeleteAddonParameters struct {
 
 // DeleteAddon allows you to delete an addon applied to a subscription.
 func (s Subscription) DeleteAddon(addonID string, options ...SubscriptionDeleteAddonParameters) error {
+	return s.DeleteAddonWithContext(context.Background(), addonID, options...)
+}
+
+// DeleteAddon allows you to delete an addon applied to a subscription., passes the provided context to the request
+func (s Subscription) DeleteAddonWithContext(ctx context.Context, addonID string, options ...SubscriptionDeleteAddonParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -407,7 +425,8 @@ func (s Subscription) DeleteAddon(addonID string, options ...SubscriptionDeleteA
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/addons/" + url.QueryEscape(addonID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),
@@ -450,6 +469,11 @@ type SubscriptionFetchCustomerParameters struct {
 
 // FetchCustomer allows you to get the customer owning the subscription.
 func (s Subscription) FetchCustomer(options ...SubscriptionFetchCustomerParameters) (*Customer, error) {
+	return s.FetchCustomerWithContext(context.Background(), options...)
+}
+
+// FetchCustomer allows you to get the customer owning the subscription., passes the provided context to the request
+func (s Subscription) FetchCustomerWithContext(ctx context.Context, options ...SubscriptionFetchCustomerParameters) (*Customer, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -487,7 +511,8 @@ func (s Subscription) FetchCustomer(options ...SubscriptionFetchCustomerParamete
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/customers"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -531,6 +556,11 @@ type SubscriptionFetchDiscountsParameters struct {
 
 // FetchDiscounts allows you to get the discounts applied to the subscription.
 func (s Subscription) FetchDiscounts(options ...SubscriptionFetchDiscountsParameters) (*Iterator, error) {
+	return s.FetchDiscountsWithContext(context.Background(), options...)
+}
+
+// FetchDiscounts allows you to get the discounts applied to the subscription., passes the provided context to the request
+func (s Subscription) FetchDiscountsWithContext(ctx context.Context, options ...SubscriptionFetchDiscountsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -569,7 +599,8 @@ func (s Subscription) FetchDiscounts(options ...SubscriptionFetchDiscountsParame
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/discounts"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -638,6 +669,11 @@ type SubscriptionFindDiscountParameters struct {
 
 // FindDiscount allows you to find a subscription's discount by its ID.
 func (s Subscription) FindDiscount(discountID string, options ...SubscriptionFindDiscountParameters) (*Discount, error) {
+	return s.FindDiscountWithContext(context.Background(), discountID, options...)
+}
+
+// FindDiscount allows you to find a subscription's discount by its ID., passes the provided context to the request
+func (s Subscription) FindDiscountWithContext(ctx context.Context, discountID string, options ...SubscriptionFindDiscountParameters) (*Discount, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -675,7 +711,8 @@ func (s Subscription) FindDiscount(discountID string, options ...SubscriptionFin
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/discounts/" + url.QueryEscape(discountID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -719,6 +756,11 @@ type SubscriptionDeleteDiscountParameters struct {
 
 // DeleteDiscount allows you to delete a discount applied to a subscription.
 func (s Subscription) DeleteDiscount(discountID string, options ...SubscriptionDeleteDiscountParameters) error {
+	return s.DeleteDiscountWithContext(context.Background(), discountID, options...)
+}
+
+// DeleteDiscount allows you to delete a discount applied to a subscription., passes the provided context to the request
+func (s Subscription) DeleteDiscountWithContext(ctx context.Context, discountID string, options ...SubscriptionDeleteDiscountParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -755,7 +797,8 @@ func (s Subscription) DeleteDiscount(discountID string, options ...SubscriptionD
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/discounts/" + url.QueryEscape(discountID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),
@@ -798,6 +841,11 @@ type SubscriptionFetchTransactionsParameters struct {
 
 // FetchTransactions allows you to get the subscriptions past transactions.
 func (s Subscription) FetchTransactions(options ...SubscriptionFetchTransactionsParameters) (*Iterator, error) {
+	return s.FetchTransactionsWithContext(context.Background(), options...)
+}
+
+// FetchTransactions allows you to get the subscriptions past transactions., passes the provided context to the request
+func (s Subscription) FetchTransactionsWithContext(ctx context.Context, options ...SubscriptionFetchTransactionsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -836,7 +884,8 @@ func (s Subscription) FetchTransactions(options ...SubscriptionFetchTransactions
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + "/transactions"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -905,6 +954,11 @@ type SubscriptionAllParameters struct {
 
 // All allows you to get all the subscriptions.
 func (s Subscription) All(options ...SubscriptionAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the subscriptions., passes the provided context to the request
+func (s Subscription) AllWithContext(ctx context.Context, options ...SubscriptionAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -943,7 +997,8 @@ func (s Subscription) All(options ...SubscriptionAllParameters) (*Iterator, erro
 
 	path := "/subscriptions"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -1014,6 +1069,11 @@ type SubscriptionCreateParameters struct {
 
 // Create allows you to create a new subscription for the given customer.
 func (s Subscription) Create(options ...SubscriptionCreateParameters) (*Subscription, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new subscription for the given customer., passes the provided context to the request
+func (s Subscription) CreateWithContext(ctx context.Context, options ...SubscriptionCreateParameters) (*Subscription, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -1077,7 +1137,8 @@ func (s Subscription) Create(options ...SubscriptionCreateParameters) (*Subscrip
 
 	path := "/subscriptions"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -1121,6 +1182,11 @@ type SubscriptionFindParameters struct {
 
 // Find allows you to find a subscription by its ID.
 func (s Subscription) Find(subscriptionID string, options ...SubscriptionFindParameters) (*Subscription, error) {
+	return s.FindWithContext(context.Background(), subscriptionID, options...)
+}
+
+// Find allows you to find a subscription by its ID., passes the provided context to the request
+func (s Subscription) FindWithContext(ctx context.Context, subscriptionID string, options ...SubscriptionFindParameters) (*Subscription, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -1158,7 +1224,8 @@ func (s Subscription) Find(subscriptionID string, options ...SubscriptionFindPar
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -1207,6 +1274,11 @@ type SubscriptionSaveParameters struct {
 
 // Save allows you to save the updated subscription attributes.
 func (s Subscription) Save(options ...SubscriptionSaveParameters) (*Subscription, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated subscription attributes., passes the provided context to the request
+func (s Subscription) SaveWithContext(ctx context.Context, options ...SubscriptionSaveParameters) (*Subscription, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -1266,7 +1338,8 @@ func (s Subscription) Save(options ...SubscriptionSaveParameters) (*Subscription
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -1311,6 +1384,11 @@ type SubscriptionCancelParameters struct {
 
 // Cancel allows you to cancel a subscription. The reason may be provided as well.
 func (s Subscription) Cancel(options ...SubscriptionCancelParameters) (*Subscription, error) {
+	return s.CancelWithContext(context.Background(), options...)
+}
+
+// Cancel allows you to cancel a subscription. The reason may be provided as well., passes the provided context to the request
+func (s Subscription) CancelWithContext(ctx context.Context, options ...SubscriptionCancelParameters) (*Subscription, error) {
 	if s.client == nil {
 		panic("Please use the client.NewSubscription() method to create a new Subscription object")
 	}
@@ -1354,7 +1432,8 @@ func (s Subscription) Cancel(options ...SubscriptionCancelParameters) (*Subscrip
 
 	path := "/subscriptions/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

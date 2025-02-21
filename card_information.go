@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -69,6 +70,11 @@ type CardInformationFetchParameters struct {
 
 // Fetch allows you to fetch card information from the IIN.
 func (s CardInformation) Fetch(iin string, options ...CardInformationFetchParameters) (*CardInformation, error) {
+	return s.FetchWithContext(context.Background(), iin, options...)
+}
+
+// Fetch allows you to fetch card information from the IIN., passes the provided context to the request
+func (s CardInformation) FetchWithContext(ctx context.Context, iin string, options ...CardInformationFetchParameters) (*CardInformation, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCardInformation() method to create a new CardInformation object")
 	}
@@ -106,7 +112,8 @@ func (s CardInformation) Fetch(iin string, options ...CardInformationFetchParame
 
 	path := "/iins/" + url.QueryEscape(iin) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),

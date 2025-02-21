@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -162,6 +163,11 @@ type CardAllParameters struct {
 
 // All allows you to get all the cards.
 func (s Card) All(options ...CardAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the cards., passes the provided context to the request
+func (s Card) AllWithContext(ctx context.Context, options ...CardAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCard() method to create a new Card object")
 	}
@@ -200,7 +206,8 @@ func (s Card) All(options ...CardAllParameters) (*Iterator, error) {
 
 	path := "/cards"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -269,6 +276,11 @@ type CardFindParameters struct {
 
 // Find allows you to find a card by its ID.
 func (s Card) Find(cardID string, options ...CardFindParameters) (*Card, error) {
+	return s.FindWithContext(context.Background(), cardID, options...)
+}
+
+// Find allows you to find a card by its ID., passes the provided context to the request
+func (s Card) FindWithContext(ctx context.Context, cardID string, options ...CardFindParameters) (*Card, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCard() method to create a new Card object")
 	}
@@ -306,7 +318,8 @@ func (s Card) Find(cardID string, options ...CardFindParameters) (*Card, error) 
 
 	path := "/cards/" + url.QueryEscape(cardID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -350,6 +363,11 @@ type CardAnonymizeParameters struct {
 
 // Anonymize allows you to anonymize the card.
 func (s Card) Anonymize(options ...CardAnonymizeParameters) error {
+	return s.AnonymizeWithContext(context.Background(), options...)
+}
+
+// Anonymize allows you to anonymize the card., passes the provided context to the request
+func (s Card) AnonymizeWithContext(ctx context.Context, options ...CardAnonymizeParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewCard() method to create a new Card object")
 	}
@@ -386,7 +404,8 @@ func (s Card) Anonymize(options ...CardAnonymizeParameters) error {
 
 	path := "/cards/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

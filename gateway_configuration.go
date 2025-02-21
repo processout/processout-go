@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -103,6 +104,11 @@ type GatewayConfigurationAllParameters struct {
 
 // All allows you to get all the gateway configurations.
 func (s GatewayConfiguration) All(options ...GatewayConfigurationAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the gateway configurations., passes the provided context to the request
+func (s GatewayConfiguration) AllWithContext(ctx context.Context, options ...GatewayConfigurationAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewGatewayConfiguration() method to create a new GatewayConfiguration object")
 	}
@@ -143,7 +149,8 @@ func (s GatewayConfiguration) All(options ...GatewayConfigurationAllParameters) 
 
 	path := "/gateway-configurations"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -212,6 +219,11 @@ type GatewayConfigurationFindParameters struct {
 
 // Find allows you to find a gateway configuration by its ID.
 func (s GatewayConfiguration) Find(configurationID string, options ...GatewayConfigurationFindParameters) (*GatewayConfiguration, error) {
+	return s.FindWithContext(context.Background(), configurationID, options...)
+}
+
+// Find allows you to find a gateway configuration by its ID., passes the provided context to the request
+func (s GatewayConfiguration) FindWithContext(ctx context.Context, configurationID string, options ...GatewayConfigurationFindParameters) (*GatewayConfiguration, error) {
 	if s.client == nil {
 		panic("Please use the client.NewGatewayConfiguration() method to create a new GatewayConfiguration object")
 	}
@@ -249,7 +261,8 @@ func (s GatewayConfiguration) Find(configurationID string, options ...GatewayCon
 
 	path := "/gateway-configurations/" + url.QueryEscape(configurationID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -295,6 +308,11 @@ type GatewayConfigurationSaveParameters struct {
 
 // Save allows you to save the updated gateway configuration attributes and settings.
 func (s GatewayConfiguration) Save(options ...GatewayConfigurationSaveParameters) (*GatewayConfiguration, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated gateway configuration attributes and settings., passes the provided context to the request
+func (s GatewayConfiguration) SaveWithContext(ctx context.Context, options ...GatewayConfigurationSaveParameters) (*GatewayConfiguration, error) {
 	if s.client == nil {
 		panic("Please use the client.NewGatewayConfiguration() method to create a new GatewayConfiguration object")
 	}
@@ -348,7 +366,8 @@ func (s GatewayConfiguration) Save(options ...GatewayConfigurationSaveParameters
 
 	path := "/gateway-configurations/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -392,6 +411,11 @@ type GatewayConfigurationDeleteParameters struct {
 
 // Delete allows you to delete the gateway configuration.
 func (s GatewayConfiguration) Delete(options ...GatewayConfigurationDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete the gateway configuration., passes the provided context to the request
+func (s GatewayConfiguration) DeleteWithContext(ctx context.Context, options ...GatewayConfigurationDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewGatewayConfiguration() method to create a new GatewayConfiguration object")
 	}
@@ -428,7 +452,8 @@ func (s GatewayConfiguration) Delete(options ...GatewayConfigurationDeleteParame
 
 	path := "/gateway-configurations/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),
@@ -473,6 +498,11 @@ type GatewayConfigurationCreateParameters struct {
 
 // Create allows you to create a new gateway configuration.
 func (s GatewayConfiguration) Create(gatewayName string, options ...GatewayConfigurationCreateParameters) (*GatewayConfiguration, error) {
+	return s.CreateWithContext(context.Background(), gatewayName, options...)
+}
+
+// Create allows you to create a new gateway configuration., passes the provided context to the request
+func (s GatewayConfiguration) CreateWithContext(ctx context.Context, gatewayName string, options ...GatewayConfigurationCreateParameters) (*GatewayConfiguration, error) {
 	if s.client == nil {
 		panic("Please use the client.NewGatewayConfiguration() method to create a new GatewayConfiguration object")
 	}
@@ -526,7 +556,8 @@ func (s GatewayConfiguration) Create(gatewayName string, options ...GatewayConfi
 
 	path := "/gateways/" + url.QueryEscape(gatewayName) + "/gateway-configurations"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),

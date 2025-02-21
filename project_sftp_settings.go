@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -60,6 +61,11 @@ type ProjectSFTPSettingsSaveSftpSettingsParameters struct {
 
 // SaveSftpSettings allows you to save the SFTP settings for the project.
 func (s ProjectSFTPSettings) SaveSftpSettings(ID string, options ...ProjectSFTPSettingsSaveSftpSettingsParameters) error {
+	return s.SaveSftpSettingsWithContext(context.Background(), ID, options...)
+}
+
+// SaveSftpSettings allows you to save the SFTP settings for the project., passes the provided context to the request
+func (s ProjectSFTPSettings) SaveSftpSettingsWithContext(ctx context.Context, ID string, options ...ProjectSFTPSettingsSaveSftpSettingsParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewProjectSFTPSettings() method to create a new ProjectSFTPSettings object")
 	}
@@ -104,7 +110,8 @@ func (s ProjectSFTPSettings) SaveSftpSettings(ID string, options ...ProjectSFTPS
 
 	path := "/projects/" + url.QueryEscape(ID) + "/sftp-settings"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -147,6 +154,11 @@ type ProjectSFTPSettingsDeleteSftpSettingsParameters struct {
 
 // DeleteSftpSettings allows you to delete the SFTP settings for the project.
 func (s ProjectSFTPSettings) DeleteSftpSettings(ID string, options ...ProjectSFTPSettingsDeleteSftpSettingsParameters) error {
+	return s.DeleteSftpSettingsWithContext(context.Background(), ID, options...)
+}
+
+// DeleteSftpSettings allows you to delete the SFTP settings for the project., passes the provided context to the request
+func (s ProjectSFTPSettings) DeleteSftpSettingsWithContext(ctx context.Context, ID string, options ...ProjectSFTPSettingsDeleteSftpSettingsParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewProjectSFTPSettings() method to create a new ProjectSFTPSettings object")
 	}
@@ -183,7 +195,8 @@ func (s ProjectSFTPSettings) DeleteSftpSettings(ID string, options ...ProjectSFT
 
 	path := "/projects/" + url.QueryEscape(ID) + "/sftp-settings"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -87,6 +88,11 @@ type ExportLayoutAllParameters struct {
 
 // All allows you to get all the export layouts.
 func (s ExportLayout) All(options ...ExportLayoutAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the export layouts., passes the provided context to the request
+func (s ExportLayout) AllWithContext(ctx context.Context, options ...ExportLayoutAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewExportLayout() method to create a new ExportLayout object")
 	}
@@ -125,7 +131,8 @@ func (s ExportLayout) All(options ...ExportLayoutAllParameters) (*Iterator, erro
 
 	path := "/exports/layouts"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -194,6 +201,11 @@ type ExportLayoutFindParameters struct {
 
 // Find allows you to find an export layout by its ID.
 func (s ExportLayout) Find(exportLayoutID string, options ...ExportLayoutFindParameters) (*ExportLayout, error) {
+	return s.FindWithContext(context.Background(), exportLayoutID, options...)
+}
+
+// Find allows you to find an export layout by its ID., passes the provided context to the request
+func (s ExportLayout) FindWithContext(ctx context.Context, exportLayoutID string, options ...ExportLayoutFindParameters) (*ExportLayout, error) {
 	if s.client == nil {
 		panic("Please use the client.NewExportLayout() method to create a new ExportLayout object")
 	}
@@ -231,7 +243,8 @@ func (s ExportLayout) Find(exportLayoutID string, options ...ExportLayoutFindPar
 
 	path := "/exports/layouts/" + url.QueryEscape(exportLayoutID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -275,6 +288,11 @@ type ExportLayoutFindDefaultParameters struct {
 
 // FindDefault allows you to find the default export layout for given export type.
 func (s ExportLayout) FindDefault(exportType string, options ...ExportLayoutFindDefaultParameters) (*ExportLayout, error) {
+	return s.FindDefaultWithContext(context.Background(), exportType, options...)
+}
+
+// FindDefault allows you to find the default export layout for given export type., passes the provided context to the request
+func (s ExportLayout) FindDefaultWithContext(ctx context.Context, exportType string, options ...ExportLayoutFindDefaultParameters) (*ExportLayout, error) {
 	if s.client == nil {
 		panic("Please use the client.NewExportLayout() method to create a new ExportLayout object")
 	}
@@ -312,7 +330,8 @@ func (s ExportLayout) FindDefault(exportType string, options ...ExportLayoutFind
 
 	path := "/exports/layouts/default/" + url.QueryEscape(exportType) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -356,6 +375,11 @@ type ExportLayoutCreateParameters struct {
 
 // Create allows you to create a new export layout.
 func (s ExportLayout) Create(options ...ExportLayoutCreateParameters) (*ExportLayout, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new export layout., passes the provided context to the request
+func (s ExportLayout) CreateWithContext(ctx context.Context, options ...ExportLayoutCreateParameters) (*ExportLayout, error) {
 	if s.client == nil {
 		panic("Please use the client.NewExportLayout() method to create a new ExportLayout object")
 	}
@@ -401,7 +425,8 @@ func (s ExportLayout) Create(options ...ExportLayoutCreateParameters) (*ExportLa
 
 	path := "/exports/layouts"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -445,6 +470,11 @@ type ExportLayoutUpdateParameters struct {
 
 // Update allows you to update the export layout.
 func (s ExportLayout) Update(exportLayoutID string, options ...ExportLayoutUpdateParameters) (*ExportLayout, error) {
+	return s.UpdateWithContext(context.Background(), exportLayoutID, options...)
+}
+
+// Update allows you to update the export layout., passes the provided context to the request
+func (s ExportLayout) UpdateWithContext(ctx context.Context, exportLayoutID string, options ...ExportLayoutUpdateParameters) (*ExportLayout, error) {
 	if s.client == nil {
 		panic("Please use the client.NewExportLayout() method to create a new ExportLayout object")
 	}
@@ -488,7 +518,8 @@ func (s ExportLayout) Update(exportLayoutID string, options ...ExportLayoutUpdat
 
 	path := "/exports/layouts/" + url.QueryEscape(exportLayoutID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -532,6 +563,11 @@ type ExportLayoutDeleteParameters struct {
 
 // Delete allows you to delete the export layout.
 func (s ExportLayout) Delete(exportLayoutID string, options ...ExportLayoutDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), exportLayoutID, options...)
+}
+
+// Delete allows you to delete the export layout., passes the provided context to the request
+func (s ExportLayout) DeleteWithContext(ctx context.Context, exportLayoutID string, options ...ExportLayoutDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewExportLayout() method to create a new ExportLayout object")
 	}
@@ -568,7 +604,8 @@ func (s ExportLayout) Delete(exportLayoutID string, options ...ExportLayoutDelet
 
 	path := "/exports/layouts/" + url.QueryEscape(exportLayoutID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

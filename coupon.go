@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -99,6 +100,11 @@ type CouponAllParameters struct {
 
 // All allows you to get all the coupons.
 func (s Coupon) All(options ...CouponAllParameters) (*Iterator, error) {
+	return s.AllWithContext(context.Background(), options...)
+}
+
+// All allows you to get all the coupons., passes the provided context to the request
+func (s Coupon) AllWithContext(ctx context.Context, options ...CouponAllParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCoupon() method to create a new Coupon object")
 	}
@@ -137,7 +143,8 @@ func (s Coupon) All(options ...CouponAllParameters) (*Iterator, error) {
 
 	path := "/coupons"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -206,6 +213,11 @@ type CouponCreateParameters struct {
 
 // Create allows you to create a new coupon.
 func (s Coupon) Create(options ...CouponCreateParameters) (*Coupon, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new coupon., passes the provided context to the request
+func (s Coupon) CreateWithContext(ctx context.Context, options ...CouponCreateParameters) (*Coupon, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCoupon() method to create a new Coupon object")
 	}
@@ -259,7 +271,8 @@ func (s Coupon) Create(options ...CouponCreateParameters) (*Coupon, error) {
 
 	path := "/coupons"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -303,6 +316,11 @@ type CouponFindParameters struct {
 
 // Find allows you to find a coupon by its ID.
 func (s Coupon) Find(couponID string, options ...CouponFindParameters) (*Coupon, error) {
+	return s.FindWithContext(context.Background(), couponID, options...)
+}
+
+// Find allows you to find a coupon by its ID., passes the provided context to the request
+func (s Coupon) FindWithContext(ctx context.Context, couponID string, options ...CouponFindParameters) (*Coupon, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCoupon() method to create a new Coupon object")
 	}
@@ -340,7 +358,8 @@ func (s Coupon) Find(couponID string, options ...CouponFindParameters) (*Coupon,
 
 	path := "/coupons/" + url.QueryEscape(couponID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -384,6 +403,11 @@ type CouponSaveParameters struct {
 
 // Save allows you to save the updated coupon attributes.
 func (s Coupon) Save(options ...CouponSaveParameters) (*Coupon, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated coupon attributes., passes the provided context to the request
+func (s Coupon) SaveWithContext(ctx context.Context, options ...CouponSaveParameters) (*Coupon, error) {
 	if s.client == nil {
 		panic("Please use the client.NewCoupon() method to create a new Coupon object")
 	}
@@ -423,7 +447,8 @@ func (s Coupon) Save(options ...CouponSaveParameters) (*Coupon, error) {
 
 	path := "/coupons/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -467,6 +492,11 @@ type CouponDeleteParameters struct {
 
 // Delete allows you to delete the coupon.
 func (s Coupon) Delete(options ...CouponDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete the coupon., passes the provided context to the request
+func (s Coupon) DeleteWithContext(ctx context.Context, options ...CouponDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewCoupon() method to create a new Coupon object")
 	}
@@ -503,7 +533,8 @@ func (s Coupon) Delete(options ...CouponDeleteParameters) error {
 
 	path := "/coupons/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

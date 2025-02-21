@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -96,6 +97,11 @@ type ProjectFetchParameters struct {
 
 // Fetch allows you to fetch the current project information.
 func (s Project) Fetch(options ...ProjectFetchParameters) (*Project, error) {
+	return s.FetchWithContext(context.Background(), options...)
+}
+
+// Fetch allows you to fetch the current project information., passes the provided context to the request
+func (s Project) FetchWithContext(ctx context.Context, options ...ProjectFetchParameters) (*Project, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProject() method to create a new Project object")
 	}
@@ -133,7 +139,8 @@ func (s Project) Fetch(options ...ProjectFetchParameters) (*Project, error) {
 
 	path := "/projects/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -177,6 +184,11 @@ type ProjectSaveParameters struct {
 
 // Save allows you to save the updated project's attributes.
 func (s Project) Save(options ...ProjectSaveParameters) (*Project, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated project's attributes., passes the provided context to the request
+func (s Project) SaveWithContext(ctx context.Context, options ...ProjectSaveParameters) (*Project, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProject() method to create a new Project object")
 	}
@@ -214,7 +226,8 @@ func (s Project) Save(options ...ProjectSaveParameters) (*Project, error) {
 
 	path := "/projects/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -258,6 +271,11 @@ type ProjectDeleteParameters struct {
 
 // Delete allows you to delete the project. Be careful! Executing this request will prevent any further interaction with the API that uses this project.
 func (s Project) Delete(options ...ProjectDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete the project. Be careful! Executing this request will prevent any further interaction with the API that uses this project., passes the provided context to the request
+func (s Project) DeleteWithContext(ctx context.Context, options ...ProjectDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewProject() method to create a new Project object")
 	}
@@ -294,7 +312,8 @@ func (s Project) Delete(options ...ProjectDeleteParameters) error {
 
 	path := "/projects/{project_id}"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),
@@ -337,6 +356,11 @@ type ProjectFetchSupervisedParameters struct {
 
 // FetchSupervised allows you to get all the supervised projects.
 func (s Project) FetchSupervised(options ...ProjectFetchSupervisedParameters) (*Iterator, error) {
+	return s.FetchSupervisedWithContext(context.Background(), options...)
+}
+
+// FetchSupervised allows you to get all the supervised projects., passes the provided context to the request
+func (s Project) FetchSupervisedWithContext(ctx context.Context, options ...ProjectFetchSupervisedParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProject() method to create a new Project object")
 	}
@@ -375,7 +399,8 @@ func (s Project) FetchSupervised(options ...ProjectFetchSupervisedParameters) (*
 
 	path := "/supervised-projects"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -446,6 +471,11 @@ type ProjectCreateSupervisedParameters struct {
 
 // CreateSupervised allows you to create a new supervised project.
 func (s Project) CreateSupervised(options ...ProjectCreateSupervisedParameters) (*Project, error) {
+	return s.CreateSupervisedWithContext(context.Background(), options...)
+}
+
+// CreateSupervised allows you to create a new supervised project., passes the provided context to the request
+func (s Project) CreateSupervisedWithContext(ctx context.Context, options ...ProjectCreateSupervisedParameters) (*Project, error) {
 	if s.client == nil {
 		panic("Please use the client.NewProject() method to create a new Project object")
 	}
@@ -495,7 +525,8 @@ func (s Project) CreateSupervised(options ...ProjectCreateSupervisedParameters) 
 
 	path := "/supervised-projects"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),

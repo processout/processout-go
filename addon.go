@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -108,6 +109,11 @@ type AddonFetchSubscriptionAddonsParameters struct {
 
 // FetchSubscriptionAddons allows you to get the addons applied to the subscription.
 func (s Addon) FetchSubscriptionAddons(subscriptionID string, options ...AddonFetchSubscriptionAddonsParameters) (*Iterator, error) {
+	return s.FetchSubscriptionAddonsWithContext(context.Background(), subscriptionID, options...)
+}
+
+// FetchSubscriptionAddons allows you to get the addons applied to the subscription., passes the provided context to the request
+func (s Addon) FetchSubscriptionAddonsWithContext(ctx context.Context, subscriptionID string, options ...AddonFetchSubscriptionAddonsParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewAddon() method to create a new Addon object")
 	}
@@ -146,7 +152,8 @@ func (s Addon) FetchSubscriptionAddons(subscriptionID string, options ...AddonFe
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/addons"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -218,6 +225,11 @@ type AddonCreateParameters struct {
 
 // Create allows you to create a new addon to the given subscription ID.
 func (s Addon) Create(options ...AddonCreateParameters) (*Addon, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new addon to the given subscription ID., passes the provided context to the request
+func (s Addon) CreateWithContext(ctx context.Context, options ...AddonCreateParameters) (*Addon, error) {
 	if s.client == nil {
 		panic("Please use the client.NewAddon() method to create a new Addon object")
 	}
@@ -273,7 +285,8 @@ func (s Addon) Create(options ...AddonCreateParameters) (*Addon, error) {
 
 	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/addons"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -317,6 +330,11 @@ type AddonFindParameters struct {
 
 // Find allows you to find a subscription's addon by its ID.
 func (s Addon) Find(subscriptionID, addonID string, options ...AddonFindParameters) (*Addon, error) {
+	return s.FindWithContext(context.Background(), subscriptionID, addonID, options...)
+}
+
+// Find allows you to find a subscription's addon by its ID., passes the provided context to the request
+func (s Addon) FindWithContext(ctx context.Context, subscriptionID, addonID string, options ...AddonFindParameters) (*Addon, error) {
 	if s.client == nil {
 		panic("Please use the client.NewAddon() method to create a new Addon object")
 	}
@@ -354,7 +372,8 @@ func (s Addon) Find(subscriptionID, addonID string, options ...AddonFindParamete
 
 	path := "/subscriptions/" + url.QueryEscape(subscriptionID) + "/addons/" + url.QueryEscape(addonID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -402,6 +421,11 @@ type AddonSaveParameters struct {
 
 // Save allows you to save the updated addon attributes.
 func (s Addon) Save(options ...AddonSaveParameters) (*Addon, error) {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated addon attributes., passes the provided context to the request
+func (s Addon) SaveWithContext(ctx context.Context, options ...AddonSaveParameters) (*Addon, error) {
 	if s.client == nil {
 		panic("Please use the client.NewAddon() method to create a new Addon object")
 	}
@@ -459,7 +483,8 @@ func (s Addon) Save(options ...AddonSaveParameters) (*Addon, error) {
 
 	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/addons/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -506,6 +531,11 @@ type AddonDeleteParameters struct {
 
 // Delete allows you to delete an addon applied to a subscription.
 func (s Addon) Delete(options ...AddonDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete an addon applied to a subscription., passes the provided context to the request
+func (s Addon) DeleteWithContext(ctx context.Context, options ...AddonDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewAddon() method to create a new Addon object")
 	}
@@ -548,7 +578,8 @@ func (s Addon) Delete(options ...AddonDeleteParameters) error {
 
 	path := "/subscriptions/" + url.QueryEscape(*s.SubscriptionID) + "/addons/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),

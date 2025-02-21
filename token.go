@@ -2,6 +2,7 @@ package processout
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -135,6 +136,11 @@ type TokenFetchCustomerTokensParameters struct {
 
 // FetchCustomerTokens allows you to get the customer's tokens.
 func (s Token) FetchCustomerTokens(customerID string, options ...TokenFetchCustomerTokensParameters) (*Iterator, error) {
+	return s.FetchCustomerTokensWithContext(context.Background(), customerID, options...)
+}
+
+// FetchCustomerTokens allows you to get the customer's tokens., passes the provided context to the request
+func (s Token) FetchCustomerTokensWithContext(ctx context.Context, customerID string, options ...TokenFetchCustomerTokensParameters) (*Iterator, error) {
 	if s.client == nil {
 		panic("Please use the client.NewToken() method to create a new Token object")
 	}
@@ -173,7 +179,8 @@ func (s Token) FetchCustomerTokens(customerID string, options ...TokenFetchCusto
 
 	path := "/customers/" + url.QueryEscape(customerID) + "/tokens"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -242,6 +249,11 @@ type TokenFindParameters struct {
 
 // Find allows you to find a customer's token by its ID.
 func (s Token) Find(customerID, tokenID string, options ...TokenFindParameters) (*Token, error) {
+	return s.FindWithContext(context.Background(), customerID, tokenID, options...)
+}
+
+// Find allows you to find a customer's token by its ID., passes the provided context to the request
+func (s Token) FindWithContext(ctx context.Context, customerID, tokenID string, options ...TokenFindParameters) (*Token, error) {
 	if s.client == nil {
 		panic("Please use the client.NewToken() method to create a new Token object")
 	}
@@ -279,7 +291,8 @@ func (s Token) Find(customerID, tokenID string, options ...TokenFindParameters) 
 
 	path := "/customers/" + url.QueryEscape(customerID) + "/tokens/" + url.QueryEscape(tokenID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"GET",
 		Host+path,
 		bytes.NewReader(body),
@@ -332,6 +345,11 @@ type TokenCreateParameters struct {
 
 // Create allows you to create a new token for the given customer ID.
 func (s Token) Create(options ...TokenCreateParameters) (*Token, *CustomerAction, error) {
+	return s.CreateWithContext(context.Background(), options...)
+}
+
+// Create allows you to create a new token for the given customer ID., passes the provided context to the request
+func (s Token) CreateWithContext(ctx context.Context, options ...TokenCreateParameters) (*Token, *CustomerAction, error) {
 	if s.client == nil {
 		panic("Please use the client.NewToken() method to create a new Token object")
 	}
@@ -400,7 +418,8 @@ func (s Token) Create(options ...TokenCreateParameters) (*Token, *CustomerAction
 
 	path := "/customers/" + url.QueryEscape(*s.CustomerID) + "/tokens"
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"POST",
 		Host+path,
 		bytes.NewReader(body),
@@ -453,6 +472,11 @@ type TokenSaveParameters struct {
 
 // Save allows you to save the updated customer attributes.
 func (s Token) Save(options ...TokenSaveParameters) error {
+	return s.SaveWithContext(context.Background(), options...)
+}
+
+// Save allows you to save the updated customer attributes., passes the provided context to the request
+func (s Token) SaveWithContext(ctx context.Context, options ...TokenSaveParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewToken() method to create a new Token object")
 	}
@@ -505,7 +529,8 @@ func (s Token) Save(options ...TokenSaveParameters) error {
 
 	path := "/customers/" + url.QueryEscape(*s.CustomerID) + "/tokens/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"PUT",
 		Host+path,
 		bytes.NewReader(body),
@@ -548,6 +573,11 @@ type TokenDeleteParameters struct {
 
 // Delete allows you to delete a customer token
 func (s Token) Delete(options ...TokenDeleteParameters) error {
+	return s.DeleteWithContext(context.Background(), options...)
+}
+
+// Delete allows you to delete a customer token, passes the provided context to the request
+func (s Token) DeleteWithContext(ctx context.Context, options ...TokenDeleteParameters) error {
 	if s.client == nil {
 		panic("Please use the client.NewToken() method to create a new Token object")
 	}
@@ -584,7 +614,8 @@ func (s Token) Delete(options ...TokenDeleteParameters) error {
 
 	path := "/customers/" + url.QueryEscape(*s.CustomerID) + "/tokens/" + url.QueryEscape(*s.ID) + ""
 
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		"DELETE",
 		Host+path,
 		bytes.NewReader(body),
