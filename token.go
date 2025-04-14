@@ -59,6 +59,8 @@ type Token struct {
 	VerificationStatus *string `json:"verification_status,omitempty"`
 	// CanGetBalance is the if true, the balance can be retrieved from the balances endpoint
 	CanGetBalance *bool `json:"can_get_balance,omitempty"`
+	// WebhookURL is the custom webhook URL where updates about this specific customer token will be sent, on top of your project-wide URLs
+	WebhookURL *string `json:"webhook_url,omitempty"`
 
 	client *ProcessOut
 }
@@ -123,6 +125,7 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.ManualInvoiceCancellation = c.ManualInvoiceCancellation
 	s.VerificationStatus = c.VerificationStatus
 	s.CanGetBalance = c.CanGetBalance
+	s.WebhookURL = c.WebhookURL
 
 	return s
 }
@@ -383,6 +386,7 @@ func (s Token) CreateWithContext(ctx context.Context, options ...TokenCreatePara
 		Description               interface{} `json:"description"`
 		InvoiceID                 interface{} `json:"invoice_id"`
 		ManualInvoiceCancellation interface{} `json:"manual_invoice_cancellation"`
+		WebhookURL                interface{} `json:"webhook_url"`
 		Source                    interface{} `json:"source"`
 		Settings                  interface{} `json:"settings"`
 		Device                    interface{} `json:"device"`
@@ -400,6 +404,7 @@ func (s Token) CreateWithContext(ctx context.Context, options ...TokenCreatePara
 		Description:               s.Description,
 		InvoiceID:                 s.InvoiceID,
 		ManualInvoiceCancellation: s.ManualInvoiceCancellation,
+		WebhookURL:                s.WebhookURL,
 		Source:                    opt.Source,
 		Settings:                  opt.Settings,
 		Device:                    opt.Device,
