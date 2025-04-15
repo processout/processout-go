@@ -39,6 +39,8 @@ type Invoice struct {
 	TokenID *string `json:"token_id,omitempty"`
 	// Details is the details of the invoice
 	Details *[]*InvoiceDetail `json:"details,omitempty"`
+	// Submerchant is the submerchant data of the invoice
+	Submerchant *InvoiceSubmerchant `json:"submerchant,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the payment
 	URL *string `json:"url,omitempty"`
 	// URLQrcode is the base64-encoded QR code for the invoice URL
@@ -150,6 +152,9 @@ func (s *Invoice) SetClient(c *ProcessOut) *Invoice {
 	if s.Token != nil {
 		s.Token.SetClient(c)
 	}
+	if s.Submerchant != nil {
+		s.Submerchant.SetClient(c)
+	}
 	if s.Risk != nil {
 		s.Risk.SetClient(c)
 	}
@@ -196,6 +201,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Token = c.Token
 	s.TokenID = c.TokenID
 	s.Details = c.Details
+	s.Submerchant = c.Submerchant
 	s.URL = c.URL
 	s.URLQrcode = c.URLQrcode
 	s.Name = c.Name
@@ -1467,6 +1473,7 @@ func (s Invoice) CreateWithContext(ctx context.Context, options ...InvoiceCreate
 		Currency                   interface{} `json:"currency"`
 		Metadata                   interface{} `json:"metadata"`
 		Details                    interface{} `json:"details"`
+		Submerchant                interface{} `json:"submerchant"`
 		ExemptionReason3ds2        interface{} `json:"exemption_reason_3ds2"`
 		ScaExemptionReason         interface{} `json:"sca_exemption_reason"`
 		ChallengeIndicator         interface{} `json:"challenge_indicator"`
@@ -1503,6 +1510,7 @@ func (s Invoice) CreateWithContext(ctx context.Context, options ...InvoiceCreate
 		Currency:                   s.Currency,
 		Metadata:                   s.Metadata,
 		Details:                    s.Details,
+		Submerchant:                s.Submerchant,
 		ExemptionReason3ds2:        s.ExemptionReason3ds2,
 		ScaExemptionReason:         s.ScaExemptionReason,
 		ChallengeIndicator:         s.ChallengeIndicator,

@@ -23,7 +23,7 @@ type Refund struct {
 	TransactionID *string `json:"transaction_id,omitempty"`
 	// Amount is the amount to be refunded. Must not be greater than the amount still available on the transaction
 	Amount *string `json:"amount,omitempty"`
-	// Reason is the reason for the refund. Either customer_request, duplicate or fraud
+	// Reason is the reason for the refund. Either customer_request, duplicate, fraud or other
 	Reason *string `json:"reason,omitempty"`
 	// Information is the custom details regarding the refund
 	Information *string `json:"information,omitempty"`
