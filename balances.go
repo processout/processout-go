@@ -16,9 +16,16 @@ import (
 // Balances represents the Balances API object
 type Balances struct {
 	// Vouchers is the vouchers linked to the customer
-	Vouchers *[]*Balance `json:"vouchers,omitempty"`
+	Vouchers         *[]*Balance `json:"vouchers,omitempty"`
+	AvailableBalance *Balance    `json:"available_balance,omitempty"`
+	NextAction       *NextAction `json:"next_action,omitempty"`
 
 	client *ProcessOut
+}
+
+type NextAction struct {
+	ActionType string `json:"type"`
+	Value      string `json:"value"`
 }
 
 // SetClient sets the client for the Balances object and its
