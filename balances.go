@@ -55,6 +55,9 @@ func (s *Balances) Prefill(c *Balances) *Balances {
 type BalancesFindParameters struct {
 	*Options
 	*Balances
+
+	// Parameter used to indicate that the API call retrieving the token balance is authenticated.
+	Authenticated bool
 }
 
 // Find allows you to fetch a customer token's balance
@@ -78,6 +81,7 @@ func (s Balances) FindWithContext(ctx context.Context, tokenID string, options .
 	if opt.Options == nil {
 		opt.Options = &Options{}
 	}
+
 	s.Prefill(opt.Balances)
 
 	type Response struct {
@@ -100,11 +104,21 @@ func (s Balances) FindWithContext(ctx context.Context, tokenID string, options .
 	}
 
 	path := "/balances/tokens/" + url.QueryEscape(tokenID) + ""
+	u, err := url.Parse(Host + path)
+	if err != nil {
+		return nil, errors.New(err, "", "")
+	}
+
+	q := u.Query()
+	if opt.Authenticated {
+		q.Add("authenticated", "true")
+	}
+	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequestWithContext(
 		ctx,
 		"GET",
-		Host+path,
+		u.String(),
 		bytes.NewReader(body),
 	)
 	if err != nil {
