@@ -18,7 +18,7 @@ type Balances struct {
 	// Vouchers is the vouchers linked to the customer
 	Vouchers         *[]*Balance     `json:"vouchers,omitempty"`
 	AvailableBalance *Balance        `json:"available_balance,omitempty"`
-	CustomerAction   *CustomerAction `json:"next_action,omitempty"`
+	CustomerAction   *CustomerAction `json:"customer_action,omitempty"`
 
 	client *ProcessOut
 }
