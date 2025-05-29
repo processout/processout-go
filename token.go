@@ -387,6 +387,7 @@ func (s Token) CreateWithContext(ctx context.Context, options ...TokenCreatePara
 		InvoiceID                 interface{} `json:"invoice_id"`
 		ManualInvoiceCancellation interface{} `json:"manual_invoice_cancellation"`
 		WebhookURL                interface{} `json:"webhook_url"`
+		GatewayConfigurationID    interface{} `json:"gateway_configuration_id"`
 		Source                    interface{} `json:"source"`
 		Settings                  interface{} `json:"settings"`
 		Device                    interface{} `json:"device"`
@@ -405,6 +406,7 @@ func (s Token) CreateWithContext(ctx context.Context, options ...TokenCreatePara
 		InvoiceID:                 s.InvoiceID,
 		ManualInvoiceCancellation: s.ManualInvoiceCancellation,
 		WebhookURL:                s.WebhookURL,
+		GatewayConfigurationID:    s.GatewayConfigurationID,
 		Source:                    opt.Source,
 		Settings:                  opt.Settings,
 		Device:                    opt.Device,
@@ -473,6 +475,7 @@ type TokenSaveParameters struct {
 	SetDefault                interface{} `json:"set_default"`
 	VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
 	InvoiceReturnURL          interface{} `json:"invoice_return_url"`
+	GatewayConfigurationID    interface{} `json:"gateway_configuration_id"`
 }
 
 // Save allows you to save the updated customer attributes.
@@ -515,6 +518,7 @@ func (s Token) SaveWithContext(ctx context.Context, options ...TokenSaveParamete
 		SetDefault                interface{} `json:"set_default"`
 		VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
 		InvoiceReturnURL          interface{} `json:"invoice_return_url"`
+		GatewayConfigurationID    interface{} `json:"gateway_configuration_id"`
 	}{
 		Options:                   opt.Options,
 		Source:                    opt.Source,
@@ -525,6 +529,7 @@ func (s Token) SaveWithContext(ctx context.Context, options ...TokenSaveParamete
 		SetDefault:                opt.SetDefault,
 		VerifyStatementDescriptor: opt.VerifyStatementDescriptor,
 		InvoiceReturnURL:          opt.InvoiceReturnURL,
+		GatewayConfigurationID:    opt.GatewayConfigurationID,
 	}
 
 	body, err := json.Marshal(data)

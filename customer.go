@@ -77,6 +77,8 @@ type Customer struct {
 	RegisteredAt *time.Time `json:"registered_at,omitempty"`
 	// DateOfBirth is the date of birth of the customer
 	DateOfBirth *time.Time `json:"date_of_birth,omitempty"`
+	// ReferenceID is the merchant reference ID, custom ID for this Customer provided by the API caller. At most 80 characters. Allowed only 1-byte ASCII characters from range 33 (inclusive) to 126 (inclusive) - non-whitespace, non-DEL characters.
+	ReferenceID *string `json:"reference_id,omitempty"`
 
 	client *ProcessOut
 }
@@ -147,6 +149,7 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.CreatedAt = c.CreatedAt
 	s.RegisteredAt = c.RegisteredAt
 	s.DateOfBirth = c.DateOfBirth
+	s.ReferenceID = c.ReferenceID
 
 	return s
 }
@@ -835,6 +838,7 @@ func (s Customer) CreateWithContext(ctx context.Context, options ...CustomerCrea
 		Sex           interface{} `json:"sex"`
 		Metadata      interface{} `json:"metadata"`
 		ID            interface{} `json:"id"`
+		ReferenceID   interface{} `json:"reference_id"`
 		RegisteredAt  interface{} `json:"registered_at"`
 		PhoneNumber   interface{} `json:"phone_number"`
 	}{
@@ -859,6 +863,7 @@ func (s Customer) CreateWithContext(ctx context.Context, options ...CustomerCrea
 		Sex:           s.Sex,
 		Metadata:      s.Metadata,
 		ID:            s.ID,
+		ReferenceID:   s.ReferenceID,
 		RegisteredAt:  s.RegisteredAt,
 		PhoneNumber:   s.PhoneNumber,
 	}
