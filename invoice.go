@@ -117,6 +117,8 @@ type Invoice struct {
 	Verification *bool `json:"verification,omitempty"`
 	// AutoCaptureAt is the a timestamp to indicate when an auto capture should take place following an authorization. This takes priority over the value sent in the authorization request.
 	AutoCaptureAt *time.Time `json:"auto_capture_at,omitempty"`
+	// ReferenceID is the merchant reference ID, custom ID for this Invoice provided by the API caller. At most 80 characters. Allowed only 1-byte ASCII characters from range 33 (inclusive) to 126 (inclusive) - non-whitespace, non-DEL characters.
+	ReferenceID *string `json:"reference_id,omitempty"`
 
 	client *ProcessOut
 }
@@ -240,6 +242,7 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.UnsupportedFeatureBypass = c.UnsupportedFeatureBypass
 	s.Verification = c.Verification
 	s.AutoCaptureAt = c.AutoCaptureAt
+	s.ReferenceID = c.ReferenceID
 
 	return s
 }
@@ -1474,6 +1477,7 @@ func (s Invoice) CreateWithContext(ctx context.Context, options ...InvoiceCreate
 		Metadata                   interface{} `json:"metadata"`
 		Details                    interface{} `json:"details"`
 		Submerchant                interface{} `json:"submerchant"`
+		ReferenceID                interface{} `json:"reference_id"`
 		ExemptionReason3ds2        interface{} `json:"exemption_reason_3ds2"`
 		ScaExemptionReason         interface{} `json:"sca_exemption_reason"`
 		ChallengeIndicator         interface{} `json:"challenge_indicator"`
@@ -1511,6 +1515,7 @@ func (s Invoice) CreateWithContext(ctx context.Context, options ...InvoiceCreate
 		Metadata:                   s.Metadata,
 		Details:                    s.Details,
 		Submerchant:                s.Submerchant,
+		ReferenceID:                s.ReferenceID,
 		ExemptionReason3ds2:        s.ExemptionReason3ds2,
 		ScaExemptionReason:         s.ScaExemptionReason,
 		ChallengeIndicator:         s.ChallengeIndicator,

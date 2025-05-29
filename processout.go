@@ -63,7 +63,7 @@ func New(projectID, projectSecret string) *ProcessOut {
 func setupRequest(client *ProcessOut, opt *Options, req *http.Request) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("API-Version", client.APIVersion)
-	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.5.0")
+	req.Header.Set("User-Agent", "ProcessOut Go-Bindings/v5.6.0")
 	req.Header.Set("Accept", "application/json")
 	if client.UserAgent != "" {
 		req.Header.Set("User-Agent", client.UserAgent)
@@ -184,6 +184,21 @@ func (c *ProcessOut) NewBalance(prefill ...*Balance) *Balance {
 	}
 	if len(prefill) == 0 {
 		return &Balance{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewBalancesCustomerAction creates a new BalancesCustomerAction object
+func (c *ProcessOut) NewBalancesCustomerAction(prefill ...*BalancesCustomerAction) *BalancesCustomerAction {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the BalancesCustomerAction, or none.")
+	}
+	if len(prefill) == 0 {
+		return &BalancesCustomerAction{
 			client: c,
 		}
 	}
@@ -1047,21 +1062,6 @@ func (c *ProcessOut) NewWebhookEndpoint(prefill ...*WebhookEndpoint) *WebhookEnd
 	return prefill[0]
 }
 
-// NewCardCreateRequest creates a new CardCreateRequest object
-func (c *ProcessOut) NewCardCreateRequest(prefill ...*CardCreateRequest) *CardCreateRequest {
-	if len(prefill) > 1 {
-		panic("You may only provide one structure used to prefill the CardCreateRequest, or none.")
-	}
-	if len(prefill) == 0 {
-		return &CardCreateRequest{
-			client: c,
-		}
-	}
-
-	prefill[0].client = c
-	return prefill[0]
-}
-
 // NewDevice creates a new Device object
 func (c *ProcessOut) NewDevice(prefill ...*Device) *Device {
 	if len(prefill) > 1 {
@@ -1114,6 +1114,21 @@ func (c *ProcessOut) NewCardUpdateRequest(prefill ...*CardUpdateRequest) *CardUp
 	}
 	if len(prefill) == 0 {
 		return &CardUpdateRequest{
+			client: c,
+		}
+	}
+
+	prefill[0].client = c
+	return prefill[0]
+}
+
+// NewCardCreateRequest creates a new CardCreateRequest object
+func (c *ProcessOut) NewCardCreateRequest(prefill ...*CardCreateRequest) *CardCreateRequest {
+	if len(prefill) > 1 {
+		panic("You may only provide one structure used to prefill the CardCreateRequest, or none.")
+	}
+	if len(prefill) == 0 {
+		return &CardCreateRequest{
 			client: c,
 		}
 	}

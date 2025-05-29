@@ -17,6 +17,10 @@ import (
 type Balances struct {
 	// Vouchers is the vouchers linked to the customer
 	Vouchers *[]*Balance `json:"vouchers,omitempty"`
+	// AvailableBalance is the available balance of the customer
+	AvailableBalance *Balance `json:"available_balance,omitempty"`
+	// CustomerAction is the customer action to be performed, such as redirecting to a URL
+	CustomerAction *BalancesCustomerAction `json:"customer_action,omitempty"`
 
 	client *ProcessOut
 }
@@ -28,6 +32,12 @@ func (s *Balances) SetClient(c *ProcessOut) *Balances {
 		return s
 	}
 	s.client = c
+	if s.AvailableBalance != nil {
+		s.AvailableBalance.SetClient(c)
+	}
+	if s.CustomerAction != nil {
+		s.CustomerAction.SetClient(c)
+	}
 
 	return s
 }
@@ -39,6 +49,8 @@ func (s *Balances) Prefill(c *Balances) *Balances {
 	}
 
 	s.Vouchers = c.Vouchers
+	s.AvailableBalance = c.AvailableBalance
+	s.CustomerAction = c.CustomerAction
 
 	return s
 }
