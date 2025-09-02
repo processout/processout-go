@@ -480,6 +480,7 @@ type InvoiceCaptureParameters struct {
 	OverrideMacBlocking        interface{} `json:"override_mac_blocking"`
 	ExternalThreeDS            interface{} `json:"external_three_d_s"`
 	SaveSource                 interface{} `json:"save_source"`
+	CaptureType                interface{} `json:"capture_type"`
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
@@ -529,6 +530,7 @@ func (s Invoice) CaptureWithContext(ctx context.Context, source string, options 
 		OverrideMacBlocking        interface{} `json:"override_mac_blocking"`
 		ExternalThreeDS            interface{} `json:"external_three_d_s"`
 		SaveSource                 interface{} `json:"save_source"`
+		CaptureType                interface{} `json:"capture_type"`
 		Source                     interface{} `json:"source"`
 	}{
 		Options:                    opt.Options,
@@ -545,6 +547,7 @@ func (s Invoice) CaptureWithContext(ctx context.Context, source string, options 
 		OverrideMacBlocking:        opt.OverrideMacBlocking,
 		ExternalThreeDS:            opt.ExternalThreeDS,
 		SaveSource:                 opt.SaveSource,
+		CaptureType:                opt.CaptureType,
 		Source:                     source,
 	}
 
