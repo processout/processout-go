@@ -16,6 +16,8 @@ import (
 type InvoiceDevice struct {
 	// Channel is the channel of the device
 	Channel *string `json:"channel,omitempty"`
+	// Platform is the platform of the device for analytics and metadata. Possible values: "web", "ios", "android", "other"
+	Platform *string `json:"platform,omitempty"`
 	// IpAddress is the iP address of the device
 	IpAddress *string `json:"ip_address,omitempty"`
 	// ID is the iD of the device
@@ -51,6 +53,7 @@ func (s *InvoiceDevice) Prefill(c *InvoiceDevice) *InvoiceDevice {
 	}
 
 	s.Channel = c.Channel
+	s.Platform = c.Platform
 	s.IpAddress = c.IpAddress
 	s.ID = c.ID
 

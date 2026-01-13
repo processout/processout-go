@@ -129,6 +129,7 @@ func (s Refund) CreateForInvoiceWithContext(ctx context.Context, invoiceID strin
 		Reason           interface{} `json:"reason"`
 		Information      interface{} `json:"information"`
 		InvoiceDetailIds interface{} `json:"invoice_detail_ids"`
+		SplitAllocations interface{} `json:"split_allocations"`
 		Metadata         interface{} `json:"metadata"`
 	}{
 		Options:          opt.Options,
@@ -136,6 +137,7 @@ func (s Refund) CreateForInvoiceWithContext(ctx context.Context, invoiceID strin
 		Reason:           s.Reason,
 		Information:      s.Information,
 		InvoiceDetailIds: s.InvoiceDetailIds,
+		SplitAllocations: s.SplitAllocations,
 		Metadata:         opt.Metadata,
 	}
 
@@ -425,6 +427,7 @@ func (s Refund) CreateWithContext(ctx context.Context, options ...RefundCreatePa
 		Reason           interface{} `json:"reason"`
 		Information      interface{} `json:"information"`
 		InvoiceDetailIds interface{} `json:"invoice_detail_ids"`
+		SplitAllocations interface{} `json:"split_allocations"`
 		Metadata         interface{} `json:"metadata"`
 	}{
 		Options:          opt.Options,
@@ -432,6 +435,7 @@ func (s Refund) CreateWithContext(ctx context.Context, options ...RefundCreatePa
 		Reason:           s.Reason,
 		Information:      s.Information,
 		InvoiceDetailIds: s.InvoiceDetailIds,
+		SplitAllocations: s.SplitAllocations,
 		Metadata:         opt.Metadata,
 	}
 

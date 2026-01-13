@@ -61,6 +61,8 @@ type Token struct {
 	CanGetBalance *bool `json:"can_get_balance,omitempty"`
 	// WebhookURL is the custom webhook URL where updates about this specific customer token will be sent, on top of your project-wide URLs
 	WebhookURL *string `json:"webhook_url,omitempty"`
+	// VaultID is the iD of the Vault that customer token resides in
+	VaultID *string `json:"vault_id,omitempty"`
 
 	client *ProcessOut
 }
@@ -126,6 +128,7 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.VerificationStatus = c.VerificationStatus
 	s.CanGetBalance = c.CanGetBalance
 	s.WebhookURL = c.WebhookURL
+	s.VaultID = c.VaultID
 
 	return s
 }

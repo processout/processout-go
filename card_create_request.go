@@ -31,6 +31,8 @@ type CardCreateRequest struct {
 	Cvc2 *string `json:"cvc2,omitempty"`
 	// PreferredScheme is the preferred card scheme
 	PreferredScheme *string `json:"preferred_scheme,omitempty"`
+	// PreferredCardType is the preferred card type for combo cards
+	PreferredCardType *string `json:"preferred_card_type,omitempty"`
 	// Metadata is the metadata related to the card, in the form of a dictionary (key-value pair)
 	Metadata *map[string]string `json:"metadata,omitempty"`
 	// TokenType is the this field defines if the card was tokenized with a 3rd party tokenization method: applepay, googlepay
@@ -87,6 +89,7 @@ func (s *CardCreateRequest) Prefill(c *CardCreateRequest) *CardCreateRequest {
 	s.ExpYear = c.ExpYear
 	s.Cvc2 = c.Cvc2
 	s.PreferredScheme = c.PreferredScheme
+	s.PreferredCardType = c.PreferredCardType
 	s.Metadata = c.Metadata
 	s.TokenType = c.TokenType
 	s.Eci = c.Eci
@@ -140,42 +143,46 @@ func (s CardCreateRequest) CreateWithContext(ctx context.Context, options ...Car
 
 	data := struct {
 		*Options
-		Device           interface{} `json:"device"`
-		Name             interface{} `json:"name"`
-		Number           interface{} `json:"number"`
-		ExpDay           interface{} `json:"exp_day"`
-		ExpMonth         interface{} `json:"exp_month"`
-		ExpYear          interface{} `json:"exp_year"`
-		Cvc2             interface{} `json:"cvc2"`
-		PreferredScheme  interface{} `json:"preferred_scheme"`
-		Metadata         interface{} `json:"metadata"`
-		TokenType        interface{} `json:"token_type"`
-		Eci              interface{} `json:"eci"`
-		Cryptogram       interface{} `json:"cryptogram"`
-		ApplepayResponse interface{} `json:"applepay_response"`
-		ApplepayMid      interface{} `json:"applepay_mid"`
-		PaymentToken     interface{} `json:"payment_token"`
-		Contact          interface{} `json:"contact"`
-		Shipping         interface{} `json:"shipping"`
+		Device            interface{} `json:"device"`
+		Name              interface{} `json:"name"`
+		Number            interface{} `json:"number"`
+		ExpDay            interface{} `json:"exp_day"`
+		ExpMonth          interface{} `json:"exp_month"`
+		ExpYear           interface{} `json:"exp_year"`
+		Cvc2              interface{} `json:"cvc2"`
+		PreferredScheme   interface{} `json:"preferred_scheme"`
+		PreferredCardType interface{} `json:"preferred_card_type"`
+		Metadata          interface{} `json:"metadata"`
+		TokenType         interface{} `json:"token_type"`
+		Eci               interface{} `json:"eci"`
+		Cryptogram        interface{} `json:"cryptogram"`
+		ApplepayResponse  interface{} `json:"applepay_response"`
+		ApplepayMid       interface{} `json:"applepay_mid"`
+		PaymentToken      interface{} `json:"payment_token"`
+		Contact           interface{} `json:"contact"`
+		Shipping          interface{} `json:"shipping"`
+		SchemeTransaction interface{} `json:"scheme_transaction"`
 	}{
-		Options:          opt.Options,
-		Device:           s.Device,
-		Name:             s.Name,
-		Number:           s.Number,
-		ExpDay:           s.ExpDay,
-		ExpMonth:         s.ExpMonth,
-		ExpYear:          s.ExpYear,
-		Cvc2:             s.Cvc2,
-		PreferredScheme:  s.PreferredScheme,
-		Metadata:         s.Metadata,
-		TokenType:        s.TokenType,
-		Eci:              s.Eci,
-		Cryptogram:       s.Cryptogram,
-		ApplepayResponse: s.ApplepayResponse,
-		ApplepayMid:      s.ApplepayMid,
-		PaymentToken:     s.PaymentToken,
-		Contact:          s.Contact,
-		Shipping:         s.Shipping,
+		Options:           opt.Options,
+		Device:            s.Device,
+		Name:              s.Name,
+		Number:            s.Number,
+		ExpDay:            s.ExpDay,
+		ExpMonth:          s.ExpMonth,
+		ExpYear:           s.ExpYear,
+		Cvc2:              s.Cvc2,
+		PreferredScheme:   s.PreferredScheme,
+		PreferredCardType: s.PreferredCardType,
+		Metadata:          s.Metadata,
+		TokenType:         s.TokenType,
+		Eci:               s.Eci,
+		Cryptogram:        s.Cryptogram,
+		ApplepayResponse:  s.ApplepayResponse,
+		ApplepayMid:       s.ApplepayMid,
+		PaymentToken:      s.PaymentToken,
+		Contact:           s.Contact,
+		Shipping:          s.Shipping,
+		SchemeTransaction: s.SchemeTransaction,
 	}
 
 	body, err := json.Marshal(data)

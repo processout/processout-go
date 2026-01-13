@@ -20,6 +20,8 @@ type InvoiceExternalFraudTools struct {
 	Ravelin interface{} `json:"ravelin,omitempty"`
 	// Signifyd is the signifyd
 	Signifyd interface{} `json:"signifyd,omitempty"`
+	// Riskified is the riskified
+	Riskified interface{} `json:"riskified,omitempty"`
 
 	client *ProcessOut
 }
@@ -44,6 +46,7 @@ func (s *InvoiceExternalFraudTools) Prefill(c *InvoiceExternalFraudTools) *Invoi
 	s.Forter = c.Forter
 	s.Ravelin = c.Ravelin
 	s.Signifyd = c.Signifyd
+	s.Riskified = c.Riskified
 
 	return s
 }

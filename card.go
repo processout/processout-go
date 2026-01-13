@@ -81,6 +81,10 @@ type Card struct {
 	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the card was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// PreferredCardType is the preferred card type for combo cards, such as credit or debit
+	PreferredCardType *string `json:"preferred_card_type,omitempty"`
+	// VaultID is the iD of the Vault that the card resides in
+	VaultID *string `json:"vault_id,omitempty"`
 
 	client *ProcessOut
 }
@@ -150,6 +154,8 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.ExpiresSoon = c.ExpiresSoon
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
+	s.PreferredCardType = c.PreferredCardType
+	s.VaultID = c.VaultID
 
 	return s
 }

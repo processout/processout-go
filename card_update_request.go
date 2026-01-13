@@ -17,6 +17,8 @@ import (
 type CardUpdateRequest struct {
 	// PreferredScheme is the customer preferred scheme, such as carte bancaire vs visa. Can be set to none to clear the previous value
 	PreferredScheme *string `json:"preferred_scheme,omitempty"`
+	// PreferredCardType is the preferred card type for combo cards, such as credit or debit.
+	PreferredCardType *string `json:"preferred_card_type,omitempty"`
 
 	client *ProcessOut
 }
@@ -39,6 +41,7 @@ func (s *CardUpdateRequest) Prefill(c *CardUpdateRequest) *CardUpdateRequest {
 	}
 
 	s.PreferredScheme = c.PreferredScheme
+	s.PreferredCardType = c.PreferredCardType
 
 	return s
 }
@@ -83,10 +86,12 @@ func (s CardUpdateRequest) UpdateWithContext(ctx context.Context, cardID string,
 
 	data := struct {
 		*Options
-		PreferredScheme interface{} `json:"preferred_scheme"`
+		PreferredScheme   interface{} `json:"preferred_scheme"`
+		SchemeTransaction interface{} `json:"scheme_transaction"`
 	}{
-		Options:         opt.Options,
-		PreferredScheme: s.PreferredScheme,
+		Options:           opt.Options,
+		PreferredScheme:   s.PreferredScheme,
+		SchemeTransaction: s.SchemeTransaction,
 	}
 
 	body, err := json.Marshal(data)

@@ -29,10 +29,6 @@ type Transaction struct {
 	Customer *Customer `json:"customer,omitempty"`
 	// CustomerID is the iD of the customer that was linked to the transaction, if any
 	CustomerID *string `json:"customer_id,omitempty"`
-	// Subscription is the subscription to which this transaction belongs
-	Subscription *Subscription `json:"subscription,omitempty"`
-	// SubscriptionID is the iD of the subscription to which the transaction belongs, if any
-	SubscriptionID *string `json:"subscription_id,omitempty"`
 	// Token is the token that was used to capture the payment of the transaction, if any
 	Token *Token `json:"token,omitempty"`
 	// TokenID is the iD of the token was used to capture the payment of the transaction, if any
@@ -149,6 +145,8 @@ type Transaction struct {
 	NativeApm *NativeAPMResponse `json:"native_apm,omitempty"`
 	// ExternalDetails is the additional data about the transaction, originating from a PSP, for example customer shipping address
 	ExternalDetails interface{} `json:"external_details,omitempty"`
+	// Origin is the the origin of the transaction, can be either 'api' - processed in the ProcessOut or 'pulling' - processed outside and pulled into the system.
+	Origin *string `json:"origin,omitempty"`
 
 	client *ProcessOut
 }
@@ -177,9 +175,6 @@ func (s *Transaction) SetClient(c *ProcessOut) *Transaction {
 	}
 	if s.Customer != nil {
 		s.Customer.SetClient(c)
-	}
-	if s.Subscription != nil {
-		s.Subscription.SetClient(c)
 	}
 	if s.Token != nil {
 		s.Token.SetClient(c)
@@ -216,8 +211,6 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.InvoiceID = c.InvoiceID
 	s.Customer = c.Customer
 	s.CustomerID = c.CustomerID
-	s.Subscription = c.Subscription
-	s.SubscriptionID = c.SubscriptionID
 	s.Token = c.Token
 	s.TokenID = c.TokenID
 	s.Card = c.Card
@@ -276,6 +269,7 @@ func (s *Transaction) Prefill(c *Transaction) *Transaction {
 	s.Eci = c.Eci
 	s.NativeApm = c.NativeApm
 	s.ExternalDetails = c.ExternalDetails
+	s.Origin = c.Origin
 
 	return s
 }
