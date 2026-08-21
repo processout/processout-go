@@ -29,10 +29,6 @@ type Invoice struct {
 	Customer *Customer `json:"customer,omitempty"`
 	// CustomerID is the iD of the customer linked to the invoice, if any
 	CustomerID *string `json:"customer_id,omitempty"`
-	// Subscription is the subscription to which the invoice is linked to, if any
-	Subscription *Subscription `json:"subscription,omitempty"`
-	// SubscriptionID is the iD of the subscription to which the invoice is linked to, if any
-	SubscriptionID *string `json:"subscription_id,omitempty"`
 	// Token is the token used to pay the invoice, if any
 	Token *Token `json:"token,omitempty"`
 	// TokenID is the iD of the token used to pay the invoice, if any
@@ -41,6 +37,8 @@ type Invoice struct {
 	Details *[]*InvoiceDetail `json:"details,omitempty"`
 	// Submerchant is the submerchant data of the invoice
 	Submerchant *InvoiceSubmerchant `json:"submerchant,omitempty"`
+	// SubmerchantID is the iD of the submerchant linked to the invoice, if any
+	SubmerchantID *string `json:"submerchant_id,omitempty"`
 	// URL is the uRL to which you may redirect your customer to proceed with the payment
 	URL *string `json:"url,omitempty"`
 	// URLQrcode is the base64-encoded QR code for the invoice URL
@@ -119,6 +117,8 @@ type Invoice struct {
 	AutoCaptureAt *time.Time `json:"auto_capture_at,omitempty"`
 	// ReferenceID is the merchant reference ID, custom ID for this Invoice provided by the API caller. At most 80 characters. Allowed only 1-byte ASCII characters from range 33 (inclusive) to 126 (inclusive) - non-whitespace, non-DEL characters.
 	ReferenceID *string `json:"reference_id,omitempty"`
+	// PaymentProcessingConfig is the configuration related to payment processing of the invoice.
+	PaymentProcessingConfig *PaymentProcessingConfiguration `json:"payment_processing_config,omitempty"`
 
 	client *ProcessOut
 }
@@ -147,9 +147,6 @@ func (s *Invoice) SetClient(c *ProcessOut) *Invoice {
 	}
 	if s.Customer != nil {
 		s.Customer.SetClient(c)
-	}
-	if s.Subscription != nil {
-		s.Subscription.SetClient(c)
 	}
 	if s.Token != nil {
 		s.Token.SetClient(c)
@@ -181,6 +178,9 @@ func (s *Invoice) SetClient(c *ProcessOut) *Invoice {
 	if s.UnsupportedFeatureBypass != nil {
 		s.UnsupportedFeatureBypass.SetClient(c)
 	}
+	if s.PaymentProcessingConfig != nil {
+		s.PaymentProcessingConfig.SetClient(c)
+	}
 
 	return s
 }
@@ -198,12 +198,11 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.TransactionID = c.TransactionID
 	s.Customer = c.Customer
 	s.CustomerID = c.CustomerID
-	s.Subscription = c.Subscription
-	s.SubscriptionID = c.SubscriptionID
 	s.Token = c.Token
 	s.TokenID = c.TokenID
 	s.Details = c.Details
 	s.Submerchant = c.Submerchant
+	s.SubmerchantID = c.SubmerchantID
 	s.URL = c.URL
 	s.URLQrcode = c.URLQrcode
 	s.Name = c.Name
@@ -243,8 +242,143 @@ func (s *Invoice) Prefill(c *Invoice) *Invoice {
 	s.Verification = c.Verification
 	s.AutoCaptureAt = c.AutoCaptureAt
 	s.ReferenceID = c.ReferenceID
+	s.PaymentProcessingConfig = c.PaymentProcessingConfig
 
 	return s
+}
+
+// InvoiceAuthenticateParameters is the structure representing the
+// additional parameters used to call Invoice.Authenticate
+type InvoiceAuthenticateParameters struct {
+	*Options
+	*Invoice
+	Synchronous             interface{} `json:"synchronous"`
+	RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
+	CaptureAmount           interface{} `json:"capture_amount"`
+	EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
+	AllowFallbackToSale     interface{} `json:"allow_fallback_to_sale"`
+	AutoCaptureAt           interface{} `json:"auto_capture_at"`
+	Metadata                interface{} `json:"metadata"`
+	OverrideMacBlocking     interface{} `json:"override_mac_blocking"`
+	ExternalThreeDS         interface{} `json:"external_three_d_s"`
+	SaveSource              interface{} `json:"save_source"`
+	ProvisionNetworkToken   interface{} `json:"provision_network_token"`
+	InvoiceLineItems        interface{} `json:"invoice_line_items"`
+	TransactionLinkID       interface{} `json:"transaction_link_id"`
+}
+
+// Authenticate allows you to autheticate the invoice using the given source (customer or token)
+func (s Invoice) Authenticate(source string, options ...InvoiceAuthenticateParameters) (*Transaction, *CustomerAction, error) {
+	return s.AuthenticateWithContext(context.Background(), source, options...)
+}
+
+// Authenticate allows you to autheticate the invoice using the given source (customer or token), passes the provided context to the request
+func (s Invoice) AuthenticateWithContext(ctx context.Context, source string, options ...InvoiceAuthenticateParameters) (*Transaction, *CustomerAction, error) {
+	if s.client == nil {
+		panic("Please use the client.NewInvoice() method to create a new Invoice object")
+	}
+	if len(options) > 1 {
+		panic("The options parameter should only be provided once.")
+	}
+
+	opt := InvoiceAuthenticateParameters{}
+	if len(options) == 1 {
+		opt = options[0]
+	}
+	if opt.Options == nil {
+		opt.Options = &Options{}
+	}
+	s.Prefill(opt.Invoice)
+
+	type Response struct {
+		Transaction    *Transaction    `json:"transaction"`
+		CustomerAction *CustomerAction `json:"customer_action"`
+		HasMore        bool            `json:"has_more"`
+		Success        bool            `json:"success"`
+		Message        string          `json:"message"`
+		Code           string          `json:"error_type"`
+	}
+
+	data := struct {
+		*Options
+		Device                  interface{} `json:"device"`
+		Incremental             interface{} `json:"incremental"`
+		Synchronous             interface{} `json:"synchronous"`
+		RetryDropLiabilityShift interface{} `json:"retry_drop_liability_shift"`
+		CaptureAmount           interface{} `json:"capture_amount"`
+		EnableThreeDS2          interface{} `json:"enable_three_d_s_2"`
+		AllowFallbackToSale     interface{} `json:"allow_fallback_to_sale"`
+		AutoCaptureAt           interface{} `json:"auto_capture_at"`
+		Metadata                interface{} `json:"metadata"`
+		OverrideMacBlocking     interface{} `json:"override_mac_blocking"`
+		ExternalThreeDS         interface{} `json:"external_three_d_s"`
+		SaveSource              interface{} `json:"save_source"`
+		ProvisionNetworkToken   interface{} `json:"provision_network_token"`
+		InvoiceLineItems        interface{} `json:"invoice_line_items"`
+		TransactionLinkID       interface{} `json:"transaction_link_id"`
+		Source                  interface{} `json:"source"`
+	}{
+		Options:                 opt.Options,
+		Device:                  s.Device,
+		Incremental:             s.Incremental,
+		Synchronous:             opt.Synchronous,
+		RetryDropLiabilityShift: opt.RetryDropLiabilityShift,
+		CaptureAmount:           opt.CaptureAmount,
+		EnableThreeDS2:          opt.EnableThreeDS2,
+		AllowFallbackToSale:     opt.AllowFallbackToSale,
+		AutoCaptureAt:           opt.AutoCaptureAt,
+		Metadata:                opt.Metadata,
+		OverrideMacBlocking:     opt.OverrideMacBlocking,
+		ExternalThreeDS:         opt.ExternalThreeDS,
+		SaveSource:              opt.SaveSource,
+		ProvisionNetworkToken:   opt.ProvisionNetworkToken,
+		InvoiceLineItems:        opt.InvoiceLineItems,
+		TransactionLinkID:       opt.TransactionLinkID,
+		Source:                  source,
+	}
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return nil, nil, errors.New(err, "", "")
+	}
+
+	path := "/invoices/:invoice_id/authenticate"
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		Host+path,
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return nil, nil, errors.NewNetworkError(err)
+	}
+	setupRequest(s.client, opt.Options, req)
+
+	res, err := s.client.HTTPClient.Do(req)
+	if err != nil {
+		return nil, nil, errors.NewNetworkError(err)
+	}
+	payload := &Response{}
+	defer res.Body.Close()
+	if res.StatusCode >= 500 {
+		return nil, nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+	}
+	err = json.NewDecoder(res.Body).Decode(payload)
+	if err != nil {
+		return nil, nil, errors.New(err, "", "")
+	}
+
+	if !payload.Success {
+		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
+			payload.Message)
+
+		return nil, nil, erri
+	}
+
+	payload.Transaction.SetClient(s.client)
+	payload.CustomerAction.SetClient(s.client)
+	return payload.Transaction, payload.CustomerAction, nil
 }
 
 // InvoiceIncrementAuthorizationParameters is the structure representing the
@@ -354,15 +488,18 @@ type InvoiceAuthorizeParameters struct {
 	OverrideMacBlocking     interface{} `json:"override_mac_blocking"`
 	ExternalThreeDS         interface{} `json:"external_three_d_s"`
 	SaveSource              interface{} `json:"save_source"`
+	ProvisionNetworkToken   interface{} `json:"provision_network_token"`
+	InvoiceLineItems        interface{} `json:"invoice_line_items"`
+	TransactionLinkID       interface{} `json:"transaction_link_id"`
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token)
-func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters) (*Transaction, *CustomerAction, error) {
+func (s Invoice) Authorize(source string, options ...InvoiceAuthorizeParameters) (*Transaction, *CustomerAction, string, error) {
 	return s.AuthorizeWithContext(context.Background(), source, options...)
 }
 
 // Authorize allows you to authorize the invoice using the given source (customer or token), passes the provided context to the request
-func (s Invoice) AuthorizeWithContext(ctx context.Context, source string, options ...InvoiceAuthorizeParameters) (*Transaction, *CustomerAction, error) {
+func (s Invoice) AuthorizeWithContext(ctx context.Context, source string, options ...InvoiceAuthorizeParameters) (*Transaction, *CustomerAction, string, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -382,10 +519,12 @@ func (s Invoice) AuthorizeWithContext(ctx context.Context, source string, option
 	type Response struct {
 		Transaction    *Transaction    `json:"transaction"`
 		CustomerAction *CustomerAction `json:"customer_action"`
-		HasMore        bool            `json:"has_more"`
-		Success        bool            `json:"success"`
-		Message        string          `json:"message"`
-		Code           string          `json:"error_type"`
+		Outcome        string          `json:"outcome"`
+
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	data := struct {
@@ -402,6 +541,9 @@ func (s Invoice) AuthorizeWithContext(ctx context.Context, source string, option
 		OverrideMacBlocking     interface{} `json:"override_mac_blocking"`
 		ExternalThreeDS         interface{} `json:"external_three_d_s"`
 		SaveSource              interface{} `json:"save_source"`
+		ProvisionNetworkToken   interface{} `json:"provision_network_token"`
+		InvoiceLineItems        interface{} `json:"invoice_line_items"`
+		TransactionLinkID       interface{} `json:"transaction_link_id"`
 		Source                  interface{} `json:"source"`
 	}{
 		Options:                 opt.Options,
@@ -417,12 +559,15 @@ func (s Invoice) AuthorizeWithContext(ctx context.Context, source string, option
 		OverrideMacBlocking:     opt.OverrideMacBlocking,
 		ExternalThreeDS:         opt.ExternalThreeDS,
 		SaveSource:              opt.SaveSource,
+		ProvisionNetworkToken:   opt.ProvisionNetworkToken,
+		InvoiceLineItems:        opt.InvoiceLineItems,
+		TransactionLinkID:       opt.TransactionLinkID,
 		Source:                  source,
 	}
 
 	body, err := json.Marshal(data)
 	if err != nil {
-		return nil, nil, errors.New(err, "", "")
+		return nil, nil, "", errors.New(err, "", "")
 	}
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/authorize"
@@ -434,34 +579,34 @@ func (s Invoice) AuthorizeWithContext(ctx context.Context, source string, option
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, nil, errors.NewNetworkError(err)
+		return nil, nil, "", errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, nil, errors.NewNetworkError(err)
+		return nil, nil, "", errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	if res.StatusCode >= 500 {
-		return nil, nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+		return nil, nil, "", errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
 	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, nil, errors.New(err, "", "")
+		return nil, nil, "", errors.New(err, "", "")
 	}
 
 	if !payload.Success {
 		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
 			payload.Message)
 
-		return nil, nil, erri
+		return nil, nil, "", erri
 	}
 
 	payload.Transaction.SetClient(s.client)
 	payload.CustomerAction.SetClient(s.client)
-	return payload.Transaction, payload.CustomerAction, nil
+	return payload.Transaction, payload.CustomerAction, payload.Outcome, nil
 }
 
 // InvoiceCaptureParameters is the structure representing the
@@ -480,15 +625,17 @@ type InvoiceCaptureParameters struct {
 	OverrideMacBlocking        interface{} `json:"override_mac_blocking"`
 	ExternalThreeDS            interface{} `json:"external_three_d_s"`
 	SaveSource                 interface{} `json:"save_source"`
+	ProvisionNetworkToken      interface{} `json:"provision_network_token"`
+	TransactionLinkID          interface{} `json:"transaction_link_id"`
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token)
-func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*Transaction, *CustomerAction, error) {
+func (s Invoice) Capture(source string, options ...InvoiceCaptureParameters) (*Transaction, *CustomerAction, string, error) {
 	return s.CaptureWithContext(context.Background(), source, options...)
 }
 
 // Capture allows you to capture the invoice using the given source (customer or token), passes the provided context to the request
-func (s Invoice) CaptureWithContext(ctx context.Context, source string, options ...InvoiceCaptureParameters) (*Transaction, *CustomerAction, error) {
+func (s Invoice) CaptureWithContext(ctx context.Context, source string, options ...InvoiceCaptureParameters) (*Transaction, *CustomerAction, string, error) {
 	if s.client == nil {
 		panic("Please use the client.NewInvoice() method to create a new Invoice object")
 	}
@@ -508,10 +655,12 @@ func (s Invoice) CaptureWithContext(ctx context.Context, source string, options 
 	type Response struct {
 		Transaction    *Transaction    `json:"transaction"`
 		CustomerAction *CustomerAction `json:"customer_action"`
-		HasMore        bool            `json:"has_more"`
-		Success        bool            `json:"success"`
-		Message        string          `json:"message"`
-		Code           string          `json:"error_type"`
+		Outcome        string          `json:"outcome"`
+
+		HasMore bool   `json:"has_more"`
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		Code    string `json:"error_type"`
 	}
 
 	data := struct {
@@ -529,6 +678,8 @@ func (s Invoice) CaptureWithContext(ctx context.Context, source string, options 
 		OverrideMacBlocking        interface{} `json:"override_mac_blocking"`
 		ExternalThreeDS            interface{} `json:"external_three_d_s"`
 		SaveSource                 interface{} `json:"save_source"`
+		ProvisionNetworkToken      interface{} `json:"provision_network_token"`
+		TransactionLinkID          interface{} `json:"transaction_link_id"`
 		Source                     interface{} `json:"source"`
 	}{
 		Options:                    opt.Options,
@@ -545,12 +696,14 @@ func (s Invoice) CaptureWithContext(ctx context.Context, source string, options 
 		OverrideMacBlocking:        opt.OverrideMacBlocking,
 		ExternalThreeDS:            opt.ExternalThreeDS,
 		SaveSource:                 opt.SaveSource,
+		ProvisionNetworkToken:      opt.ProvisionNetworkToken,
+		TransactionLinkID:          opt.TransactionLinkID,
 		Source:                     source,
 	}
 
 	body, err := json.Marshal(data)
 	if err != nil {
-		return nil, nil, errors.New(err, "", "")
+		return nil, nil, "", errors.New(err, "", "")
 	}
 
 	path := "/invoices/" + url.QueryEscape(*s.ID) + "/capture"
@@ -562,34 +715,34 @@ func (s Invoice) CaptureWithContext(ctx context.Context, source string, options 
 		bytes.NewReader(body),
 	)
 	if err != nil {
-		return nil, nil, errors.NewNetworkError(err)
+		return nil, nil, "", errors.NewNetworkError(err)
 	}
 	setupRequest(s.client, opt.Options, req)
 
 	res, err := s.client.HTTPClient.Do(req)
 	if err != nil {
-		return nil, nil, errors.NewNetworkError(err)
+		return nil, nil, "", errors.NewNetworkError(err)
 	}
 	payload := &Response{}
 	defer res.Body.Close()
 	if res.StatusCode >= 500 {
-		return nil, nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
+		return nil, nil, "", errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
 	}
 	err = json.NewDecoder(res.Body).Decode(payload)
 	if err != nil {
-		return nil, nil, errors.New(err, "", "")
+		return nil, nil, "", errors.New(err, "", "")
 	}
 
 	if !payload.Success {
 		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
 			payload.Message)
 
-		return nil, nil, erri
+		return nil, nil, "", erri
 	}
 
 	payload.Transaction.SetClient(s.client)
 	payload.CustomerAction.SetClient(s.client)
-	return payload.Transaction, payload.CustomerAction, nil
+	return payload.Transaction, payload.CustomerAction, payload.Outcome, nil
 }
 
 // InvoiceFetchCustomerParameters is the structure representing the
@@ -774,6 +927,7 @@ type InvoicePayoutParameters struct {
 	*Options
 	*Invoice
 	ForceGatewayConfigurationID interface{} `json:"force_gateway_configuration_id"`
+	Metadata                    interface{} `json:"metadata"`
 }
 
 // Payout allows you to process the payout invoice using the given source (customer or token)
@@ -810,11 +964,13 @@ func (s Invoice) PayoutWithContext(ctx context.Context, gatewayConfigurationID, 
 	data := struct {
 		*Options
 		ForceGatewayConfigurationID interface{} `json:"force_gateway_configuration_id"`
+		Metadata                    interface{} `json:"metadata"`
 		GatewayConfigurationID      interface{} `json:"gateway_configuration_id"`
 		Source                      interface{} `json:"source"`
 	}{
 		Options:                     opt.Options,
 		ForceGatewayConfigurationID: opt.ForceGatewayConfigurationID,
+		Metadata:                    opt.Metadata,
 		GatewayConfigurationID:      gatewayConfigurationID,
 		Source:                      source,
 	}
@@ -1348,11 +1504,10 @@ func (s Invoice) AllWithContext(ctx context.Context, options ...InvoiceAllParame
 
 	type Response struct {
 		Invoices []*Invoice `json:"invoices"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		HasMore  bool       `json:"has_more"`
+		Success  bool       `json:"success"`
+		Message  string     `json:"message"`
+		Code     string     `json:"error_type"`
 	}
 
 	data := struct {
@@ -1477,6 +1632,7 @@ func (s Invoice) CreateWithContext(ctx context.Context, options ...InvoiceCreate
 		Metadata                   interface{} `json:"metadata"`
 		Details                    interface{} `json:"details"`
 		Submerchant                interface{} `json:"submerchant"`
+		SubmerchantID              interface{} `json:"submerchant_id"`
 		ReferenceID                interface{} `json:"reference_id"`
 		ExemptionReason3ds2        interface{} `json:"exemption_reason_3ds2"`
 		ScaExemptionReason         interface{} `json:"sca_exemption_reason"`
@@ -1515,6 +1671,7 @@ func (s Invoice) CreateWithContext(ctx context.Context, options ...InvoiceCreate
 		Metadata:                   s.Metadata,
 		Details:                    s.Details,
 		Submerchant:                s.Submerchant,
+		SubmerchantID:              s.SubmerchantID,
 		ReferenceID:                s.ReferenceID,
 		ExemptionReason3ds2:        s.ExemptionReason3ds2,
 		ScaExemptionReason:         s.ScaExemptionReason,

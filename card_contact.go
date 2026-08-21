@@ -22,8 +22,10 @@ type CardContact struct {
 	City *string `json:"city,omitempty"`
 	// State is the state of the card holder
 	State *string `json:"state,omitempty"`
-	// CountryCode is the country code of the card holder (ISO-3166, 2 characters format)
+	// CountryCode is the deprecated alias for billing_country_code. Billing country of the card holder (ISO-3166, 2 characters format). Kept for backward compatibility; prefer billing_country_code.
 	CountryCode *string `json:"country_code,omitempty"`
+	// BillingCountryCode is the billing country of the card holder (ISO-3166, 2 characters format). Takes precedence over country_code when both are supplied.
+	BillingCountryCode *string `json:"billing_country_code,omitempty"`
 	// Zip is the zIP code of the card holder
 	Zip *string `json:"zip,omitempty"`
 
@@ -52,6 +54,7 @@ func (s *CardContact) Prefill(c *CardContact) *CardContact {
 	s.City = c.City
 	s.State = c.State
 	s.CountryCode = c.CountryCode
+	s.BillingCountryCode = c.BillingCountryCode
 	s.Zip = c.Zip
 
 	return s

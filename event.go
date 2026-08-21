@@ -105,11 +105,10 @@ func (s Event) FetchWebhooksWithContext(ctx context.Context, options ...EventFet
 
 	type Response struct {
 		Webhooks []*Webhook `json:"webhooks"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		HasMore  bool       `json:"has_more"`
+		Success  bool       `json:"success"`
+		Message  string     `json:"message"`
+		Code     string     `json:"error_type"`
 	}
 
 	data := struct {
@@ -217,12 +216,11 @@ func (s Event) AllWithContext(ctx context.Context, options ...EventAllParameters
 	s.Prefill(opt.Event)
 
 	type Response struct {
-		Events []*Event `json:"events"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Events  []*Event `json:"events"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	data := struct {

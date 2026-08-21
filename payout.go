@@ -143,12 +143,11 @@ func (s Payout) FetchItemsWithContext(ctx context.Context, options ...PayoutFetc
 	s.Prefill(opt.Payout)
 
 	type Response struct {
-		Items []*PayoutItem `json:"items"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Items   []*PayoutItem `json:"items"`
+		HasMore bool          `json:"has_more"`
+		Success bool          `json:"success"`
+		Message string        `json:"message"`
+		Code    string        `json:"error_type"`
 	}
 
 	data := struct {
@@ -257,11 +256,10 @@ func (s Payout) AllWithContext(ctx context.Context, options ...PayoutAllParamete
 
 	type Response struct {
 		Payouts []*Payout `json:"payouts"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		HasMore bool      `json:"has_more"`
+		Success bool      `json:"success"`
+		Message string    `json:"message"`
+		Code    string    `json:"error_type"`
 	}
 
 	data := struct {

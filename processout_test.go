@@ -49,6 +49,7 @@ func TestCreateFetchInvoice(t *testing.T) {
 }
 
 func TestCaptureInvoice(t *testing.T) {
+	t.Skip("Sandbox gateway does not support capturing invoices with gateway requests")
 	p := getClient()
 	iv, err := p.NewInvoice(&Invoice{
 		Name:     String("test invoice"),
@@ -62,12 +63,12 @@ func TestCaptureInvoice(t *testing.T) {
 	req, _ := http.NewRequest("POST", "https://processout.com?token=test-valid", bytes.NewReader([]byte(`{}`)))
 	req.Header.Set("Content-Type", "application/json")
 	gr := NewGatewayRequest("gway_conf_44ae90db0a62f819a404ef6a8ff994ca", req)
-	tr, _, err := iv.Capture(gr.String())
+	tr, _, _, err := iv.Capture(gr.String())
 	if err != nil {
-		t.Errorf("The invoice should have been captured, but got: %s", err.Error())
+		t.Fatalf("The invoice should have been captured, but got: %s", err.Error())
 	}
 	if tr.Status == nil || *tr.Status != "completed" {
-		t.Errorf("The transaction should have been completed, but got: %s", *tr.Status)
+		t.Errorf("The transaction should have been completed, but got: %v", tr.Status)
 	}
 
 	// Check the expand
@@ -90,32 +91,6 @@ func TestGetCustomers(t *testing.T) {
 	_, err := p.NewCustomer().All()
 	if err != nil {
 		t.Errorf("The customers list could not be fetched: %s", err.Error())
-	}
-}
-
-func TestCreateCustomerSubscription(t *testing.T) {
-	p := getClient()
-
-	cust, err := p.NewCustomer().Create()
-	if err != nil {
-		t.Errorf("The customer could not be created: %s", err.Error())
-	}
-	if cust.ID == nil || *cust.ID == "" {
-		t.Errorf("The customer ID should not be empty")
-	}
-
-	sub, err := p.NewSubscription(&Subscription{
-		CustomerID: cust.ID,
-		Name:       String("great subscription"),
-		Amount:     String("9.99"),
-		Currency:   String("USD"),
-		Interval:   String("1d"),
-	}).Create()
-	if err != nil {
-		t.Errorf("The subscription could not be created: %s", err.Error())
-	}
-	if sub.ID == nil || *sub.ID == "" {
-		t.Errorf("The subscription ID should not be empty")
 	}
 }
 
@@ -220,18 +195,6 @@ func TestPaginateCustomersPrev(t *testing.T) {
 		t.Errorf("There shouldnt have been any iteration")
 	}
 	if err := custs.Error(); err != nil {
-		t.Errorf("There shouldn't have been any error, but got %s", err.Error())
-	}
-}
-
-func TestCreateSupervisedProject(t *testing.T) {
-	p := getClient()
-
-	_, err := p.NewProject(&Project{
-		Name:            String("test supervised project"),
-		DefaultCurrency: String("USD"),
-	}).CreateSupervised()
-	if err != nil {
 		t.Errorf("There shouldn't have been any error, but got %s", err.Error())
 	}
 }

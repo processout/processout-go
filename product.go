@@ -207,11 +207,10 @@ func (s Product) AllWithContext(ctx context.Context, options ...ProductAllParame
 
 	type Response struct {
 		Products []*Product `json:"products"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		HasMore  bool       `json:"has_more"`
+		Success  bool       `json:"success"`
+		Message  string     `json:"message"`
+		Code     string     `json:"error_type"`
 	}
 
 	data := struct {
