@@ -16,6 +16,8 @@ import (
 type UnsupportedFeatureBypass struct {
 	// IncrementalAuthorization is the indicates whether to fallback to normal authorization if incremental is not supported
 	IncrementalAuthorization *bool `json:"incremental_authorization,omitempty"`
+	// SplitPayments is the indicates whether to fallback to normal payment if split payments are not supported
+	SplitPayments *bool `json:"split_payments,omitempty"`
 
 	client *ProcessOut
 }
@@ -38,6 +40,7 @@ func (s *UnsupportedFeatureBypass) Prefill(c *UnsupportedFeatureBypass) *Unsuppo
 	}
 
 	s.IncrementalAuthorization = c.IncrementalAuthorization
+	s.SplitPayments = c.SplitPayments
 
 	return s
 }

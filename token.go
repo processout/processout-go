@@ -61,6 +61,8 @@ type Token struct {
 	CanGetBalance *bool `json:"can_get_balance,omitempty"`
 	// WebhookURL is the custom webhook URL where updates about this specific customer token will be sent, on top of your project-wide URLs
 	WebhookURL *string `json:"webhook_url,omitempty"`
+	// ProvisionNetworkToken is the sticky preference controlling network token provisioning for this token. Null when unset (default behaviour applies), false to opt out, true to opt in
+	ProvisionNetworkToken *bool `json:"provision_network_token,omitempty"`
 
 	client *ProcessOut
 }
@@ -126,6 +128,7 @@ func (s *Token) Prefill(c *Token) *Token {
 	s.VerificationStatus = c.VerificationStatus
 	s.CanGetBalance = c.CanGetBalance
 	s.WebhookURL = c.WebhookURL
+	s.ProvisionNetworkToken = c.ProvisionNetworkToken
 
 	return s
 }
@@ -161,12 +164,11 @@ func (s Token) FetchCustomerTokensWithContext(ctx context.Context, customerID st
 	s.Prefill(opt.Token)
 
 	type Response struct {
-		Tokens []*Token `json:"tokens"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Tokens  []*Token `json:"tokens"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	data := struct {
@@ -344,6 +346,7 @@ type TokenCreateParameters struct {
 	VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
 	InvoiceReturnURL          interface{} `json:"invoice_return_url"`
 	Summary                   interface{} `json:"summary"`
+	ProvisionNetworkToken     interface{} `json:"provision_network_token"`
 }
 
 // Create allows you to create a new token for the given customer ID.
@@ -397,6 +400,7 @@ func (s Token) CreateWithContext(ctx context.Context, options ...TokenCreatePara
 		VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
 		InvoiceReturnURL          interface{} `json:"invoice_return_url"`
 		Summary                   interface{} `json:"summary"`
+		ProvisionNetworkToken     interface{} `json:"provision_network_token"`
 	}{
 		Options:                   opt.Options,
 		Metadata:                  s.Metadata,
@@ -416,6 +420,7 @@ func (s Token) CreateWithContext(ctx context.Context, options ...TokenCreatePara
 		VerifyStatementDescriptor: opt.VerifyStatementDescriptor,
 		InvoiceReturnURL:          opt.InvoiceReturnURL,
 		Summary:                   opt.Summary,
+		ProvisionNetworkToken:     opt.ProvisionNetworkToken,
 	}
 
 	body, err := json.Marshal(data)
@@ -476,6 +481,7 @@ type TokenSaveParameters struct {
 	VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
 	InvoiceReturnURL          interface{} `json:"invoice_return_url"`
 	GatewayConfigurationID    interface{} `json:"gateway_configuration_id"`
+	ProvisionNetworkToken     interface{} `json:"provision_network_token"`
 }
 
 // Save allows you to save the updated customer attributes.
@@ -519,6 +525,7 @@ func (s Token) SaveWithContext(ctx context.Context, options ...TokenSaveParamete
 		VerifyStatementDescriptor interface{} `json:"verify_statement_descriptor"`
 		InvoiceReturnURL          interface{} `json:"invoice_return_url"`
 		GatewayConfigurationID    interface{} `json:"gateway_configuration_id"`
+		ProvisionNetworkToken     interface{} `json:"provision_network_token"`
 	}{
 		Options:                   opt.Options,
 		Source:                    opt.Source,
@@ -530,6 +537,7 @@ func (s Token) SaveWithContext(ctx context.Context, options ...TokenSaveParamete
 		VerifyStatementDescriptor: opt.VerifyStatementDescriptor,
 		InvoiceReturnURL:          opt.InvoiceReturnURL,
 		GatewayConfigurationID:    opt.GatewayConfigurationID,
+		ProvisionNetworkToken:     opt.ProvisionNetworkToken,
 	}
 
 	body, err := json.Marshal(data)

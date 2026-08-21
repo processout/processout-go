@@ -61,8 +61,10 @@ type Card struct {
 	State *string `json:"state,omitempty"`
 	// Zip is the zIP code of the card holder
 	Zip *string `json:"zip,omitempty"`
-	// CountryCode is the country code of the card holder (ISO-3166, 2 characters format)
+	// CountryCode is the country where the card was issued, derived from the IIN/BIN lookup (ISO-3166, 2 characters format)
 	CountryCode *string `json:"country_code,omitempty"`
+	// BillingCountryCode is the billing country of the card holder (ISO-3166, 2 characters format), as supplied on the card's contact
+	BillingCountryCode *string `json:"billing_country_code,omitempty"`
 	// IpAddress is the iP address of the card (IPv4 or IPv6)
 	IpAddress *string `json:"ip_address,omitempty"`
 	// Fingerprint is the fingerprint of the card (stays the same if the same card gets tokenized multiple times). Scoped per ProcessOut project
@@ -81,6 +83,12 @@ type Card struct {
 	Sandbox *bool `json:"sandbox,omitempty"`
 	// CreatedAt is the date at which the card was created
 	CreatedAt *time.Time `json:"created_at,omitempty"`
+	// PreferredCardType is the preferred card type for combo cards, such as credit or debit
+	PreferredCardType *string `json:"preferred_card_type,omitempty"`
+	// InitialSchemeTransactionID is the initial scheme transaction ID associated with the card for transaction chaining
+	InitialSchemeTransactionID *string `json:"initial_scheme_transaction_id,omitempty"`
+	// PaymentAccountReference is the payment Account Reference (PAR) of the card, a unique identifier associating the card with the underlying account across tokens
+	PaymentAccountReference *string `json:"payment_account_reference,omitempty"`
 
 	client *ProcessOut
 }
@@ -141,6 +149,7 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.State = c.State
 	s.Zip = c.Zip
 	s.CountryCode = c.CountryCode
+	s.BillingCountryCode = c.BillingCountryCode
 	s.IpAddress = c.IpAddress
 	s.Fingerprint = c.Fingerprint
 	s.TokenType = c.TokenType
@@ -150,6 +159,9 @@ func (s *Card) Prefill(c *Card) *Card {
 	s.ExpiresSoon = c.ExpiresSoon
 	s.Sandbox = c.Sandbox
 	s.CreatedAt = c.CreatedAt
+	s.PreferredCardType = c.PreferredCardType
+	s.InitialSchemeTransactionID = c.InitialSchemeTransactionID
+	s.PaymentAccountReference = c.PaymentAccountReference
 
 	return s
 }
@@ -185,12 +197,11 @@ func (s Card) AllWithContext(ctx context.Context, options ...CardAllParameters) 
 	s.Prefill(opt.Card)
 
 	type Response struct {
-		Cards []*Card `json:"cards"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Cards   []*Card `json:"cards"`
+		HasMore bool    `json:"has_more"`
+		Success bool    `json:"success"`
+		Message string  `json:"message"`
+		Code    string  `json:"error_type"`
 	}
 
 	data := struct {

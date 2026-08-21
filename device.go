@@ -20,6 +20,10 @@ type Device struct {
 	ID *string `json:"id,omitempty"`
 	// Channel is the device channel. Possible values: "web", "ios", "android", "other"
 	Channel *string `json:"channel,omitempty"`
+	// ThreedsSdk is the preferred 3DS SDK type for authentication. Possible values: "web", "ios", "android", "other". This is the recommended field to use instead of channel for 3DS SDK selection
+	ThreedsSdk *string `json:"threeds_sdk,omitempty"`
+	// Platform is the platform of the device for analytics and metadata. Possible values: "web", "ios", "android", "other"
+	Platform *string `json:"platform,omitempty"`
 	// IpAddress is the device IP address. Use if request origin is "backend"
 	IpAddress *string `json:"ip_address,omitempty"`
 	// UserAgent is the device user agent. Use if request origin is "backend"
@@ -73,6 +77,8 @@ func (s *Device) Prefill(c *Device) *Device {
 	s.RequestOrigin = c.RequestOrigin
 	s.ID = c.ID
 	s.Channel = c.Channel
+	s.ThreedsSdk = c.ThreedsSdk
+	s.Platform = c.Platform
 	s.IpAddress = c.IpAddress
 	s.UserAgent = c.UserAgent
 	s.HeaderAccept = c.HeaderAccept

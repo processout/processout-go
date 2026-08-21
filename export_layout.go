@@ -111,11 +111,10 @@ func (s ExportLayout) AllWithContext(ctx context.Context, options ...ExportLayou
 
 	type Response struct {
 		ExportLayouts []*ExportLayout `json:"export_layouts"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		HasMore       bool            `json:"has_more"`
+		Success       bool            `json:"success"`
+		Message       string          `json:"message"`
+		Code          string          `json:"error_type"`
 	}
 
 	data := struct {

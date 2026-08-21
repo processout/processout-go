@@ -213,11 +213,10 @@ func (s Refund) FetchTransactionRefundsWithContext(ctx context.Context, transact
 
 	type Response struct {
 		Refunds []*Refund `json:"refunds"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		HasMore bool      `json:"has_more"`
+		Success bool      `json:"success"`
+		Message string    `json:"message"`
+		Code    string    `json:"error_type"`
 	}
 
 	data := struct {

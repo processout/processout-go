@@ -27,8 +27,6 @@ type Customer struct {
 	DefaultTokenID *string `json:"default_token_id,omitempty"`
 	// Tokens is the list of the customer tokens
 	Tokens *[]*Token `json:"tokens,omitempty"`
-	// Subscriptions is the list of the customer subscriptions
-	Subscriptions *[]*Subscription `json:"subscriptions,omitempty"`
 	// Transactions is the list of the customer transactions
 	Transactions *[]*Transaction `json:"transactions,omitempty"`
 	// Balance is the customer balance. Can be positive or negative
@@ -124,7 +122,6 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.DefaultToken = c.DefaultToken
 	s.DefaultTokenID = c.DefaultTokenID
 	s.Tokens = c.Tokens
-	s.Subscriptions = c.Subscriptions
 	s.Transactions = c.Transactions
 	s.Balance = c.Balance
 	s.Currency = c.Currency
@@ -152,119 +149,6 @@ func (s *Customer) Prefill(c *Customer) *Customer {
 	s.ReferenceID = c.ReferenceID
 
 	return s
-}
-
-// CustomerFetchSubscriptionsParameters is the structure representing the
-// additional parameters used to call Customer.FetchSubscriptions
-type CustomerFetchSubscriptionsParameters struct {
-	*Options
-	*Customer
-}
-
-// FetchSubscriptions allows you to get the subscriptions belonging to the customer.
-func (s Customer) FetchSubscriptions(options ...CustomerFetchSubscriptionsParameters) (*Iterator, error) {
-	return s.FetchSubscriptionsWithContext(context.Background(), options...)
-}
-
-// FetchSubscriptions allows you to get the subscriptions belonging to the customer., passes the provided context to the request
-func (s Customer) FetchSubscriptionsWithContext(ctx context.Context, options ...CustomerFetchSubscriptionsParameters) (*Iterator, error) {
-	if s.client == nil {
-		panic("Please use the client.NewCustomer() method to create a new Customer object")
-	}
-	if len(options) > 1 {
-		panic("The options parameter should only be provided once.")
-	}
-
-	opt := CustomerFetchSubscriptionsParameters{}
-	if len(options) == 1 {
-		opt = options[0]
-	}
-	if opt.Options == nil {
-		opt.Options = &Options{}
-	}
-	s.Prefill(opt.Customer)
-
-	type Response struct {
-		Subscriptions []*Subscription `json:"subscriptions"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
-	}
-
-	data := struct {
-		*Options
-	}{
-		Options: opt.Options,
-	}
-
-	body, err := json.Marshal(data)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	path := "/customers/" + url.QueryEscape(*s.ID) + "/subscriptions"
-
-	req, err := http.NewRequestWithContext(
-		ctx,
-		"GET",
-		Host+path,
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return nil, errors.NewNetworkError(err)
-	}
-	setupRequest(s.client, opt.Options, req)
-
-	res, err := s.client.HTTPClient.Do(req)
-	if err != nil {
-		return nil, errors.NewNetworkError(err)
-	}
-	payload := &Response{}
-	defer res.Body.Close()
-	if res.StatusCode >= 500 {
-		return nil, errors.New(nil, "", "An unexpected error occurred while processing your request.. A lot of sweat is already flowing from our developers head!")
-	}
-	err = json.NewDecoder(res.Body).Decode(payload)
-	if err != nil {
-		return nil, errors.New(err, "", "")
-	}
-
-	if !payload.Success {
-		erri := errors.NewFromResponse(res.StatusCode, payload.Code,
-			payload.Message)
-
-		return nil, erri
-	}
-
-	subscriptionsList := []Identifiable{}
-	for _, o := range payload.Subscriptions {
-		subscriptionsList = append(subscriptionsList, o.SetClient(s.client))
-	}
-	subscriptionsIterator := &Iterator{
-		pos:     -1,
-		path:    path,
-		data:    subscriptionsList,
-		options: opt.Options,
-		decoder: func(b io.Reader, i interface{}) (bool, error) {
-			r := struct {
-				Data    json.RawMessage `json:"subscriptions"`
-				HasMore bool            `json:"has_more"`
-			}{}
-			if err := json.NewDecoder(b).Decode(&r); err != nil {
-				return false, err
-			}
-			if err := json.Unmarshal(r.Data, i); err != nil {
-				return false, err
-			}
-			return r.HasMore, nil
-		},
-		client:      s.client,
-		hasMoreNext: payload.HasMore,
-		hasMorePrev: false,
-	}
-	return subscriptionsIterator, nil
 }
 
 // CustomerFetchTokensParameters is the structure representing the
@@ -298,12 +182,11 @@ func (s Customer) FetchTokensWithContext(ctx context.Context, options ...Custome
 	s.Prefill(opt.Customer)
 
 	type Response struct {
-		Tokens []*Token `json:"tokens"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		Tokens  []*Token `json:"tokens"`
+		HasMore bool     `json:"has_more"`
+		Success bool     `json:"success"`
+		Message string   `json:"message"`
+		Code    string   `json:"error_type"`
 	}
 
 	data := struct {
@@ -584,11 +467,10 @@ func (s Customer) FetchTransactionsWithContext(ctx context.Context, options ...C
 
 	type Response struct {
 		Transactions []*Transaction `json:"transactions"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		HasMore      bool           `json:"has_more"`
+		Success      bool           `json:"success"`
+		Message      string         `json:"message"`
+		Code         string         `json:"error_type"`
 	}
 
 	data := struct {
@@ -697,11 +579,10 @@ func (s Customer) AllWithContext(ctx context.Context, options ...CustomerAllPara
 
 	type Response struct {
 		Customers []*Customer `json:"customers"`
-
-		HasMore bool   `json:"has_more"`
-		Success bool   `json:"success"`
-		Message string `json:"message"`
-		Code    string `json:"error_type"`
+		HasMore   bool        `json:"has_more"`
+		Success   bool        `json:"success"`
+		Message   string      `json:"message"`
+		Code      string      `json:"error_type"`
 	}
 
 	data := struct {
