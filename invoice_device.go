@@ -16,6 +16,8 @@ import (
 type InvoiceDevice struct {
 	// Channel is the channel of the device
 	Channel *string `json:"channel,omitempty"`
+	// ThreedsSdk is the preferred 3DS SDK type for authentication. This is the recommended field to use instead of channel for 3DS SDK selection
+	ThreedsSdk *string `json:"threeds_sdk,omitempty"`
 	// Platform is the platform of the device for analytics and metadata. Possible values: "web", "ios", "android", "other"
 	Platform *string `json:"platform,omitempty"`
 	// IpAddress is the iP address of the device
@@ -53,6 +55,7 @@ func (s *InvoiceDevice) Prefill(c *InvoiceDevice) *InvoiceDevice {
 	}
 
 	s.Channel = c.Channel
+	s.ThreedsSdk = c.ThreedsSdk
 	s.Platform = c.Platform
 	s.IpAddress = c.IpAddress
 	s.ID = c.ID

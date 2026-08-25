@@ -16,7 +16,7 @@ import (
 type PaymentProcessingConfiguration struct {
 	// BypassUnsupportedSplitPayments is the payment processing should bypass unsupported split payments validation when no payment gateway supports it.
 	BypassUnsupportedSplitPayments *bool `json:"bypass_unsupported_split_payments,omitempty"`
-	// ApmPaymentConfig is the alternative Payment Method (APM) specific payment processing cofiguration.
+	// ApmPaymentConfig is the alternative Payment Method (APM) specific payment processing configuration.
 	ApmPaymentConfig *APMPaymentProcessingConfiguration `json:"apm_payment_config,omitempty"`
 
 	client *ProcessOut
